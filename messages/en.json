@@ -97,7 +97,7 @@
     "postImageInvalid": "Choose a JPG, PNG, or WebP image (up to 10MB).",
     "postImageTooLarge": "Image is too large after compression. Try a smaller photo.",
     "postImageProcessFailed": "Could not process the image. Please try again.",
-    "postImageStorageMissing": "Post image storage is not set up. Run supabase/post-images.sql.",
+    "postImageStorageMissing": "Post image storage is not set up. In Supabase SQL Editor, run supabase/post-images.sql (production too).",
     "emptyFeed": "No posts yet. Share the first update."
   },
   "post": {

@@ -16,8 +16,8 @@ function GalleryIcon({ className = "" }: { className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
-      width="22"
-      height="22"
+      width="24"
+      height="24"
       viewBox="0 0 24 24"
       fill="none"
       stroke="currentColor"
@@ -28,6 +28,23 @@ function GalleryIcon({ className = "" }: { className?: string }) {
       <rect x="3" y="3" width="18" height="18" rx="2" />
       <circle cx="8.5" cy="8.5" r="1.25" fill="currentColor" stroke="none" />
       <path d="m21 15-5-5L5 21" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      aria-hidden="true"
+    >
+      <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
     </svg>
   );
 }
@@ -187,67 +204,83 @@ export default function PostComposerPanel({
     />
   );
 
-  const galleryButton = (
+  const galleryToolbarButton = (
     <button
       type="button"
       onClick={() => fileInputRef.current?.click()}
       disabled={saving}
-      className={
-        fullScreen
-          ? "inline-flex min-w-[4.5rem] flex-col items-center gap-1 rounded-lg border border-border bg-white px-3 py-2 text-xs font-medium text-foreground transition hover:border-primary/30 hover:bg-muted/30 disabled:opacity-60"
-          : "inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-muted-foreground transition hover:border-primary/30 hover:text-primary disabled:opacity-60"
-      }
+      className="flex size-11 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted/60 hover:text-primary disabled:opacity-60"
+      aria-label={t("feed.postImageAdd")}
     >
-      <GalleryIcon className={fullScreen ? "text-foreground" : ""} />
-      <span>{fullScreen ? t("feed.postGallery") : t("feed.postImageAdd")}</span>
+      <GalleryIcon />
     </button>
+  );
+
+  const galleryButtonDesktop = (
+    <button
+      type="button"
+      onClick={() => fileInputRef.current?.click()}
+      disabled={saving}
+      className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-muted-foreground transition hover:border-primary/30 hover:text-primary disabled:opacity-60"
+    >
+      <GalleryIcon className="size-[22px]" />
+      <span>{t("feed.postImageAdd")}</span>
+    </button>
+  );
+
+  const userAvatar = (
+    <span className="relative flex size-10 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10">
+      {user.avatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={user.avatarUrl} alt="" className="size-full object-cover" />
+      ) : (
+        <span className="flex size-full items-center justify-center text-xs font-semibold text-primary">
+          {user.initials}
+        </span>
+      )}
+    </span>
   );
 
   if (fullScreen) {
     return (
       <div
-        className="flex min-h-0 flex-1 flex-col"
+        className="flex min-h-0 flex-1 flex-col bg-white"
         role="dialog"
         aria-modal="true"
         aria-labelledby="post-composer-title"
       >
-        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-3 py-2">
+        <header className="grid shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-b border-border px-3 py-2.5">
           <button
             type="button"
             onClick={handleClose}
             disabled={saving}
-            className="rounded-lg px-2 py-1.5 text-base text-muted-foreground transition hover:bg-muted disabled:opacity-60"
+            className="flex size-10 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted disabled:opacity-60"
             aria-label={t("profile.cancel")}
           >
-            ✕
+            <CloseIcon />
           </button>
+
+          <div className="flex min-w-0 items-center gap-2">
+            {userAvatar}
+            <p
+              id="post-composer-title"
+              className="truncate text-sm font-semibold text-foreground"
+            >
+              {user.fullName}
+            </p>
+          </div>
+
           <button
             type="button"
             onClick={handlePublish}
             disabled={!canPublish}
-            className="rounded-full bg-primary px-5 py-2 text-base font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-45"
+            className="rounded-full bg-primary px-4 py-2 text-base font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {saving ? "…" : t("feed.composerSubmit")}
           </button>
         </header>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 py-3 text-start" dir="auto">
-          <div className="mb-3 flex items-center gap-2">
-            <span className="relative flex size-9 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10">
-              {user.avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={user.avatarUrl} alt="" className="size-full object-cover" />
-              ) : (
-                <span className="flex size-full items-center justify-center text-[10px] font-semibold text-primary">
-                  {user.initials}
-                </span>
-              )}
-            </span>
-            <p id="post-composer-title" className="truncate text-sm font-semibold text-foreground">
-              {user.fullName}
-            </p>
-          </div>
-
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 py-3" dir="auto">
           <label className="sr-only" htmlFor="post-composer-body">
             {t("feed.composerLabel")}
           </label>
@@ -255,40 +288,59 @@ export default function PostComposerPanel({
             id="post-composer-body"
             value={body}
             onChange={(event) => setBody(event.target.value)}
-            rows={6}
+            rows={5}
             maxLength={4000}
             disabled={saving}
             autoFocus
             placeholder={t("feed.composerModalPlaceholder")}
-            className="min-h-[10rem] w-full flex-1 resize-none border-0 bg-transparent p-0 text-start text-base leading-relaxed text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-60"
+            className="min-h-[8.5rem] w-full resize-none border-0 bg-transparent p-0 text-start text-base leading-relaxed text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-60"
           />
 
-          <div className="mt-2 flex flex-wrap items-start gap-2">
-            {fileInput}
-            {galleryButton}
-          </div>
-
           {previewUrl ? (
-            <div className="relative mt-3 overflow-hidden rounded-lg border border-border bg-muted/20">
+            <div className="relative mt-2 w-full overflow-hidden rounded-lg bg-muted/30">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={previewUrl} alt="" className="max-h-40 w-full object-contain" />
-              <button
-                type="button"
-                onClick={removeImage}
-                disabled={saving}
-                className="absolute start-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-xs text-white transition hover:bg-black/70"
-              >
-                {t("feed.postImageRemove")}
-              </button>
+              <img
+                src={previewUrl}
+                alt=""
+                className="max-h-[min(52vh,22rem)] w-full object-contain"
+              />
+              <div className="absolute end-2 top-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={saving}
+                  className="flex size-9 items-center justify-center rounded-full bg-white/95 text-foreground shadow-md transition hover:bg-white disabled:opacity-60"
+                  aria-label={t("feed.postImageAdd")}
+                >
+                  <GalleryIcon className="size-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  disabled={saving}
+                  className="flex size-9 items-center justify-center rounded-full bg-white/95 text-foreground shadow-md transition hover:bg-white disabled:opacity-60"
+                  aria-label={t("feed.postImageRemove")}
+                >
+                  <CloseIcon />
+                </button>
+              </div>
             </div>
           ) : null}
 
           {error ? (
-            <p className="mt-2 text-xs text-red-600" role="alert">
+            <p
+              className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              role="alert"
+            >
               {error}
             </p>
           ) : null}
         </div>
+
+        <footer className="shrink-0 border-t border-border px-2 py-1.5 pb-[max(0.25rem,env(safe-area-inset-bottom,0px))]">
+          {fileInput}
+          <div className="flex items-center gap-1">{galleryToolbarButton}</div>
+        </footer>
       </div>
     );
   }
@@ -302,16 +354,7 @@ export default function PostComposerPanel({
     >
       <header className="flex items-center justify-between gap-3 border-b border-border pb-3">
         <div className="flex min-w-0 items-center gap-2">
-          <span className="relative flex size-10 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10">
-            {user.avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={user.avatarUrl} alt="" className="size-full object-cover" />
-            ) : (
-              <span className="flex size-full items-center justify-center text-xs font-semibold text-primary">
-                {user.initials}
-              </span>
-            )}
-          </span>
+          {userAvatar}
           <p id="post-composer-title" className="truncate text-sm font-semibold text-foreground">
             {user.fullName}
           </p>
@@ -360,7 +403,7 @@ export default function PostComposerPanel({
 
         <div className="mt-3 border-t border-border pt-3">
           {fileInput}
-          {galleryButton}
+          {galleryButtonDesktop}
         </div>
 
         {error ? (

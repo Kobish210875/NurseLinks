@@ -59,13 +59,9 @@ export default function FeedComposer({ user }: FeedComposerProps) {
             onClick={closeComposer}
           />
           <div
-            className="composer-sheet fixed inset-x-0 bottom-0 z-[71] flex max-h-[100dvh] w-full max-w-[100vw] flex-col overflow-x-clip overflow-y-hidden rounded-t-2xl bg-white shadow-[0_-12px_48px_rgb(44_74_110_/_0.18)] md:hidden"
-            style={{ paddingTop: "max(0.5rem, env(safe-area-inset-top, 0px))" }}
+            className="composer-sheet fixed inset-0 z-[71] flex h-[100dvh] max-h-[100dvh] w-full flex-col overflow-hidden bg-white md:hidden"
+            style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
           >
-            <div
-              className="mx-auto mb-1 mt-0.5 h-1 w-10 shrink-0 rounded-full bg-border"
-              aria-hidden="true"
-            />
             <PostComposerPanel user={user} onClose={closeComposer} fullScreen />
           </div>
         </>

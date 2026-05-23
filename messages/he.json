@@ -97,7 +97,7 @@
     "postImageInvalid": "יש לבחור תמונה JPG, PNG או WebP (עד 10MB).",
     "postImageTooLarge": "התמונה גדולה מדי אחרי הדחיסה. נסו תמונה קטנה יותר.",
     "postImageProcessFailed": "לא ניתן לעבד את התמונה. נסו שוב.",
-    "postImageStorageMissing": "אחסון תמונות לפוסטים לא הוגדר. הריצו את supabase/post-images.sql.",
+    "postImageStorageMissing": "אחסון תמונות לפוסטים לא הוגדר. ב-Supabase פתחו SQL Editor והריצו את הקובץ supabase/post-images.sql (גם בפרודקשן).",
     "emptyFeed": "עדיין אין פוסטים. פרסמו את העדכון הראשון."
   },
   "post": {

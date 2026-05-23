@@ -57,16 +57,37 @@ export async function createPost(formData: FormData) {
 
   if (imageFile) {
     const path = postImageStoragePath(user.id, postId);
-    const buffer = await imageFile.arrayBuffer();
+    const buffer = Buffer.from(await imageFile.arrayBuffer());
+    const uploadOpts = { upsert: true, contentType: "image/jpeg" as const };
+
     const { error: uploadError } = await supabase.storage
       .from(POST_IMAGES_BUCKET)
-      .upload(path, buffer, { upsert: true, contentType: "image/jpeg" });
+      .upload(path, buffer, uploadOpts);
+
+    let uploaded = !uploadError;
 
     if (uploadError) {
-      const code = uploadError.message.toLowerCase();
-      if (code.includes("bucket") || code.includes("not found")) {
-        return { error: "storage-not-configured" as const };
+      const admin = createAdminClient();
+      if (admin) {
+        const { error: adminError } = await admin.storage
+          .from(POST_IMAGES_BUCKET)
+          .upload(path, buffer, uploadOpts);
+        uploaded = !adminError;
+        if (adminError) {
+          const code = adminError.message.toLowerCase();
+          if (code.includes("bucket") || code.includes("not found")) {
+            return { error: "storage-not-configured" as const };
+          }
+        }
+      } else {
+        const code = uploadError.message.toLowerCase();
+        if (code.includes("bucket") || code.includes("not found")) {
+          return { error: "storage-not-configured" as const };
+        }
       }
+    }
+
+    if (!uploaded) {
       return { error: "insert-failed" as const };
     }
 

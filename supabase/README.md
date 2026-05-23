@@ -25,6 +25,17 @@
    - If message send fails after connecting: `supabase/connections-messaging-fix.sql`
 5. Restart the Next.js dev server after changing `.env.local`.
 
+### Post photos on the feed (required for image posts)
+
+If publishing a post with a photo shows **“אחסון תמונות לפוסטים לא הוגדר”**:
+
+1. Open your project in [Supabase Dashboard](https://supabase.com/dashboard) → **SQL Editor**.
+2. Paste and run the full contents of `supabase/post-images.sql`.
+3. Under **Storage**, confirm a public bucket named `post-images` exists.
+4. On Vercel, ensure `SUPABASE_SERVICE_ROLE_KEY` is set (optional fallback for uploads).
+
+Re-deploy is not required after SQL; only the database changes.
+
 The initial schema supports:
 
 - user profiles
