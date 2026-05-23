@@ -87,14 +87,18 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
         >
           <Link
             href="/home"
-            className="max-w-[5.5rem] shrink-0 overflow-hidden text-base font-bold text-primary"
+            className="shrink-0 text-base font-bold text-primary"
             aria-label={t("nav.homeAria")}
           >
-            <NurseLinkWordmark textClassName="text-primary text-sm" />
+            <NurseLinkWordmark
+              className="gap-1"
+              textClassName="text-primary text-sm"
+              iconClassName="size-[0.85em] shrink-0 text-primary"
+            />
           </Link>
 
-          <div className="min-w-0 flex-1 overflow-visible">
-            <NavPeopleSearch />
+          <div className="min-w-0 flex-1 overflow-visible max-w-[8.25rem]">
+            <NavPeopleSearch compact />
           </div>
 
           <Link

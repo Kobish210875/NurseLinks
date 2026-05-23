@@ -10,7 +10,12 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 const DEBOUNCE_MS = 200;
 const MOBILE_MAX_WIDTH = 767;
 
-export default function NavPeopleSearch() {
+type NavPeopleSearchProps = {
+  /** Slightly smaller field for the mobile header bar. */
+  compact?: boolean;
+};
+
+export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProps) {
   const t = useT();
   const { locale } = useLocale();
   const router = useRouter();
@@ -201,11 +206,17 @@ export default function NavPeopleSearch() {
       </label>
       <svg
         className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-muted-foreground ${
-          isRtl ? "start-3" : "end-3"
+          isRtl
+            ? compact
+              ? "start-2 md:start-3"
+              : "start-3"
+            : compact
+              ? "end-2 md:end-3"
+              : "end-3"
         }`}
         xmlns="http://www.w3.org/2000/svg"
-        width="16"
-        height="16"
+        width={compact ? 14 : 16}
+        height={compact ? 14 : 16}
         viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
@@ -237,9 +248,11 @@ export default function NavPeopleSearch() {
         }}
         onFocus={() => setIsOpen(true)}
         onKeyDown={handleKeyDown}
-        className={`w-full max-w-full rounded-md border border-border bg-white py-2 text-base text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/15 md:text-sm ${
-          isRtl ? "ps-10 pe-3 text-start" : "pe-10 ps-3"
-        }`}
+        className={`w-full max-w-full rounded-md border border-border bg-white text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/15 ${
+          compact
+            ? "py-1.5 text-base md:py-2 md:text-sm"
+            : "py-2 text-base md:text-sm"
+        } ${isRtl ? "ps-9 pe-2 text-start md:ps-10 md:pe-3" : "pe-9 ps-2 md:pe-10 md:ps-3"}`}
       />
 
       {showList && isMobile ? (
