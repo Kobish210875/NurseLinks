@@ -211,10 +211,10 @@ export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProp
         className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-muted-foreground ${
           isRtl
             ? compact
-              ? "start-2 md:start-3"
+              ? "start-2.5 md:start-3"
               : "start-3"
             : compact
-              ? "end-2 md:end-3"
+              ? "end-2.5 md:end-3"
               : "end-3"
         }`}
         xmlns="http://www.w3.org/2000/svg"
@@ -251,11 +251,19 @@ export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProp
         }}
         onFocus={() => setIsOpen(true)}
         onKeyDown={handleKeyDown}
-        className={`w-full max-w-full rounded-md border border-border bg-white text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/15 ${
+        className={`w-full max-w-full appearance-none rounded-md border border-border bg-white text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/15 ${
           compact
             ? "py-1.5 text-base md:py-2 md:text-sm"
             : "py-2 text-base md:text-sm"
-        } ${isRtl ? "ps-10 pe-2 text-start md:ps-10 md:pe-3" : "pe-9 ps-2 md:pe-10 md:ps-3"}`}
+        } ${
+          isRtl
+            ? compact
+              ? "ps-8 pe-1 text-right placeholder:text-right"
+              : "ps-10 pe-3 text-start md:ps-10 md:pe-3"
+            : compact
+              ? "pe-8 ps-2 text-left placeholder:text-left"
+              : "pe-10 ps-3 md:pe-10 md:ps-3"
+        }`}
       />
 
       {showList && isMobile ? (

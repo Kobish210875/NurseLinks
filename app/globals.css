@@ -89,5 +89,13 @@ body {
   body.has-mobile-app-shell .site-footer {
     display: none;
   }
+
+  #nav-search[dir="rtl"] {
+    text-align: right;
+  }
+
+  #nav-search[dir="rtl"]::placeholder {
+    text-align: right;
+  }
 }
 
