@@ -26,10 +26,18 @@ export default function FeedComposer({ user }: FeedComposerProps) {
     if (!open) {
       return;
     }
-    const previous = document.body.style.overflow;
+    const scrollY = window.scrollY;
+    const { overflow, position, top, width } = document.body.style;
     document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = "100%";
     return () => {
-      document.body.style.overflow = previous;
+      document.body.style.overflow = overflow;
+      document.body.style.position = position;
+      document.body.style.top = top;
+      document.body.style.width = width;
+      window.scrollTo(0, scrollY);
     };
   }, [open]);
 
@@ -47,10 +55,17 @@ export default function FeedComposer({ user }: FeedComposerProps) {
           <button
             type="button"
             aria-label={t("profile.cancel")}
-            className="fixed inset-0 z-[70] bg-black/40 md:hidden"
+            className="composer-backdrop fixed inset-0 z-[70] bg-black/45 md:hidden"
             onClick={closeComposer}
           />
-          <div className="fixed inset-0 z-[71] flex flex-col bg-white md:hidden">
+          <div
+            className="composer-sheet fixed inset-x-0 bottom-0 z-[71] flex max-h-[100dvh] w-full max-w-[100vw] flex-col overflow-x-clip overflow-y-hidden rounded-t-2xl bg-white shadow-[0_-12px_48px_rgb(44_74_110_/_0.18)] md:hidden"
+            style={{ paddingTop: "max(0.5rem, env(safe-area-inset-top, 0px))" }}
+          >
+            <div
+              className="mx-auto mb-1 mt-0.5 h-1 w-10 shrink-0 rounded-full bg-border"
+              aria-hidden="true"
+            />
             <PostComposerPanel user={user} onClose={closeComposer} fullScreen />
           </div>
         </>

@@ -210,14 +210,13 @@ export default function PostComposerPanel({
         role="dialog"
         aria-modal="true"
         aria-labelledby="post-composer-title"
-        dir="ltr"
       >
-        <header className="flex shrink-0 items-center justify-between border-b border-border px-3 py-2.5">
+        <header className="flex shrink-0 items-center justify-between gap-3 border-b border-border px-3 py-2">
           <button
             type="button"
             onClick={handleClose}
             disabled={saving}
-            className="rounded-lg px-2 py-1 text-lg text-muted-foreground transition hover:bg-muted disabled:opacity-60"
+            className="rounded-lg px-2 py-1.5 text-base text-muted-foreground transition hover:bg-muted disabled:opacity-60"
             aria-label={t("profile.cancel")}
           >
             ✕
@@ -226,13 +225,13 @@ export default function PostComposerPanel({
             type="button"
             onClick={handlePublish}
             disabled={!canPublish}
-            className="rounded-full bg-primary px-5 py-1.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-45"
+            className="rounded-full bg-primary px-5 py-2 text-base font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-45"
           >
             {saving ? "…" : t("feed.composerSubmit")}
           </button>
         </header>
 
-        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3 text-start" dir="auto">
+        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 py-3 text-start" dir="auto">
           <div className="mb-3 flex items-center gap-2">
             <span className="relative flex size-9 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10">
               {user.avatarUrl ? (
@@ -256,12 +255,12 @@ export default function PostComposerPanel({
             id="post-composer-body"
             value={body}
             onChange={(event) => setBody(event.target.value)}
-            rows={4}
+            rows={6}
             maxLength={4000}
             disabled={saving}
             autoFocus
             placeholder={t("feed.composerModalPlaceholder")}
-            className="w-full resize-none border-0 bg-transparent p-0 text-start text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-60"
+            className="min-h-[10rem] w-full flex-1 resize-none border-0 bg-transparent p-0 text-start text-base leading-relaxed text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-60"
           />
 
           <div className="mt-2 flex flex-wrap items-start gap-2">
@@ -341,7 +340,7 @@ export default function PostComposerPanel({
           disabled={saving}
           autoFocus
           placeholder={t("feed.composerModalPlaceholder")}
-          className="min-h-[7rem] w-full resize-none rounded-xl border border-border bg-muted/20 px-3 py-2.5 text-start text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60"
+          className="min-h-[7rem] w-full resize-none rounded-xl border border-border bg-muted/20 px-3 py-2.5 text-start text-base text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60 md:text-sm"
         />
 
         {previewUrl ? (
