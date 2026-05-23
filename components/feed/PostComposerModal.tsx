@@ -12,6 +12,26 @@ import { resizePostImageFile } from "@/lib/images/resize-post-image";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 
+function GalleryIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect x="3" y="3" width="18" height="18" rx="2" />
+      <circle cx="8.5" cy="8.5" r="1.25" fill="currentColor" stroke="none" />
+      <path d="m21 15-5-5L5 21" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
 type PostComposerPanelProps = {
   user: CurrentUser;
   onClose: () => void;
@@ -155,18 +175,133 @@ export default function PostComposerPanel({
 
   const canPublish = body.trim().length > 0 && !saving;
 
+  const fileInput = (
+    <input
+      ref={fileInputRef}
+      id={fileInputId}
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      className="sr-only"
+      disabled={saving}
+      onChange={handleImageChange}
+    />
+  );
+
+  const galleryButton = (
+    <button
+      type="button"
+      onClick={() => fileInputRef.current?.click()}
+      disabled={saving}
+      className={
+        fullScreen
+          ? "inline-flex min-w-[4.5rem] flex-col items-center gap-1 rounded-lg border border-border bg-white px-3 py-2 text-xs font-medium text-foreground transition hover:border-primary/30 hover:bg-muted/30 disabled:opacity-60"
+          : "inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-muted-foreground transition hover:border-primary/30 hover:text-primary disabled:opacity-60"
+      }
+    >
+      <GalleryIcon className={fullScreen ? "text-foreground" : ""} />
+      <span>{fullScreen ? t("feed.postGallery") : t("feed.postImageAdd")}</span>
+    </button>
+  );
+
+  if (fullScreen) {
+    return (
+      <div
+        className="flex min-h-0 flex-1 flex-col"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="post-composer-title"
+        dir="ltr"
+      >
+        <header className="flex shrink-0 items-center justify-between border-b border-border px-3 py-2.5">
+          <button
+            type="button"
+            onClick={handleClose}
+            disabled={saving}
+            className="rounded-lg px-2 py-1 text-lg text-muted-foreground transition hover:bg-muted disabled:opacity-60"
+            aria-label={t("profile.cancel")}
+          >
+            ✕
+          </button>
+          <button
+            type="button"
+            onClick={handlePublish}
+            disabled={!canPublish}
+            className="rounded-full bg-primary px-5 py-1.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            {saving ? "…" : t("feed.composerSubmit")}
+          </button>
+        </header>
+
+        <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3 text-start" dir="auto">
+          <div className="mb-3 flex items-center gap-2">
+            <span className="relative flex size-9 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10">
+              {user.avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={user.avatarUrl} alt="" className="size-full object-cover" />
+              ) : (
+                <span className="flex size-full items-center justify-center text-[10px] font-semibold text-primary">
+                  {user.initials}
+                </span>
+              )}
+            </span>
+            <p id="post-composer-title" className="truncate text-sm font-semibold text-foreground">
+              {user.fullName}
+            </p>
+          </div>
+
+          <label className="sr-only" htmlFor="post-composer-body">
+            {t("feed.composerLabel")}
+          </label>
+          <textarea
+            id="post-composer-body"
+            value={body}
+            onChange={(event) => setBody(event.target.value)}
+            rows={4}
+            maxLength={4000}
+            disabled={saving}
+            autoFocus
+            placeholder={t("feed.composerModalPlaceholder")}
+            className="w-full resize-none border-0 bg-transparent p-0 text-start text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-60"
+          />
+
+          <div className="mt-2 flex flex-wrap items-start gap-2">
+            {fileInput}
+            {galleryButton}
+          </div>
+
+          {previewUrl ? (
+            <div className="relative mt-3 overflow-hidden rounded-lg border border-border bg-muted/20">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={previewUrl} alt="" className="max-h-40 w-full object-contain" />
+              <button
+                type="button"
+                onClick={removeImage}
+                disabled={saving}
+                className="absolute start-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-xs text-white transition hover:bg-black/70"
+              >
+                {t("feed.postImageRemove")}
+              </button>
+            </div>
+          ) : null}
+
+          {error ? (
+            <p className="mt-2 text-xs text-red-600" role="alert">
+              {error}
+            </p>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
-      className={`flex flex-col ${fullScreen ? "min-h-0 flex-1" : "max-h-[min(85vh,34rem)]"}`}
+      className="flex max-h-[min(85vh,34rem)] flex-col"
       role="dialog"
       aria-modal="true"
       aria-labelledby="post-composer-title"
     >
-      <header
-        className={`flex items-center justify-between gap-3 border-b border-border ${
-          fullScreen ? "shrink-0 px-4 py-3" : "pb-3"
-        }`}
-      >
+      <header className="flex items-center justify-between gap-3 border-b border-border pb-3">
         <div className="flex min-w-0 items-center gap-2">
           <span className="relative flex size-10 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10">
             {user.avatarUrl ? (
@@ -193,7 +328,7 @@ export default function PostComposerPanel({
         </button>
       </header>
 
-      <div className={`flex-1 overflow-y-auto py-3 ${fullScreen ? "px-4" : ""}`}>
+      <div className="flex-1 overflow-y-auto py-3">
         <label className="sr-only" htmlFor="post-composer-body">
           {t("feed.composerLabel")}
         </label>
@@ -201,14 +336,12 @@ export default function PostComposerPanel({
           id="post-composer-body"
           value={body}
           onChange={(event) => setBody(event.target.value)}
-          rows={fullScreen ? 8 : 5}
+          rows={5}
           maxLength={4000}
           disabled={saving}
           autoFocus
           placeholder={t("feed.composerModalPlaceholder")}
-          className={`w-full resize-none rounded-xl border border-border bg-muted/20 px-3 py-2.5 text-start text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60 ${
-            fullScreen ? "min-h-[40vh] flex-1 border-0 bg-transparent px-0 focus:ring-0" : "min-h-[7rem]"
-          }`}
+          className="min-h-[7rem] w-full resize-none rounded-xl border border-border bg-muted/20 px-3 py-2.5 text-start text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60"
         />
 
         {previewUrl ? (
@@ -227,36 +360,8 @@ export default function PostComposerPanel({
         ) : null}
 
         <div className="mt-3 border-t border-border pt-3">
-          <input
-            ref={fileInputRef}
-            id={fileInputId}
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            className="sr-only"
-            disabled={saving}
-            onChange={handleImageChange}
-          />
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={saving}
-            className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-muted-foreground transition hover:border-primary/30 hover:text-primary disabled:opacity-60"
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.75"
-              aria-hidden="true"
-            >
-              <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
-              <circle cx="12" cy="13" r="3.5" />
-            </svg>
-            {t("feed.postImageAdd")}
-          </button>
+          {fileInput}
+          {galleryButton}
         </div>
 
         {error ? (
@@ -266,18 +371,12 @@ export default function PostComposerPanel({
         ) : null}
       </div>
 
-      <footer
-        className={`flex justify-end border-t border-border pt-3 ${
-          fullScreen ? "shrink-0 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))]" : ""
-        }`}
-      >
+      <footer className="flex justify-end border-t border-border pt-3">
         <button
           type="button"
           onClick={handlePublish}
           disabled={!canPublish}
-          className={`rounded-full bg-primary text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50 ${
-            fullScreen ? "min-w-[5.5rem] px-6 py-2" : "min-w-[7rem] px-8 py-2.5"
-          }`}
+          className="min-w-[7rem] rounded-full bg-primary px-8 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
         >
           {saving ? "…" : t("feed.composerSubmit")}
         </button>

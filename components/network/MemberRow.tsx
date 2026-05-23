@@ -41,13 +41,13 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
   );
 
   return (
-    <li className="flex items-start gap-3 border-b border-border py-4 last:border-b-0">
-      <span className="relative flex size-14 shrink-0 overflow-hidden rounded-full border-2 border-border bg-primary/10">
+    <li className="flex items-center gap-2.5 border-b border-border py-2.5 last:border-b-0 md:items-start md:gap-3 md:py-4">
+      <span className="relative flex size-10 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10 md:size-14 md:border-2">
         {member.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={member.avatarUrl} alt="" className="size-full object-cover" />
         ) : (
-          <span className="flex size-full items-center justify-center text-sm font-semibold text-primary">
+          <span className="flex size-full items-center justify-center text-[10px] font-semibold text-primary md:text-sm">
             {member.initials}
           </span>
         )}
@@ -56,15 +56,17 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
       <div className="min-w-0 flex-1 text-start">
         <Link
           href={`/profile/${member.id}`}
-          className="font-semibold text-foreground hover:text-primary hover:underline"
+          className="text-sm font-semibold text-foreground hover:text-primary hover:underline md:text-base"
         >
           {member.fullName}
         </Link>
         {professionalLine ? (
-          <p className="mt-0.5 text-sm text-muted-foreground">{professionalLine}</p>
+          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground md:line-clamp-none md:text-sm">
+            {professionalLine}
+          </p>
         ) : null}
         {variant === "connection" && member.connectedAt ? (
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-0.5 text-[10px] text-muted-foreground md:mt-1 md:text-xs">
             <time dateTime={member.connectedAt}>
               {t("network.connectedOn")}{" "}
               {formatFeedTimestamp(member.connectedAt, locale)}
@@ -73,7 +75,7 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
         ) : null}
       </div>
 
-      <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
+      <div className="flex shrink-0 flex-wrap items-center justify-end gap-1 md:gap-2">
         {variant === "invitation" ? (
           <>
             <button
@@ -82,7 +84,7 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
               onClick={() =>
                 run(() => acceptConnectionRequest(member.id))
               }
-              className="rounded-full border border-primary bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
+              className="rounded-full border border-primary bg-primary px-3 py-1 text-xs font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60 md:px-4 md:py-1.5 md:text-sm"
             >
               {t("network.accept")}
             </button>
@@ -92,7 +94,7 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
               onClick={() =>
                 run(() => rejectConnectionRequest(member.id))
               }
-              className="rounded-full border border-border px-4 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted disabled:opacity-60"
+              className="rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground transition hover:bg-muted disabled:opacity-60 md:px-4 md:py-1.5 md:text-sm"
             >
               {t("network.ignore")}
             </button>
@@ -106,7 +108,7 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
                 type="button"
                 disabled={pending}
                 onClick={() => run(() => sendConnectionRequest(member.id))}
-                className="rounded-full border border-primary px-4 py-1.5 text-sm font-medium text-primary transition hover:bg-primary/5 disabled:opacity-60"
+                className="rounded-full border border-primary px-3 py-1 text-xs font-medium text-primary transition hover:bg-primary/5 disabled:opacity-60 md:px-4 md:py-1.5 md:text-sm"
               >
                 {t("network.connect")}
               </button>
@@ -116,7 +118,7 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
                 type="button"
                 disabled={pending}
                 onClick={() => run(() => cancelConnectionRequest(member.id))}
-                className="rounded-full border border-border px-4 py-1.5 text-sm font-medium text-muted-foreground disabled:opacity-60"
+                className="rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground disabled:opacity-60 md:px-4 md:py-1.5 md:text-sm"
               >
                 {t("network.pending")}
               </button>
@@ -127,7 +129,7 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
                   type="button"
                   disabled={pending}
                   onClick={() => run(() => acceptConnectionRequest(member.id))}
-                  className="rounded-full border border-primary bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground disabled:opacity-60"
+                  className="rounded-full border border-primary bg-primary px-2.5 py-1 text-xs font-medium text-primary-foreground disabled:opacity-60 md:px-3 md:py-1.5 md:text-sm"
                 >
                   {t("network.accept")}
                 </button>
@@ -135,7 +137,7 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
                   type="button"
                   disabled={pending}
                   onClick={() => run(() => rejectConnectionRequest(member.id))}
-                  className="rounded-full border border-border px-3 py-1.5 text-sm text-muted-foreground disabled:opacity-60"
+                  className="rounded-full border border-border px-2.5 py-1 text-xs text-muted-foreground disabled:opacity-60 md:px-3 md:py-1.5 md:text-sm"
                 >
                   {t("network.ignore")}
                 </button>
@@ -144,7 +146,7 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
             {member.connectionStatus === "connected" && messageHref ? (
               <Link
                 href={messageHref}
-                className="rounded-full border border-primary px-4 py-1.5 text-sm font-medium text-primary transition hover:bg-primary/5"
+                className="rounded-full border border-primary px-3 py-1 text-xs font-medium text-primary transition hover:bg-primary/5 md:px-4 md:py-1.5 md:text-sm"
               >
                 {t("network.message")}
               </Link>
@@ -155,7 +157,7 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
         {variant === "connection" && messageHref ? (
           <Link
             href={messageHref}
-            className="rounded-full border border-primary px-4 py-1.5 text-sm font-medium text-primary transition hover:bg-primary/5"
+            className="rounded-full border border-primary px-3 py-1 text-xs font-medium text-primary transition hover:bg-primary/5 md:px-4 md:py-1.5 md:text-sm"
           >
             {t("network.message")}
           </Link>

@@ -50,9 +50,9 @@ export default function NetworkPanel({
   const showSearch = query.trim().length >= 2;
 
   return (
-    <div className="feed-card p-4 md:p-6">
-      <header className="mb-4 text-start">
-        <h1 className="text-xl font-bold text-foreground">{t("network.title")}</h1>
+    <div className="feed-card p-3 md:p-6">
+      <header className="mb-3 text-start md:mb-4">
+        <h1 className="text-lg font-bold text-foreground md:text-xl">{t("network.title")}</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           {t("network.count").replace("{count}", String(connections.length))}
         </p>
@@ -61,7 +61,7 @@ export default function NetworkPanel({
       <label className="sr-only" htmlFor="network-search">
         {t("network.searchLabel")}
       </label>
-      <div className="relative mb-4">
+      <div className="relative mb-3 md:mb-4">
         <svg
           className="pointer-events-none absolute top-1/2 end-3 size-4 -translate-y-1/2 text-muted-foreground"
           xmlns="http://www.w3.org/2000/svg"
@@ -85,7 +85,7 @@ export default function NetworkPanel({
       </div>
 
       {showSearch ? (
-        <section className="mb-6 text-start">
+        <section className="mb-4 text-start md:mb-6">
           <h2 className="mb-2 text-sm font-semibold text-foreground">{t("network.searchResults")}</h2>
           {searchResults.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t("network.searchEmpty")}</p>

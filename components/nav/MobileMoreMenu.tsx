@@ -2,7 +2,6 @@
 
 import { signOut } from "@/app/actions/auth";
 import AboutStoryDialog from "@/components/feed/AboutStoryDialog";
-import LanguageToggle from "@/components/i18n/LanguageToggle";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { useState } from "react";
 
@@ -42,10 +41,6 @@ export default function MobileMoreMenu({ open, onClose }: MobileMoreMenuProps) {
                 >
                   {t("feed.aboutCardTitle")}
                 </button>
-              </li>
-              <li className="flex items-center justify-between rounded-md px-3 py-2.5">
-                <span className="text-sm font-medium text-foreground">{t("lang.label")}</span>
-                <LanguageToggle />
               </li>
               <li className="border-t border-border pt-2">
                 <form action={signOut}>
