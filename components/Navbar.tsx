@@ -179,18 +179,26 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
           authenticated && mobileUser ? "hidden md:flex" : "flex"
         } ${isHomeDesktopNav ? "md:dir-ltr" : ""}`}
       >
-        <Link
-          href={authenticated ? "/home" : "/"}
-          className="min-w-0 shrink pe-1 text-base font-bold text-primary sm:pe-2 sm:text-lg"
-          aria-label={t("nav.homeAria")}
-        >
-          <NurseLinkWordmark textClassName="text-primary text-base sm:text-lg" />
-        </Link>
-
         {authenticated && isHomeDesktopNav ? desktopNavLinks : null}
 
+        <Link
+          href={authenticated ? "/home" : "/"}
+          className={`min-w-0 shrink-0 text-base font-bold text-primary ${
+            isHomeDesktopNav ? "ms-1 pe-0 sm:ms-2" : "pe-1 sm:pe-2 sm:text-lg"
+          }`}
+          aria-label={t("nav.homeAria")}
+        >
+          <NurseLinkWordmark
+            textClassName={`text-primary ${isHomeDesktopNav ? "text-base" : "text-base sm:text-lg"}`}
+          />
+        </Link>
+
         {authenticated ? (
-          <div className="mx-2 hidden min-w-0 flex-1 md:block">
+          <div
+            className={`hidden min-w-0 flex-1 md:block ${
+              isHomeDesktopNav ? "ms-2" : "mx-2"
+            }`}
+          >
             <NavPeopleSearch />
           </div>
         ) : null}
