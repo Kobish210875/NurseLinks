@@ -76,6 +76,38 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
     return <NavUnreadDot ariaLabel={badgeLabel(kind, count)} />;
   }
 
+  const isHomeDesktopNav = authenticated && pathname === "/home";
+
+  const desktopNavLinks = (
+    <div className="hidden items-stretch gap-1 md:flex">
+      {authenticated
+        ? navItems.map((item) => {
+            const count = badgeCount(item.badge);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`relative flex min-w-[4.5rem] flex-col items-center justify-center px-2 py-1 text-xs font-medium transition-colors ${
+                  isActive(item.href)
+                    ? "nav-link-active"
+                    : "text-muted-foreground hover:text-primary"
+                }`}
+              >
+                <span
+                  className={
+                    item.badge ? "inline-flex items-center gap-1.5 px-1" : "px-1"
+                  }
+                >
+                  {item.label}
+                  {renderNavBadge(item.badge, count)}
+                </span>
+              </Link>
+            );
+          })
+        : null}
+    </div>
+  );
+
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-nav-bg md:overflow-x-clip">
       {/* Mobile app header — physical LTR: logo left, menu right */}
@@ -145,7 +177,7 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
       <nav
         className={`mx-auto flex h-14 w-full min-w-0 max-w-[1128px] items-center gap-1.5 px-3 sm:gap-2 sm:px-4 ${
           authenticated && mobileUser ? "hidden md:flex" : "flex"
-        }`}
+        } ${isHomeDesktopNav ? "md:dir-ltr" : ""}`}
       >
         <Link
           href={authenticated ? "/home" : "/"}
@@ -155,41 +187,15 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
           <NurseLinkWordmark textClassName="text-primary text-base sm:text-lg" />
         </Link>
 
+        {authenticated && isHomeDesktopNav ? desktopNavLinks : null}
+
         {authenticated ? (
           <div className="mx-2 hidden min-w-0 flex-1 md:block">
             <NavPeopleSearch />
           </div>
         ) : null}
 
-        <div className="hidden items-stretch gap-1 md:flex">
-          {authenticated
-            ? navItems.map((item) => {
-                const count = badgeCount(item.badge);
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`relative flex min-w-[4.5rem] flex-col items-center justify-center px-2 py-1 text-xs font-medium transition-colors ${
-                      isActive(item.href)
-                        ? "nav-link-active"
-                        : "text-muted-foreground hover:text-primary"
-                    }`}
-                  >
-                    <span
-                      className={
-                        item.badge
-                          ? "inline-flex items-center gap-1.5 px-1"
-                          : "px-1"
-                      }
-                    >
-                      {item.label}
-                      {renderNavBadge(item.badge, count)}
-                    </span>
-                  </Link>
-                );
-              })
-            : null}
-        </div>
+        {authenticated && !isHomeDesktopNav ? desktopNavLinks : null}
 
         <div className="ms-auto hidden items-center gap-2 md:flex">
           <LanguageToggle />
