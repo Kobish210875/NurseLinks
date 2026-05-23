@@ -93,7 +93,7 @@ export default function MobileBottomNav() {
             <li key={item.href}>
               <Link
                 href={item.href}
-                className={`relative flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 px-1 py-2 text-center text-[10px] font-semibold leading-tight transition ${
+                className={`relative flex min-h-[3.25rem] flex-col items-center justify-center gap-0.5 px-1 py-2 text-center text-[11px] font-semibold leading-snug transition ${
                   active
                     ? "text-foreground after:absolute after:inset-x-2 after:top-0 after:h-0.5 after:rounded-full after:bg-foreground"
                     : "text-muted-foreground hover:text-primary"
