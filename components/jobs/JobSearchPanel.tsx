@@ -44,7 +44,7 @@ export default function JobSearchPanel({
   }
 
   return (
-    <section className="feed-card space-y-3 p-4">
+    <section className="feed-card min-w-0 space-y-3 p-3 sm:p-4">
       <div>
         <h2 className="text-sm font-semibold text-foreground">{t("jobs.searchTitle")}</h2>
         <p className="mt-0.5 text-xs text-muted-foreground">{t("jobs.searchHint")}</p>

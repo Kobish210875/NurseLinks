@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import LanguageToggle from "@/components/i18n/LanguageToggle";
 import { useT } from "@/components/i18n/LocaleProvider";
-import NavBadge from "@/components/nav/NavBadge";
 import NavUnreadDot from "@/components/nav/NavUnreadDot";
 import NavPeopleSearch from "@/components/nav/NavPeopleSearch";
 import { useNavCounts } from "@/components/nav/NavCountsProvider";
@@ -71,21 +70,18 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
     if (count <= 0 || !kind) {
       return null;
     }
-    if (kind === "jobs") {
-      return <NavUnreadDot ariaLabel={badgeLabel(kind, count)} />;
-    }
-    return <NavBadge count={count} ariaLabel={badgeLabel(kind, count)} />;
+    return <NavUnreadDot ariaLabel={badgeLabel(kind, count)} />;
   }
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-nav-bg">
-      <nav className="mx-auto flex h-14 max-w-[1128px] items-center gap-2 px-4">
+    <header className="sticky top-0 z-50 overflow-x-clip border-b border-border bg-nav-bg">
+      <nav className="mx-auto flex h-14 w-full min-w-0 max-w-[1128px] items-center gap-1.5 px-3 sm:gap-2 sm:px-4">
         <Link
           href={authenticated ? "/home" : "/"}
-          className="shrink-0 pe-2 text-lg font-bold text-primary"
+          className="min-w-0 shrink pe-1 text-base font-bold text-primary sm:pe-2 sm:text-lg"
           aria-label={t("nav.homeAria")}
         >
-          <NurseLinkWordmark textClassName="text-primary" />
+          <NurseLinkWordmark textClassName="text-primary text-base sm:text-lg" />
         </Link>
 
         {authenticated ? (
@@ -110,9 +106,9 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
                   >
                     <span
                       className={
-                        item.badge === "jobs"
+                        item.badge
                           ? "inline-flex items-center gap-1.5 px-1"
-                          : "relative px-1"
+                          : "px-1"
                       }
                     >
                       {item.label}
@@ -144,7 +140,7 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
           ) : null}
         </div>
 
-        <div className="ms-auto flex items-center gap-2 md:ms-0 md:hidden">
+        <div className="ms-auto flex min-w-0 shrink-0 items-center gap-1.5 md:ms-0 md:hidden sm:gap-2">
           <LanguageToggle />
           <button
             type="button"
@@ -192,15 +188,10 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
                 >
                   <span className="inline-flex items-center gap-2">
                     {item.label}
-                    {item.badge === "jobs" && count > 0 ? (
-                      <NavUnreadDot ariaLabel={badgeLabel("jobs", count)} />
+                    {count > 0 && item.badge ? (
+                      <NavUnreadDot ariaLabel={badgeLabel(item.badge, count)} />
                     ) : null}
                   </span>
-                  {count > 0 && item.badge !== "jobs" ? (
-                    <span className="rounded-full bg-red-500 px-2 py-0.5 text-xs font-bold text-white">
-                      {count > 99 ? "99+" : count}
-                    </span>
-                  ) : null}
                 </Link>
               );
             })}

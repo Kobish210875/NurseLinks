@@ -44,7 +44,7 @@ export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
   return (
     <>
       {published ? (
-        <p className="rounded-lg border border-primary/25 bg-primary/5 px-3 py-2 text-sm text-primary">
+        <p className="break-words rounded-lg border border-primary/25 bg-primary/5 px-3 py-2 text-sm text-primary">
           {t("jobs.publishedBanner")}
         </p>
       ) : null}

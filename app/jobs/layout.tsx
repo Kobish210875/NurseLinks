@@ -23,10 +23,12 @@ export default async function JobsLayout({
   return (
     <>
       <Navbar authenticated />
-      <main className="feed-page min-h-[calc(100vh-4rem)] py-4 md:py-6">
-        <div className="mx-auto max-w-2xl space-y-4 px-4">
-          <header className="text-start">
-            <h1 className="text-xl font-bold text-foreground">{t("jobs.title")}</h1>
+      <main className="feed-page min-h-[calc(100vh-4rem)] overflow-x-clip py-4 md:py-6">
+        <div className="mx-auto w-full min-w-0 max-w-2xl space-y-4 px-3 sm:px-4">
+          <header className="min-w-0 text-start">
+            <h1 className="break-words text-lg font-bold text-foreground sm:text-xl">
+              {t("jobs.title")}
+            </h1>
           </header>
           <MarkJobsSeenOnOpen />
           <JobsNav />

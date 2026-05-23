@@ -26,12 +26,12 @@ export default function MarkAllApplicationsRead({ visible }: MarkAllApplications
   }
 
   return (
-    <div className="flex justify-end">
+    <div className="flex min-w-0 justify-end">
       <button
         type="button"
         onClick={handleClick}
         disabled={pending}
-        className="text-xs font-medium text-primary transition hover:underline disabled:opacity-60"
+        className="max-w-full text-start text-xs font-medium leading-snug text-primary transition hover:underline disabled:opacity-60"
       >
         {pending ? "..." : t("jobs.markAllApplicationsRead")}
       </button>

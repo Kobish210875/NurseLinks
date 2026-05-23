@@ -54,7 +54,9 @@ export default function JobCard({ job, defaultApplicantName }: JobCardProps) {
         >
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-1.5">
-              <h2 className="text-sm font-semibold leading-snug text-foreground">{job.title}</h2>
+              <h2 className="break-words text-sm font-semibold leading-snug text-foreground">
+                {job.title}
+              </h2>
               {job.isUnread ? (
                 <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
                   {t("jobs.newBadge")}

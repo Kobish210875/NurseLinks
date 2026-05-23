@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Rubik } from "next/font/google";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
 import { NavCountsProvider } from "@/components/nav/NavCountsProvider";
@@ -17,6 +17,11 @@ const rubik = Rubik({
   subsets: ["hebrew", "latin"],
   weight: ["400", "500", "600", "700"],
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
 
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
@@ -52,7 +57,7 @@ export default async function RootLayout({
 
   return (
     <html lang={locale} dir={dir} className={`${rubik.variable} scroll-smooth`}>
-      <body className="min-h-screen antialiased">
+      <body className="min-h-screen overflow-x-clip antialiased">
         <LocaleProvider locale={locale} messages={messages}>
           <NavCountsProvider
             pendingInvitations={pendingInvitations}

@@ -30,7 +30,7 @@ export default async function JobsPagination({ filters, page, totalPages }: Jobs
 
   return (
     <nav
-      className="flex items-center justify-between gap-3 rounded-lg border border-border bg-white px-4 py-3 text-sm"
+      className="flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-white px-3 py-3 text-xs sm:gap-3 sm:px-4 sm:text-sm"
       aria-label={t("jobs.paginationAria")}
     >
       {prevHref ? (

@@ -11,7 +11,7 @@ export default function JobsNav() {
   const onPublish = pathname.startsWith("/jobs/new");
 
   const tabClass = (active: boolean) =>
-    `flex-1 rounded-lg px-3 py-2.5 text-center text-sm font-semibold transition ${
+    `min-w-0 rounded-lg px-2 py-2 text-center text-xs font-semibold leading-snug transition sm:px-3 sm:py-2.5 sm:text-sm ${
       active
         ? "bg-primary text-primary-foreground shadow-sm"
         : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
@@ -19,7 +19,7 @@ export default function JobsNav() {
 
   return (
     <nav
-      className="feed-card grid grid-cols-2 gap-1 p-1"
+      className="feed-card grid min-w-0 grid-cols-2 gap-1 p-1"
       aria-label={t("jobs.navAria")}
     >
       <Link href="/jobs" className={tabClass(onBrowse)}>

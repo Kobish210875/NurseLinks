@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useT } from "@/components/i18n/LocaleProvider";
+import NavUnreadDot from "@/components/nav/NavUnreadDot";
 import type { NetworkMember } from "@/lib/network/types";
 import MemberRow from "./MemberRow";
 
@@ -121,9 +122,12 @@ export default function NetworkPanel({
         >
           {t("network.tabInvitations")}
           {invitations.length > 0 ? (
-            <span className="rounded-full bg-primary px-2 py-0.5 text-xs text-primary-foreground">
-              {invitations.length}
-            </span>
+            <NavUnreadDot
+              ariaLabel={t("nav.pendingInvitations").replace(
+                "{count}",
+                String(invitations.length),
+              )}
+            />
           ) : null}
         </button>
       </div>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useLocale, useT } from "@/components/i18n/LocaleProvider";
+import NavUnreadDot from "@/components/nav/NavUnreadDot";
 import { formatFeedTimestamp } from "@/lib/i18n/format-feed-time";
 import type { MessageThread } from "@/lib/network/types";
 
@@ -38,7 +39,17 @@ export default function MessagesInbox({ threads }: MessagesInboxProps) {
                 </span>
                 <div className="min-w-0 flex-1 text-start">
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="font-semibold text-foreground">{thread.peerName}</span>
+                    <span className="inline-flex min-w-0 items-center gap-1.5 font-semibold text-foreground">
+                      {thread.peerName}
+                      {thread.unreadCount > 0 ? (
+                        <NavUnreadDot
+                          ariaLabel={t("nav.unreadMessages").replace(
+                            "{count}",
+                            String(thread.unreadCount),
+                          )}
+                        />
+                      ) : null}
+                    </span>
                     <time className="shrink-0 text-xs text-muted-foreground">
                       {formatFeedTimestamp(thread.lastMessageAt, locale)}
                     </time>
@@ -50,11 +61,6 @@ export default function MessagesInbox({ threads }: MessagesInboxProps) {
                     {thread.lastMessageBody}
                   </p>
                 </div>
-                {thread.unreadCount > 0 ? (
-                  <span className="mt-1 rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
-                    {thread.unreadCount}
-                  </span>
-                ) : null}
               </Link>
             </li>
           ))}
