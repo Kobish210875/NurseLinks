@@ -182,22 +182,19 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
       >
         {isHomeDesktopNav ? (
           <>
-            {desktopNavLinks}
-            <div
-              className="hidden min-w-0 flex-1 items-center gap-3 md:flex"
-              dir="ltr"
+            <Link
+              href="/home"
+              className="hidden shrink-0 text-base font-bold text-primary md:block"
+              aria-label={t("nav.homeAria")}
             >
-              <Link
-                href="/home"
-                className="shrink-0 text-base font-bold text-primary"
-                aria-label={t("nav.homeAria")}
-              >
-                <NurseLinkWordmark textClassName="text-primary text-base sm:text-lg" />
-              </Link>
-              <div className="min-w-0 flex-1">
+              <NurseLinkWordmark textClassName="text-primary text-base sm:text-lg" />
+            </Link>
+            <div className="hidden min-w-0 flex-1 justify-center px-2 md:flex md:px-6">
+              <div className="w-full max-w-md min-w-0">
                 <NavPeopleSearch />
               </div>
             </div>
+            {desktopNavLinks}
           </>
         ) : (
           <>
@@ -219,6 +216,7 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
           </>
         )}
 
+        {!isHomeDesktopNav ? (
         <div className="ms-auto hidden items-center gap-2 md:flex">
           <LanguageToggle />
           {!authenticated ? (
@@ -238,6 +236,7 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
             </>
           ) : null}
         </div>
+        ) : null}
 
         {!authenticated ? (
           <div className="ms-auto flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-2 md:hidden">
