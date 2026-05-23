@@ -175,29 +175,37 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
 
       {/* Desktop + logged-out mobile */}
       <nav
-        dir={isHomeDesktopNav ? "ltr" : undefined}
-        className={`mx-auto flex h-14 w-full min-w-0 max-w-[1128px] items-center gap-1.5 px-3 sm:gap-2 sm:px-4 ${
-          authenticated && mobileUser ? "hidden md:flex" : "flex"
+        className={`mx-auto h-14 w-full min-w-0 max-w-[1128px] px-3 sm:px-4 ${
+          authenticated && mobileUser
+            ? isHomeDesktopNav
+              ? "hidden md:block"
+              : "hidden md:flex md:items-center md:gap-2"
+            : isHomeDesktopNav
+              ? "hidden md:block"
+              : "flex items-center gap-1.5 sm:gap-2"
         }`}
       >
         {isHomeDesktopNav ? (
-          <>
-            <Link
-              href="/home"
-              className="hidden shrink-0 text-base font-bold text-primary md:block"
-              aria-label={t("nav.homeAria")}
-            >
-              <NurseLinkWordmark textClassName="text-primary text-base sm:text-lg" />
-            </Link>
-            <div className="hidden min-w-0 flex-1 justify-center px-2 md:flex md:px-6">
+          <div
+            dir="rtl"
+            className="flex h-14 w-full items-center gap-3 lg:grid lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)_minmax(0,260px)] lg:items-center lg:gap-6"
+          >
+            <div className="shrink-0 lg:justify-self-end">{desktopNavLinks}</div>
+            <div className="flex min-w-0 flex-1 justify-start lg:flex-none">
               <div className="w-full max-w-md min-w-0">
                 <NavPeopleSearch />
               </div>
             </div>
-            {desktopNavLinks}
-          </>
+            <Link
+              href="/home"
+              className="shrink-0 text-base font-bold text-primary"
+              aria-label={t("nav.homeAria")}
+            >
+              <NurseLinkWordmark textClassName="text-primary text-base sm:text-lg" />
+            </Link>
+          </div>
         ) : (
-          <>
+          <div className="flex h-14 w-full items-center gap-1.5 sm:gap-2">
             <Link
               href={authenticated ? "/home" : "/"}
               className="min-w-0 shrink pe-1 text-base font-bold text-primary sm:pe-2 sm:text-lg"
@@ -213,42 +221,40 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
             ) : null}
 
             {authenticated ? desktopNavLinks : null}
-          </>
-        )}
 
-        {!isHomeDesktopNav ? (
-        <div className="ms-auto hidden items-center gap-2 md:flex">
-          <LanguageToggle />
-          {!authenticated ? (
-            <>
-              <Link
-                href="/login"
-                className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-white hover:text-primary"
-              >
-                {t("nav.login")}
-              </Link>
-              <Link
-                href="/register"
-                className="btn-primary rounded-md px-4 py-1.5 text-sm font-semibold text-primary-foreground"
-              >
-                {t("nav.register")}
-              </Link>
-            </>
-          ) : null}
-        </div>
-        ) : null}
+            <div className="ms-auto hidden items-center gap-2 md:flex">
+              <LanguageToggle />
+              {!authenticated ? (
+                <>
+                  <Link
+                    href="/login"
+                    className="rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground hover:bg-white hover:text-primary"
+                  >
+                    {t("nav.login")}
+                  </Link>
+                  <Link
+                    href="/register"
+                    className="btn-primary rounded-md px-4 py-1.5 text-sm font-semibold text-primary-foreground"
+                  >
+                    {t("nav.register")}
+                  </Link>
+                </>
+              ) : null}
+            </div>
 
-        {!authenticated ? (
-          <div className="ms-auto flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-2 md:hidden">
-            <LanguageToggle />
-            <Link
-              href="/login"
-              className="rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground"
-            >
-              {t("nav.login")}
-            </Link>
+            {!authenticated ? (
+              <div className="ms-auto flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-2 md:hidden">
+                <LanguageToggle />
+                <Link
+                  href="/login"
+                  className="rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground"
+                >
+                  {t("nav.login")}
+                </Link>
+              </div>
+            ) : null}
           </div>
-        ) : null}
+        )}
       </nav>
 
       {authenticated && mobileUser ? (
