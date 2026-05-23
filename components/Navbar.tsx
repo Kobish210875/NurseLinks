@@ -196,23 +196,23 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
         }`}
       >
         {isHomeDesktopNav ? (
-          <div className="grid h-14 w-full items-center gap-3 max-lg:grid-cols-[auto_minmax(0,1fr)] lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)_minmax(0,260px)] lg:gap-6">
-            <Link
-              href="/home"
-              className="col-start-1 shrink-0 justify-self-end text-base font-bold text-primary"
-              aria-label={t("nav.homeAria")}
-            >
-              <NurseLinkWordmark textClassName="text-primary text-base sm:text-lg" />
-            </Link>
+          <div className="grid h-14 w-full items-center gap-3 max-lg:grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)_minmax(0,260px)] lg:gap-6">
+            <div className="hidden lg:col-start-1 lg:block" aria-hidden="true" />
 
-            <div className="col-start-2 flex min-w-0 items-center justify-end gap-2 sm:gap-3 lg:justify-start">
+            <div className="col-start-1 flex min-w-0 items-center justify-end gap-2 sm:gap-3 lg:col-start-2 lg:justify-start">
               {renderDesktopNavLinks(true)}
               <div className="w-full min-w-0 max-w-[14rem] sm:max-w-xs md:max-w-sm lg:max-w-md">
                 <NavPeopleSearch />
               </div>
             </div>
 
-            <div className="hidden lg:col-start-3 lg:block" aria-hidden="true" />
+            <Link
+              href="/home"
+              className="hidden shrink-0 text-base font-bold text-primary lg:col-start-3 lg:block lg:justify-self-end"
+              aria-label={t("nav.homeAria")}
+            >
+              <NurseLinkWordmark textClassName="text-primary text-base sm:text-lg" />
+            </Link>
           </div>
         ) : (
           <div className="flex h-14 w-full items-center gap-1.5 sm:gap-2">
