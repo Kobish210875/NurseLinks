@@ -199,9 +199,18 @@ export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProp
     </>
   );
 
+  const rtlIconClass = compact ? "right-2.5" : "start-3";
+  const rtlInputClass = compact
+    ? "py-2 pr-9 pl-2.5 text-sm text-right placeholder:text-right"
+    : "py-2 ps-10 pe-3 text-sm text-start placeholder:text-start";
+  const ltrInputClass = compact
+    ? "py-2 pe-9 ps-2.5 text-sm text-start placeholder:text-start"
+    : "py-2 pe-10 ps-3 text-sm text-start placeholder:text-start";
+
   return (
     <div
       ref={containerRef}
+      dir={isRtl ? "rtl" : "ltr"}
       className={`relative z-[1] min-w-0 w-full ${compact ? "" : "flex-1"}`}
     >
       <label className="sr-only" htmlFor="nav-search">
@@ -209,13 +218,7 @@ export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProp
       </label>
       <svg
         className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-muted-foreground ${
-          isRtl
-            ? compact
-              ? "start-2.5 md:start-3"
-              : "start-3"
-            : compact
-              ? "end-2.5 md:end-3"
-              : "end-3"
+          isRtl ? rtlIconClass : compact ? "end-2.5 md:end-3" : "end-3"
         }`}
         xmlns="http://www.w3.org/2000/svg"
         width={compact ? 14 : 16}
@@ -252,17 +255,7 @@ export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProp
         onFocus={() => setIsOpen(true)}
         onKeyDown={handleKeyDown}
         className={`w-full max-w-full appearance-none rounded-md border border-border bg-white text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/15 ${
-          compact
-            ? "py-1.5 text-base md:py-2 md:text-sm"
-            : "py-2 text-base md:text-sm"
-        } ${
-          isRtl
-            ? compact
-              ? "ps-8 pe-1 text-right placeholder:text-right"
-              : "ps-10 pe-3 text-start md:ps-10 md:pe-3"
-            : compact
-              ? "pe-8 ps-2 text-left placeholder:text-left"
-              : "pe-10 ps-3 md:pe-10 md:ps-3"
+          isRtl ? rtlInputClass : ltrInputClass
         }`}
       />
 
