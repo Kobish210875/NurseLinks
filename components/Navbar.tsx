@@ -78,35 +78,45 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
 
   const isHomeDesktopNav = authenticated && pathname === "/home";
 
-  const desktopNavLinks = (
-    <div className="hidden items-stretch gap-1 md:flex">
-      {authenticated
-        ? navItems.map((item) => {
-            const count = badgeCount(item.badge);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`relative flex min-w-[4.5rem] flex-col items-center justify-center px-2 py-1 text-xs font-medium transition-colors ${
-                  isActive(item.href)
-                    ? "nav-link-active"
-                    : "text-muted-foreground hover:text-primary"
-                }`}
-              >
-                <span
-                  className={
-                    item.badge ? "inline-flex items-center gap-1.5 px-1" : "px-1"
-                  }
+  function renderDesktopNavLinks(homeLayout = false) {
+    return (
+      <div
+        className={`hidden md:flex ${
+          homeLayout ? "shrink-0 items-center gap-0.5" : "items-stretch gap-1"
+        }`}
+      >
+        {authenticated
+          ? navItems.map((item) => {
+              const count = badgeCount(item.badge);
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`relative flex items-center justify-center whitespace-nowrap text-xs font-medium transition-colors ${
+                    homeLayout ? "px-2.5 py-2" : "min-w-[4.5rem] flex-col px-2 py-1"
+                  } ${
+                    isActive(item.href)
+                      ? "nav-link-active"
+                      : "text-muted-foreground hover:text-primary"
+                  }`}
                 >
-                  {item.label}
-                  {renderNavBadge(item.badge, count)}
-                </span>
-              </Link>
-            );
-          })
-        : null}
-    </div>
-  );
+                  <span
+                    className={
+                      item.badge
+                        ? "inline-flex items-center gap-1.5"
+                        : "inline-flex items-center"
+                    }
+                  >
+                    {item.label}
+                    {renderNavBadge(item.badge, count)}
+                  </span>
+                </Link>
+              );
+            })
+          : null}
+      </div>
+    );
+  }
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-nav-bg md:overflow-x-clip">
@@ -186,23 +196,23 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
         }`}
       >
         {isHomeDesktopNav ? (
-          <div
-            dir="rtl"
-            className="flex h-14 w-full items-center gap-3 lg:grid lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)_minmax(0,260px)] lg:items-center lg:gap-6"
-          >
-            <div className="shrink-0 lg:justify-self-end">{desktopNavLinks}</div>
-            <div className="flex min-w-0 flex-1 justify-start lg:flex-none">
-              <div className="w-full max-w-md min-w-0">
-                <NavPeopleSearch />
-              </div>
-            </div>
+          <div className="grid h-14 w-full items-center gap-3 max-lg:grid-cols-[auto_minmax(0,1fr)] lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)_minmax(0,260px)] lg:gap-6">
             <Link
               href="/home"
-              className="shrink-0 text-base font-bold text-primary"
+              className="col-start-1 shrink-0 justify-self-end text-base font-bold text-primary"
               aria-label={t("nav.homeAria")}
             >
               <NurseLinkWordmark textClassName="text-primary text-base sm:text-lg" />
             </Link>
+
+            <div className="col-start-2 flex min-w-0 items-center justify-end gap-2 sm:gap-3 lg:justify-start">
+              {renderDesktopNavLinks(true)}
+              <div className="w-full min-w-0 max-w-[14rem] sm:max-w-xs md:max-w-sm lg:max-w-md">
+                <NavPeopleSearch />
+              </div>
+            </div>
+
+            <div className="hidden lg:col-start-3 lg:block" aria-hidden="true" />
           </div>
         ) : (
           <div className="flex h-14 w-full items-center gap-1.5 sm:gap-2">
@@ -220,7 +230,7 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
               </div>
             ) : null}
 
-            {authenticated ? desktopNavLinks : null}
+            {authenticated ? renderDesktopNavLinks() : null}
 
             <div className="ms-auto hidden items-center gap-2 md:flex">
               <LanguageToggle />
