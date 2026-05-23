@@ -1,0 +1,151 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { loadConnectionRows, resolveConnectionStatus } from "@/lib/data/connections";
+import { createClient } from "@/lib/supabase/server";
+import type { Database } from "@/lib/supabase/database.types";
+
+type ConnectionInsert = Database["public"]["Tables"]["connections"]["Insert"];
+function revalidateNetwork() {
+  revalidatePath("/network");
+  revalidatePath("/messages");
+  revalidatePath("/home");
+  revalidatePath("/", "layout");
+}
+
+export async function sendConnectionRequest(addresseeId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/");
+  }
+
+  if (addresseeId === user.id) {
+    return { error: "self" as const };
+  }
+
+  const rows = await loadConnectionRows(supabase, user.id);
+  const existing = resolveConnectionStatus(user.id, addresseeId, rows);
+
+  if (existing.status === "connected") {
+    return { error: "already-connected" as const };
+  }
+
+  if (existing.status === "pending_out") {
+    return { success: true as const };
+  }
+
+  if (existing.status === "pending_in") {
+    const { error } = await supabase
+      .from("connections")
+      .update({ status: "accepted", updated_at: new Date().toISOString() } as never)
+      .eq("requester_id", addresseeId)
+      .eq("addressee_id", user.id)
+      .eq("status", "pending");
+
+    if (error) {
+      return { error: "accept-failed" as const };
+    }
+
+    revalidateNetwork();
+    return { success: true as const, accepted: true as const };
+  }
+
+  if (existing.status === "blocked") {
+    return { error: "blocked" as const };
+  }
+
+  const row: ConnectionInsert = {
+    requester_id: user.id,
+    addressee_id: addresseeId,
+    status: "pending",
+  };
+
+  const { error } = await supabase.from("connections").insert(row as never);
+
+  if (error) {
+    return { error: "request-failed" as const };
+  }
+
+  revalidateNetwork();
+  return { success: true as const };
+}
+
+export async function acceptConnectionRequest(requesterId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/");
+  }
+
+  const { error } = await supabase
+    .from("connections")
+    .update({ status: "accepted", updated_at: new Date().toISOString() } as never)
+    .eq("requester_id", requesterId)
+    .eq("addressee_id", user.id)
+    .eq("status", "pending");
+
+  if (error) {
+    return { error: "accept-failed" as const };
+  }
+
+  revalidateNetwork();
+  return { success: true as const };
+}
+
+export async function rejectConnectionRequest(requesterId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/");
+  }
+
+  const { error } = await supabase
+    .from("connections")
+    .delete()
+    .eq("requester_id", requesterId)
+    .eq("addressee_id", user.id)
+    .eq("status", "pending");
+
+  if (error) {
+    return { error: "reject-failed" as const };
+  }
+
+  revalidateNetwork();
+  return { success: true as const };
+}
+
+export async function cancelConnectionRequest(addresseeId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/");
+  }
+
+  const { error } = await supabase
+    .from("connections")
+    .delete()
+    .eq("requester_id", user.id)
+    .eq("addressee_id", addresseeId)
+    .eq("status", "pending");
+
+  if (error) {
+    return { error: "cancel-failed" as const };
+  }
+
+  revalidateNetwork();
+  return { success: true as const };
+}

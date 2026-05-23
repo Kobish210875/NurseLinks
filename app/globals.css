@@ -1,26 +1,76 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #eef3f8;
+  --foreground: #2c4a6e;
+  --primary: #2b6cb0;
+  --primary-dark: #1e4f7a;
+  --primary-foreground: #ffffff;
+  --accent: #0d9488;
+  --accent-light: #e6f7f5;
+  --card: #ffffff;
+  --card-foreground: #2c4a6e;
+  --muted: #e4edf5;
+  --muted-foreground: #5b7a9a;
+  --border: #d0dde9;
+  --secondary: #e8f2fa;
+  --secondary-foreground: #1e4f7a;
+  --nav-bg: #f7fafc;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --color-primary: var(--primary);
+  --color-primary-dark: var(--primary-dark);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-nav-bg: var(--nav-bg);
+  --font-sans: var(--font-rubik);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-rubik), system-ui, sans-serif;
 }
+
+.feed-page {
+  background: var(--background);
+}
+
+.feed-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  box-shadow: 0 1px 3px rgb(44 74 110 / 0.06);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+  box-shadow: 0 2px 8px rgb(43 108 176 / 0.28);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.04);
+  box-shadow: 0 4px 12px rgb(43 108 176 / 0.35);
+  transform: translateY(-1px);
+}
+
+.nav-link-active {
+  color: var(--primary);
+  border-bottom: 2px solid var(--primary);
+}
+
