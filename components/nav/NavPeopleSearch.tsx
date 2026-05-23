@@ -2,23 +2,41 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useT } from "@/components/i18n/LocaleProvider";
+import { useLocale, useT } from "@/components/i18n/LocaleProvider";
 import type { PeopleSearchHit } from "@/lib/data/people-search";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 const DEBOUNCE_MS = 200;
+const MOBILE_MAX_WIDTH = 767;
 
 export default function NavPeopleSearch() {
   const t = useT();
+  const { locale } = useLocale();
   const router = useRouter();
   const listId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<PeopleSearchHit[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(-1);
   const [loading, setLoading] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH}px)`).matches,
+  );
+
+  const isRtl = locale === "he";
+
+  useEffect(() => {
+    const mq = window.matchMedia(`(max-width: ${MOBILE_MAX_WIDTH}px)`);
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   const fetchResults = useCallback(async (q: string, signal: AbortSignal) => {
     const trimmed = q.trim();
@@ -32,6 +50,7 @@ export default function NavPeopleSearch() {
     try {
       const res = await fetch(`/api/people/search?q=${encodeURIComponent(trimmed)}`, {
         signal,
+        cache: "no-store",
       });
       if (!res.ok) {
         setResults([]);
@@ -63,20 +82,21 @@ export default function NavPeopleSearch() {
   }, [query, fetchResults]);
 
   useEffect(() => {
-    function handlePointerDown(event: MouseEvent) {
+    function handlePointerDown(event: PointerEvent) {
       if (!containerRef.current?.contains(event.target as Node)) {
         setIsOpen(false);
         setActiveIndex(-1);
       }
     }
-    document.addEventListener("mousedown", handlePointerDown);
-    return () => document.removeEventListener("mousedown", handlePointerDown);
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, []);
 
   function goToProfile(id: string) {
     setIsOpen(false);
     setQuery("");
     setResults([]);
+    inputRef.current?.blur();
     router.push(`/profile/${id}`);
   }
 
@@ -103,18 +123,86 @@ export default function NavPeopleSearch() {
     if (event.key === "Escape") {
       setIsOpen(false);
       setActiveIndex(-1);
+      inputRef.current?.blur();
     }
   }
 
   const showList = isOpen && query.trim().length >= 1;
 
+  const listContent = (
+    <>
+      {loading && results.length === 0 ? (
+        <li className="px-3 py-2 text-sm text-muted-foreground">{t("nav.searchLoading")}</li>
+      ) : null}
+      {!loading && results.length === 0 ? (
+        <li className="px-3 py-2 text-sm text-muted-foreground">{t("nav.searchEmpty")}</li>
+      ) : null}
+      {results.map((person, index) => {
+        const subtitle = formatProfileHeadline(
+          person.headline,
+          person.workplaceInstitutionSlug,
+          t("profile.institutionOther"),
+        );
+        return (
+          <li key={person.id} role="presentation">
+            <button
+              type="button"
+              role="option"
+              aria-selected={index === activeIndex}
+              onPointerDown={(e) => e.preventDefault()}
+              onClick={() => goToProfile(person.id)}
+              className={`flex w-full items-center gap-2.5 px-3 py-2 text-start transition hover:bg-muted/60 md:gap-3 ${
+                index === activeIndex ? "bg-primary/10" : ""
+              }`}
+            >
+              <span className="flex size-8 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10 md:size-9">
+                {person.avatarUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={person.avatarUrl} alt="" className="size-full object-cover" />
+                ) : (
+                  <span className="flex size-full items-center justify-center text-[10px] font-semibold text-primary md:text-xs">
+                    {person.initials}
+                  </span>
+                )}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-sm font-medium text-foreground">
+                  {person.fullName}
+                </span>
+                {subtitle ? (
+                  <span className="block truncate text-xs text-muted-foreground">{subtitle}</span>
+                ) : null}
+              </span>
+            </button>
+          </li>
+        );
+      })}
+      {results.length > 0 ? (
+        <li className="border-t border-border px-3 py-2">
+          <Link
+            href={`/network?q=${encodeURIComponent(query.trim())}`}
+            className="text-xs font-medium text-primary hover:underline"
+            onClick={() => {
+              setIsOpen(false);
+              inputRef.current?.blur();
+            }}
+          >
+            {t("nav.searchSeeAll")}
+          </Link>
+        </li>
+      ) : null}
+    </>
+  );
+
   return (
-    <div ref={containerRef} className="relative min-w-0 flex-1">
+    <div ref={containerRef} className="relative z-[1] min-w-0 flex-1">
       <label className="sr-only" htmlFor="nav-search">
         {t("nav.search")}
       </label>
       <svg
-        className="pointer-events-none absolute top-1/2 end-3 z-10 -translate-y-1/2 text-muted-foreground"
+        className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-muted-foreground ${
+          isRtl ? "start-3" : "end-3"
+        }`}
         xmlns="http://www.w3.org/2000/svg"
         width="16"
         height="16"
@@ -128,10 +216,15 @@ export default function NavPeopleSearch() {
         <path d="m21 21-4.3-4.3" />
       </svg>
       <input
+        ref={inputRef}
         id="nav-search"
         type="search"
+        enterKeyHint="search"
         value={query}
         autoComplete="off"
+        autoCorrect="off"
+        spellCheck={false}
+        dir={isRtl ? "rtl" : "ltr"}
         role="combobox"
         aria-expanded={showList}
         aria-controls={listId}
@@ -142,78 +235,44 @@ export default function NavPeopleSearch() {
           setIsOpen(true);
           setActiveIndex(-1);
         }}
-        onFocus={() => {
-          if (query.trim()) {
-            setIsOpen(true);
-          }
-        }}
+        onFocus={() => setIsOpen(true)}
         onKeyDown={handleKeyDown}
-        className="w-full rounded-md border border-border bg-white py-2 pe-10 ps-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/15"
+        className={`w-full max-w-full rounded-md border border-border bg-white py-2 text-base text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/15 md:text-sm ${
+          isRtl ? "ps-10 pe-3 text-start" : "pe-10 ps-3"
+        }`}
       />
 
-      {showList ? (
+      {showList && isMobile ? (
+        <>
+          <button
+            type="button"
+            aria-hidden="true"
+            tabIndex={-1}
+            className="fixed inset-0 top-14 z-[90] bg-black/20 md:hidden"
+            onClick={() => {
+              setIsOpen(false);
+              setActiveIndex(-1);
+            }}
+          />
+          <ul
+            id={listId}
+            role="listbox"
+            className="fixed inset-x-3 top-14 z-[95] max-h-[min(50vh,20rem)] overflow-y-auto rounded-lg border border-border bg-white py-1 text-start shadow-lg md:hidden"
+            dir={isRtl ? "rtl" : "ltr"}
+          >
+            {listContent}
+          </ul>
+        </>
+      ) : null}
+
+      {showList && !isMobile ? (
         <ul
           id={listId}
           role="listbox"
-          className="absolute start-0 end-0 top-full z-50 mt-1 max-h-80 overflow-y-auto rounded-lg border border-border bg-white py-1 shadow-lg"
+          className="absolute start-0 end-0 top-full z-50 mt-1 max-h-80 overflow-y-auto rounded-lg border border-border bg-white py-1 text-start shadow-lg"
+          dir={isRtl ? "rtl" : "ltr"}
         >
-          {loading && results.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-muted-foreground">{t("nav.searchLoading")}</li>
-          ) : null}
-          {!loading && results.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-muted-foreground">{t("nav.searchEmpty")}</li>
-          ) : null}
-          {results.map((person, index) => {
-            const subtitle = formatProfileHeadline(
-              person.headline,
-              person.workplaceInstitutionSlug,
-              t("profile.institutionOther"),
-            );
-            return (
-              <li key={person.id} role="presentation">
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={index === activeIndex}
-                  onMouseDown={(e) => e.preventDefault()}
-                  onClick={() => goToProfile(person.id)}
-                  className={`flex w-full items-center gap-3 px-3 py-2 text-start transition hover:bg-muted/60 ${
-                    index === activeIndex ? "bg-primary/10" : ""
-                  }`}
-                >
-                  <span className="flex size-9 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10">
-                    {person.avatarUrl ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={person.avatarUrl} alt="" className="size-full object-cover" />
-                    ) : (
-                      <span className="flex size-full items-center justify-center text-xs font-semibold text-primary">
-                        {person.initials}
-                      </span>
-                    )}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium text-foreground">
-                      {person.fullName}
-                    </span>
-                    {subtitle ? (
-                      <span className="block truncate text-xs text-muted-foreground">{subtitle}</span>
-                    ) : null}
-                  </span>
-                </button>
-              </li>
-            );
-          })}
-          {results.length > 0 ? (
-            <li className="border-t border-border px-3 py-2">
-              <Link
-                href={`/network?q=${encodeURIComponent(query.trim())}`}
-                className="text-xs font-medium text-primary hover:underline"
-                onClick={() => setIsOpen(false)}
-              >
-                {t("nav.searchSeeAll")}
-              </Link>
-            </li>
-          ) : null}
+          {listContent}
         </ul>
       ) : null}
     </div>

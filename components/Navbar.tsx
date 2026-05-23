@@ -77,23 +77,23 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 overflow-x-clip border-b border-border bg-nav-bg">
+    <header className="sticky top-0 z-50 border-b border-border bg-nav-bg md:overflow-x-clip">
       {/* Mobile app header — physical LTR: logo left, menu right */}
       {authenticated && mobileUser ? (
         <nav
-          className="mx-auto flex h-14 w-full min-w-0 items-center gap-2 px-3 md:hidden"
+          className="mx-auto flex h-14 w-full min-w-0 max-w-[100vw] items-center gap-1.5 overflow-visible px-2 md:hidden"
           dir="ltr"
           aria-label={t("nav.mobileHeaderAria")}
         >
           <Link
             href="/home"
-            className="shrink-0 text-base font-bold text-primary"
+            className="max-w-[5.5rem] shrink-0 overflow-hidden text-base font-bold text-primary"
             aria-label={t("nav.homeAria")}
           >
-            <NurseLinkWordmark textClassName="text-primary text-base" />
+            <NurseLinkWordmark textClassName="text-primary text-sm" />
           </Link>
 
-          <div className="min-w-0 flex-1">
+          <div className="min-w-0 flex-1 overflow-visible">
             <NavPeopleSearch />
           </div>
 
