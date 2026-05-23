@@ -175,35 +175,49 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
 
       {/* Desktop + logged-out mobile */}
       <nav
+        dir={isHomeDesktopNav ? "ltr" : undefined}
         className={`mx-auto flex h-14 w-full min-w-0 max-w-[1128px] items-center gap-1.5 px-3 sm:gap-2 sm:px-4 ${
           authenticated && mobileUser ? "hidden md:flex" : "flex"
-        } ${isHomeDesktopNav ? "md:dir-ltr" : ""}`}
+        }`}
       >
-        {authenticated && isHomeDesktopNav ? desktopNavLinks : null}
+        {isHomeDesktopNav ? (
+          <>
+            {desktopNavLinks}
+            <div
+              className="hidden min-w-0 flex-1 items-center gap-3 md:flex"
+              dir="ltr"
+            >
+              <Link
+                href="/home"
+                className="shrink-0 text-base font-bold text-primary"
+                aria-label={t("nav.homeAria")}
+              >
+                <NurseLinkWordmark textClassName="text-primary text-base sm:text-lg" />
+              </Link>
+              <div className="min-w-0 flex-1">
+                <NavPeopleSearch />
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <Link
+              href={authenticated ? "/home" : "/"}
+              className="min-w-0 shrink pe-1 text-base font-bold text-primary sm:pe-2 sm:text-lg"
+              aria-label={t("nav.homeAria")}
+            >
+              <NurseLinkWordmark textClassName="text-primary text-base sm:text-lg" />
+            </Link>
 
-        <Link
-          href={authenticated ? "/home" : "/"}
-          className={`min-w-0 shrink-0 text-base font-bold text-primary ${
-            isHomeDesktopNav ? "ms-1 pe-0 sm:ms-2" : "pe-1 sm:pe-2 sm:text-lg"
-          }`}
-          aria-label={t("nav.homeAria")}
-        >
-          <NurseLinkWordmark
-            textClassName={`text-primary ${isHomeDesktopNav ? "text-base" : "text-base sm:text-lg"}`}
-          />
-        </Link>
+            {authenticated ? (
+              <div className="mx-2 hidden min-w-0 flex-1 md:block">
+                <NavPeopleSearch />
+              </div>
+            ) : null}
 
-        {authenticated ? (
-          <div
-            className={`hidden min-w-0 flex-1 md:block ${
-              isHomeDesktopNav ? "ms-2" : "mx-2"
-            }`}
-          >
-            <NavPeopleSearch />
-          </div>
-        ) : null}
-
-        {authenticated && !isHomeDesktopNav ? desktopNavLinks : null}
+            {authenticated ? desktopNavLinks : null}
+          </>
+        )}
 
         <div className="ms-auto hidden items-center gap-2 md:flex">
           <LanguageToggle />
