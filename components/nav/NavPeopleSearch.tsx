@@ -199,13 +199,15 @@ export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProp
     </>
   );
 
+  // 16px on mobile prevents iOS Safari from zooming the page on input focus.
+  const inputTextSize = "text-base md:text-sm";
   const rtlIconClass = compact ? "right-2.5" : "start-3";
   const rtlInputClass = compact
-    ? "py-2 pr-9 pl-2.5 text-sm text-right placeholder:text-right"
-    : "py-2 ps-10 pe-3 text-sm text-start placeholder:text-start";
+    ? `py-2 pr-9 pl-2.5 ${inputTextSize} text-right placeholder:text-right`
+    : `py-2 ps-10 pe-3 ${inputTextSize} text-start placeholder:text-start`;
   const ltrInputClass = compact
-    ? "py-2 pe-9 ps-2.5 text-sm text-start placeholder:text-start"
-    : "py-2 pe-10 ps-3 text-sm text-start placeholder:text-start";
+    ? `py-2 pe-9 ps-2.5 ${inputTextSize} text-start placeholder:text-start`
+    : `py-2 pe-10 ps-3 ${inputTextSize} text-start placeholder:text-start`;
 
   return (
     <div
