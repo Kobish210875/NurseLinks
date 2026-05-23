@@ -81,13 +81,13 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
       {/* Mobile app header — physical LTR: logo left, menu right */}
       {authenticated && mobileUser ? (
         <nav
-          className="mx-auto flex h-14 w-full min-w-0 max-w-[100vw] items-center gap-1.5 overflow-visible px-2 md:hidden"
+          className="grid h-14 w-full grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-2 overflow-visible px-3 md:hidden"
           dir="ltr"
           aria-label={t("nav.mobileHeaderAria")}
         >
           <Link
             href="/home"
-            className="shrink-0 text-base font-bold text-primary"
+            className="shrink-0 justify-self-start text-base font-bold text-primary"
             aria-label={t("nav.homeAria")}
           >
             <NurseLinkWordmark
@@ -97,13 +97,13 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
             />
           </Link>
 
-          <div className="min-w-0 flex-1 overflow-visible max-w-[8.25rem]">
+          <div className="min-w-0 overflow-visible ps-1">
             <NavPeopleSearch compact />
           </div>
 
           <Link
             href="/profile"
-            className="relative flex size-9 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10"
+            className="relative flex size-9 shrink-0 justify-self-end overflow-hidden rounded-full border border-border bg-primary/10"
             aria-label={t("nav.myProfile")}
           >
             {mobileUser.avatarUrl ? (
@@ -118,7 +118,7 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
 
           <button
             type="button"
-            className="shrink-0 rounded-md p-2 text-muted-foreground hover:bg-white"
+            className="-me-1 shrink-0 justify-self-end rounded-md p-2 text-muted-foreground hover:bg-white"
             aria-label={t("nav.openMenu")}
             aria-expanded={mobileMenuOpen}
             onClick={() => setMobileMenuOpen((open) => !open)}

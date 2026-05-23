@@ -200,7 +200,10 @@ export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProp
   );
 
   return (
-    <div ref={containerRef} className="relative z-[1] min-w-0 flex-1">
+    <div
+      ref={containerRef}
+      className={`relative z-[1] min-w-0 w-full ${compact ? "" : "flex-1"}`}
+    >
       <label className="sr-only" htmlFor="nav-search">
         {t("nav.search")}
       </label>
@@ -252,7 +255,7 @@ export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProp
           compact
             ? "py-1.5 text-base md:py-2 md:text-sm"
             : "py-2 text-base md:text-sm"
-        } ${isRtl ? "ps-9 pe-2 text-start md:ps-10 md:pe-3" : "pe-9 ps-2 md:pe-10 md:ps-3"}`}
+        } ${isRtl ? "ps-10 pe-2 text-start md:ps-10 md:pe-3" : "pe-9 ps-2 md:pe-10 md:ps-3"}`}
       />
 
       {showList && isMobile ? (
