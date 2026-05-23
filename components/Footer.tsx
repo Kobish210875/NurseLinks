@@ -8,7 +8,7 @@ export default async function Footer() {
   const t = createT(getMessages(locale));
 
   return (
-    <footer className="mt-auto border-t border-border bg-white py-5">
+    <footer className="site-footer mt-auto border-t border-border bg-white py-5">
       <div className="mx-auto max-w-[1128px] px-4">
         <div className="flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-3">
           <Link href="/" className="shrink-0 text-base font-bold text-primary" aria-label="NurseLinks">

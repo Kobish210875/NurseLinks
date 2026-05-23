@@ -15,9 +15,14 @@ import { useEffect, useId, useRef, useState } from "react";
 type PostComposerPanelProps = {
   user: CurrentUser;
   onClose: () => void;
+  fullScreen?: boolean;
 };
 
-export default function PostComposerPanel({ user, onClose }: PostComposerPanelProps) {
+export default function PostComposerPanel({
+  user,
+  onClose,
+  fullScreen = false,
+}: PostComposerPanelProps) {
   const t = useT();
   const router = useRouter();
   const fileInputId = useId();
@@ -152,12 +157,16 @@ export default function PostComposerPanel({ user, onClose }: PostComposerPanelPr
 
   return (
     <div
-      className="flex max-h-[min(85vh,34rem)] flex-col"
+      className={`flex flex-col ${fullScreen ? "min-h-0 flex-1" : "max-h-[min(85vh,34rem)]"}`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="post-composer-title"
     >
-      <header className="flex items-center justify-between gap-3 border-b border-border pb-3">
+      <header
+        className={`flex items-center justify-between gap-3 border-b border-border ${
+          fullScreen ? "shrink-0 px-4 py-3" : "pb-3"
+        }`}
+      >
         <div className="flex min-w-0 items-center gap-2">
           <span className="relative flex size-10 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10">
             {user.avatarUrl ? (
@@ -184,7 +193,7 @@ export default function PostComposerPanel({ user, onClose }: PostComposerPanelPr
         </button>
       </header>
 
-      <div className="flex-1 overflow-y-auto py-3">
+      <div className={`flex-1 overflow-y-auto py-3 ${fullScreen ? "px-4" : ""}`}>
         <label className="sr-only" htmlFor="post-composer-body">
           {t("feed.composerLabel")}
         </label>
@@ -192,12 +201,14 @@ export default function PostComposerPanel({ user, onClose }: PostComposerPanelPr
           id="post-composer-body"
           value={body}
           onChange={(event) => setBody(event.target.value)}
-          rows={5}
+          rows={fullScreen ? 8 : 5}
           maxLength={4000}
           disabled={saving}
           autoFocus
           placeholder={t("feed.composerModalPlaceholder")}
-          className="min-h-[7rem] w-full resize-none rounded-xl border border-border bg-muted/20 px-3 py-2.5 text-start text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60"
+          className={`w-full resize-none rounded-xl border border-border bg-muted/20 px-3 py-2.5 text-start text-sm text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60 ${
+            fullScreen ? "min-h-[40vh] flex-1 border-0 bg-transparent px-0 focus:ring-0" : "min-h-[7rem]"
+          }`}
         />
 
         {previewUrl ? (
@@ -255,12 +266,18 @@ export default function PostComposerPanel({ user, onClose }: PostComposerPanelPr
         ) : null}
       </div>
 
-      <footer className="flex justify-end border-t border-border pt-3">
+      <footer
+        className={`flex justify-end border-t border-border pt-3 ${
+          fullScreen ? "shrink-0 px-4 pb-[calc(0.75rem+env(safe-area-inset-bottom))]" : ""
+        }`}
+      >
         <button
           type="button"
           onClick={handlePublish}
           disabled={!canPublish}
-          className="min-w-[7rem] rounded-full bg-primary px-8 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+          className={`rounded-full bg-primary text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50 ${
+            fullScreen ? "min-w-[5.5rem] px-6 py-2" : "min-w-[7rem] px-8 py-2.5"
+          }`}
         >
           {saving ? "…" : t("feed.composerSubmit")}
         </button>

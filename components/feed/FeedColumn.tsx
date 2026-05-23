@@ -1,4 +1,5 @@
 import FeedComposer from "@/components/feed/FeedComposer";
+import { Suspense } from "react";
 import FeedAutoRefresh from "@/components/feed/FeedAutoRefresh";
 import PostCard from "@/components/feed/PostCard";
 import type { CurrentUser } from "@/lib/auth/get-current-user";
@@ -26,7 +27,9 @@ export default async function FeedColumn({ user }: FeedColumnProps) {
     <section className="flex min-w-0 flex-col gap-4" aria-label={t("feed.feedAria")}>
       <FeedAutoRefresh initialVersion={feedVersion} />
       <div className="flex min-h-[28rem] flex-col gap-4 lg:min-h-[32rem]">
-        <FeedComposer user={user} />
+        <Suspense fallback={null}>
+          <FeedComposer user={user} />
+        </Suspense>
         {firstPost ? (
           <PostCard post={firstPost} currentUserId={user.id} />
         ) : (

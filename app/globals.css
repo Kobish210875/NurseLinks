@@ -81,3 +81,13 @@ body {
   border-bottom: 2px solid var(--primary);
 }
 
+@media (max-width: 767px) {
+  body.has-mobile-app-shell main {
+    padding-bottom: calc(3.75rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  body.has-mobile-app-shell .site-footer {
+    display: none;
+  }
+}
+

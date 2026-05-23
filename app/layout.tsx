@@ -1,7 +1,11 @@
 import type { Metadata, Viewport } from "next";
 import { Rubik } from "next/font/google";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
+import { CurrentUserProvider } from "@/components/nav/CurrentUserProvider";
+import MobileBottomNav from "@/components/nav/MobileBottomNav";
+import MobileShellEffects from "@/components/nav/MobileShellEffects";
 import { NavCountsProvider } from "@/components/nav/NavCountsProvider";
+import { Suspense } from "react";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getPendingInvitationCount } from "@/lib/data/connections";
 import { getNavJobsUnreadCount } from "@/lib/data/jobs";
@@ -64,7 +68,26 @@ export default async function RootLayout({
             unreadMessages={unreadMessages}
             unreadJobs={unreadJobs}
           >
-            {children}
+            <CurrentUserProvider
+              user={
+                user
+                  ? {
+                      id: user.id,
+                      avatarUrl: user.avatarUrl,
+                      initials: user.initials,
+                      fullName: user.fullName,
+                    }
+                  : null
+              }
+            >
+              <MobileShellEffects />
+              {children}
+              {user ? (
+                <Suspense fallback={null}>
+                  <MobileBottomNav />
+                </Suspense>
+              ) : null}
+            </CurrentUserProvider>
           </NavCountsProvider>
         </LocaleProvider>
       </body>

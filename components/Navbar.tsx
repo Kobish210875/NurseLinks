@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import LanguageToggle from "@/components/i18n/LanguageToggle";
 import { useT } from "@/components/i18n/LocaleProvider";
+import { useCurrentUser } from "@/components/nav/CurrentUserProvider";
+import MobileMoreMenu from "@/components/nav/MobileMoreMenu";
 import NavUnreadDot from "@/components/nav/NavUnreadDot";
 import NavPeopleSearch from "@/components/nav/NavPeopleSearch";
 import { useNavCounts } from "@/components/nav/NavCountsProvider";
@@ -23,8 +25,9 @@ type NavItem = {
 export default function Navbar({ authenticated = false }: NavbarProps) {
   const t = useT();
   const pathname = usePathname();
+  const mobileUser = useCurrentUser();
   const { pendingInvitations, unreadMessages, unreadJobs } = useNavCounts();
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navItems: NavItem[] = [
     { href: "/home", label: t("nav.home") },
@@ -75,7 +78,71 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
 
   return (
     <header className="sticky top-0 z-50 overflow-x-clip border-b border-border bg-nav-bg">
-      <nav className="mx-auto flex h-14 w-full min-w-0 max-w-[1128px] items-center gap-1.5 px-3 sm:gap-2 sm:px-4">
+      {/* Mobile app header — physical LTR: logo left, menu right */}
+      {authenticated && mobileUser ? (
+        <nav
+          className="mx-auto flex h-14 w-full min-w-0 items-center gap-2 px-3 md:hidden"
+          dir="ltr"
+          aria-label={t("nav.mobileHeaderAria")}
+        >
+          <Link
+            href="/home"
+            className="shrink-0 text-base font-bold text-primary"
+            aria-label={t("nav.homeAria")}
+          >
+            <NurseLinkWordmark textClassName="text-primary text-base" />
+          </Link>
+
+          <div className="min-w-0 flex-1">
+            <NavPeopleSearch />
+          </div>
+
+          <Link
+            href="/profile"
+            className="relative flex size-9 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10"
+            aria-label={t("nav.myProfile")}
+          >
+            {mobileUser.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={mobileUser.avatarUrl} alt="" className="size-full object-cover" />
+            ) : (
+              <span className="flex size-full items-center justify-center text-[10px] font-semibold text-primary">
+                {mobileUser.initials}
+              </span>
+            )}
+          </Link>
+
+          <button
+            type="button"
+            className="shrink-0 rounded-md p-2 text-muted-foreground hover:bg-white"
+            aria-label={t("nav.openMenu")}
+            aria-expanded={mobileMenuOpen}
+            onClick={() => setMobileMenuOpen((open) => !open)}
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              aria-hidden="true"
+            >
+              <line x1="4" x2="20" y1="12" y2="12" />
+              <line x1="4" x2="20" y1="6" y2="6" />
+              <line x1="4" x2="20" y1="18" y2="18" />
+            </svg>
+          </button>
+        </nav>
+      ) : null}
+
+      {/* Desktop + logged-out mobile */}
+      <nav
+        className={`mx-auto flex h-14 w-full min-w-0 max-w-[1128px] items-center gap-1.5 px-3 sm:gap-2 sm:px-4 ${
+          authenticated && mobileUser ? "hidden md:flex" : "flex"
+        }`}
+      >
         <Link
           href={authenticated ? "/home" : "/"}
           className="min-w-0 shrink pe-1 text-base font-bold text-primary sm:pe-2 sm:text-lg"
@@ -140,86 +207,21 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
           ) : null}
         </div>
 
-        <div className="ms-auto flex min-w-0 shrink-0 items-center gap-1.5 md:ms-0 md:hidden sm:gap-2">
-          <LanguageToggle />
-          <button
-            type="button"
-            className="rounded-md p-2 text-muted-foreground hover:bg-white md:hidden"
-            aria-label={t("nav.openMenu")}
-            aria-expanded={mobileOpen}
-            onClick={() => setMobileOpen((open) => !open)}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              aria-hidden="true"
+        {!authenticated ? (
+          <div className="ms-auto flex min-w-0 shrink-0 items-center gap-1.5 sm:gap-2 md:hidden">
+            <LanguageToggle />
+            <Link
+              href="/login"
+              className="rounded-md px-2 py-1.5 text-xs font-medium text-muted-foreground"
             >
-              <line x1="4" x2="20" y1="12" y2="12" />
-              <line x1="4" x2="20" y1="6" y2="6" />
-              <line x1="4" x2="20" y1="18" y2="18" />
-            </svg>
-          </button>
-        </div>
+              {t("nav.login")}
+            </Link>
+          </div>
+        ) : null}
       </nav>
 
-      {mobileOpen && authenticated ? (
-        <div className="border-t border-border bg-nav-bg md:hidden">
-          <div className="space-y-1 px-4 py-3">
-            <div className="pb-2 md:hidden">
-              <NavPeopleSearch />
-            </div>
-            {navItems.map((item) => {
-              const count = badgeCount(item.badge);
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium ${
-                    isActive(item.href)
-                      ? "bg-white text-primary"
-                      : "text-muted-foreground hover:bg-white hover:text-primary"
-                  }`}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <span className="inline-flex items-center gap-2">
-                    {item.label}
-                    {count > 0 && item.badge ? (
-                      <NavUnreadDot ariaLabel={badgeLabel(item.badge, count)} />
-                    ) : null}
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      ) : null}
-
-      {mobileOpen && !authenticated ? (
-        <div className="border-t border-border bg-nav-bg md:hidden">
-          <div className="space-y-1 px-4 py-3">
-            <div className="flex gap-2 pt-1">
-              <Link
-                href="/login"
-                className="flex-1 rounded-md border border-border bg-white py-2 text-center text-sm font-medium"
-                onClick={() => setMobileOpen(false)}
-              >
-                {t("nav.login")}
-              </Link>
-              <Link
-                href="/register"
-                className="btn-primary flex-1 rounded-md py-2 text-center text-sm font-semibold text-primary-foreground"
-                onClick={() => setMobileOpen(false)}
-              >
-                {t("nav.register")}
-              </Link>
-            </div>
-          </div>
-        </div>
+      {authenticated && mobileUser ? (
+        <MobileMoreMenu open={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
       ) : null}
     </header>
   );

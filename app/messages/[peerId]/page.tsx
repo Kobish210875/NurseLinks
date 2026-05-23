@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import Footer from "@/components/Footer";
 import MarkThreadReadOnOpen from "@/components/messages/MarkThreadReadOnOpen";
+import MessagesAutoRefresh from "@/components/messages/MessagesAutoRefresh";
 import MessageThreadView from "@/components/messages/MessageThreadView";
 import Navbar from "@/components/Navbar";
 import { createT, getMessages } from "@/lib/i18n/messages";
@@ -9,6 +10,7 @@ import { getLocale } from "@/lib/i18n/get-locale";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getNetworkPeer } from "@/lib/data/connections";
 import { getThreadMessages, usersAreConnected } from "@/lib/data/messages";
+import { getMessagesVersion } from "@/lib/data/sync-versions";
 import { createClient } from "@/lib/supabase/server";
 
 type ThreadPageProps = {
@@ -30,7 +32,12 @@ export default async function MessageThreadPage({ params }: ThreadPageProps) {
   }
 
   const connected = await usersAreConnected(supabase, user.id, peerId);
-  const messages = connected ? await getThreadMessages(supabase, user.id, peerId) : [];
+  const [messages, messagesVersion] = connected
+    ? await Promise.all([
+        getThreadMessages(supabase, user.id, peerId),
+        getMessagesVersion(supabase, user.id, peerId),
+      ])
+    : [[], "disconnected"];
 
   const locale = await getLocale();
   const t = createT(getMessages(locale));
@@ -52,6 +59,7 @@ export default async function MessageThreadPage({ params }: ThreadPageProps) {
             </div>
           ) : (
             <>
+              <MessagesAutoRefresh initialVersion={messagesVersion} peerId={peerId} />
               <MarkThreadReadOnOpen peerId={peerId} />
               <MessageThreadView peer={peer} messages={messages} />
             </>
