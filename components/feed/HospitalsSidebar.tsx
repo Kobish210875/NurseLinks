@@ -16,7 +16,7 @@ export default function HospitalsSidebar() {
   const activeRegion = INSTITUTION_REGIONS.find((r) => r.id === region);
 
   return (
-    <div className="feed-card flex min-h-[28rem] flex-col p-4 text-start lg:max-h-[calc(100vh-3.5rem)] lg:min-h-0">
+    <div className="feed-card flex min-h-[28rem] flex-col p-4 text-start lg:max-h-[calc(100dvh-5rem)] lg:min-h-0">
       <h2 className="mb-3 text-sm font-semibold text-foreground">{t("hospitals.sidebarTitle")}</h2>
 
       <div

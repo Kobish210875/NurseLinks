@@ -54,29 +54,47 @@ body {
   background: var(--background);
 }
 
-/* WEB home: only the posts column scrolls; nav + sidebars stay put */
+/* WEB home: navbar + sidebars fixed; only posts list scrolls */
 @media (min-width: 1024px) {
-  body:has(.home-main-shell) {
+  .home-page-root {
+    height: 100dvh;
+    max-height: 100dvh;
     overflow: hidden;
-    height: 100vh;
+  }
+
+  .home-page-root > header {
+    flex-shrink: 0;
   }
 
   .home-main-shell {
-    height: calc(100vh - 3.5rem);
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .home-feed-shell {
     height: 100%;
+    min-height: 0;
     overflow: hidden;
   }
 
-  .home-feed-sidebar {
+  .home-feed-sidebar-pin {
+    position: sticky;
+    top: 0;
+    max-height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .home-feed-center {
+    min-height: 0;
     overflow: hidden;
-    overscroll-behavior: none;
   }
 
   .home-feed-posts-scroll {
     scrollbar-gutter: stable;
+    -webkit-overflow-scrolling: touch;
   }
 }
 

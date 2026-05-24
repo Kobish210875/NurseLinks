@@ -12,14 +12,14 @@ export default async function HomePage() {
   }
 
   return (
-    <>
+    <div className="home-page-root flex min-h-screen flex-col">
       <Navbar authenticated />
-      <main className="home-main-shell lg:h-[calc(100vh-3.5rem)] lg:overflow-hidden">
+      <main className="home-main-shell min-h-0 flex-1">
         <HomeFeed user={user} />
       </main>
       <div className="lg:hidden">
         <Footer />
       </div>
-    </>
+    </div>
   );
 }

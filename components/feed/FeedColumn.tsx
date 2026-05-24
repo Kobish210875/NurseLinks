@@ -24,12 +24,17 @@ export default async function FeedColumn({ user }: FeedColumnProps) {
   const [firstPost, ...restPosts] = posts;
 
   return (
-    <section className="flex min-w-0 flex-col gap-4" aria-label={t("feed.feedAria")}>
+    <section
+      className="flex h-full min-h-0 min-w-0 flex-col gap-4"
+      aria-label={t("feed.feedAria")}
+    >
       <FeedAutoRefresh initialVersion={feedVersion} />
-      <div className="flex min-h-[28rem] flex-col gap-4 lg:min-h-[32rem]">
+      <div className="shrink-0">
         <Suspense fallback={null}>
           <FeedComposer user={user} />
         </Suspense>
+      </div>
+      <div className="home-feed-posts-scroll flex min-h-0 flex-1 flex-col gap-4 max-lg:min-h-[28rem] lg:overflow-y-auto lg:overscroll-contain">
         {firstPost ? (
           <PostCard post={firstPost} currentUserId={user.id} />
         ) : (
@@ -37,10 +42,10 @@ export default async function FeedColumn({ user }: FeedColumnProps) {
             {t("feed.emptyFeed")}
           </div>
         )}
+        {restPosts.map((post) => (
+          <PostCard key={post.id} post={post} currentUserId={user.id} />
+        ))}
       </div>
-      {restPosts.map((post) => (
-        <PostCard key={post.id} post={post} currentUserId={user.id} />
-      ))}
     </section>
   );
 }
