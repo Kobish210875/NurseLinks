@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
 :root {
+  --mobile-bottom-nav-height: 3.5rem;
+  --mobile-bottom-nav-offset: calc(
+    var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px)
+  );
   --background: #eef3f8;
   --foreground: #2c4a6e;
   --primary: #2b6cb0;
@@ -183,8 +187,28 @@ body {
 }
 
 @media (max-width: 767px) {
+  /* Fixed bottom tab bar — content scrolls above it with reserved space */
+  .mobile-bottom-nav {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: 60;
+    transform: translateZ(0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+
+  html.has-mobile-app-shell,
+  body.has-mobile-app-shell {
+    scroll-padding-bottom: var(--mobile-bottom-nav-offset);
+  }
+
   body.has-mobile-app-shell main {
-    padding-bottom: calc(3.75rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(var(--mobile-bottom-nav-offset) + 1rem);
+  }
+
+  body.has-mobile-app-shell .home-feed-posts-scroll-inner {
+    padding-bottom: 0.5rem;
   }
 
   body.has-mobile-app-shell .site-footer {
@@ -280,7 +304,7 @@ body.composer-open .mobile-bottom-nav {
 
   .post-comment-input {
     font-size: 1rem;
-    scroll-margin-bottom: min(42vh, 18rem);
+    scroll-margin-bottom: calc(var(--mobile-bottom-nav-offset) + 6rem);
   }
 
   .post-comment-list {

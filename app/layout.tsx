@@ -25,7 +25,8 @@ const rubik = Rubik({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  interactiveWidget: "resizes-content",
+  /* Keep layout height stable; fixed bottom nav overlays browser chrome instead of shrinking the page */
+  interactiveWidget: "overlays-content",
 };
 
 export async function generateMetadata(): Promise<Metadata> {

@@ -45,7 +45,7 @@ export default function FeedPostsScroll({ children }: FeedPostsScrollProps) {
   return (
     <div
       ref={panelRef}
-      className="home-feed-posts-scroll-panel flex min-h-0 flex-1 flex-col max-lg:min-h-[28rem] lg:overflow-y-auto lg:overscroll-contain"
+      className="home-feed-posts-scroll-panel flex min-h-0 flex-1 flex-col lg:overflow-y-auto lg:overscroll-contain"
     >
       <div className="home-feed-posts-scroll-inner flex flex-col gap-4" dir="rtl">
         {children}
