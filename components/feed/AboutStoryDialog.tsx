@@ -2,7 +2,8 @@
 
 import NurseLinkWordmark from "@/components/NurseLinkWordmark";
 import { useT } from "@/components/i18n/LocaleProvider";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 type AboutStoryDialogProps = {
   open: boolean;
@@ -17,6 +18,11 @@ const STORY_KEYS = [
 
 export default function AboutStoryDialog({ open, onClose }: AboutStoryDialogProps) {
   const t = useT();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) {
@@ -36,13 +42,13 @@ export default function AboutStoryDialog({ open, onClose }: AboutStoryDialogProp
     };
   }, [open, onClose]);
 
-  if (!open) {
+  if (!open || !mounted) {
     return null;
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[60] flex items-start justify-center overflow-y-auto p-4 pt-12 sm:items-start sm:pt-16"
+      className="about-story-overlay fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto p-4 pt-12 sm:items-start sm:pt-16"
       role="dialog"
       aria-modal="true"
       aria-labelledby="about-story-title"
@@ -91,6 +97,7 @@ export default function AboutStoryDialog({ open, onClose }: AboutStoryDialogProp
           </button>
         </footer>
       </article>
-    </div>
+    </div>,
+    document.body,
   );
 }
