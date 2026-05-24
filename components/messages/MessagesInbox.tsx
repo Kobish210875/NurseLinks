@@ -15,19 +15,24 @@ export default function MessagesInbox({ threads }: MessagesInboxProps) {
   const { locale } = useLocale();
 
   return (
-    <div className="md:feed-card md:p-6">
+    <div>
       <h1 className="mb-3 px-1 text-lg font-bold text-foreground md:mb-4 md:px-0 md:text-xl">
         {t("messages.title")}
       </h1>
       {threads.length === 0 ? (
-        <p className="px-1 text-sm text-muted-foreground md:px-0">{t("messages.empty")}</p>
+        <p className="feed-card px-4 py-6 text-center text-sm text-muted-foreground md:px-6">
+          {t("messages.empty")}
+        </p>
       ) : (
-        <ul className="divide-y divide-border md:feed-card md:overflow-hidden">
+        <ul className="flex flex-col gap-2 md:gap-3">
           {threads.map((thread) => (
-            <li key={thread.peerId}>
+            <li
+              key={thread.peerId}
+              className="messages-thread-card overflow-hidden rounded-xl transition hover:border-primary/50"
+            >
               <Link
                 href={`/messages/${thread.peerId}`}
-                className="flex items-center gap-2.5 px-1 py-2.5 transition hover:bg-muted/30 md:gap-3 md:px-4 md:py-3"
+                className="flex w-full items-center gap-2.5 px-3 py-2.5 hover:bg-muted/25 md:gap-3 md:px-4 md:py-3"
               >
                 <span className="relative flex size-9 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10 md:size-12">
                   {thread.peerAvatarUrl ? (

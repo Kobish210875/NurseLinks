@@ -128,6 +128,15 @@ body {
   box-shadow: 0 1px 3px rgb(44 74 110 / 0.06);
 }
 
+/* Messages inbox: visible frame on page background (WEB + mobile) */
+.messages-thread-card {
+  background: var(--card);
+  border: 1px solid #b8c9db;
+  box-shadow:
+    0 1px 2px rgb(44 74 110 / 0.08),
+    0 0 0 1px rgb(255 255 255 / 0.6) inset;
+}
+
 .btn-primary {
   background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
   box-shadow: 0 2px 8px rgb(43 108 176 / 0.28);
