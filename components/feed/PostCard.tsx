@@ -3,6 +3,13 @@
 import Link from "next/link";
 import { addPostComment, deletePost, togglePostLike } from "@/app/actions/feed";
 import { useT } from "@/components/i18n/LocaleProvider";
+import PostShareDialog from "@/components/feed/PostShareDialog";
+import {
+  formatEngagementCount,
+  PostCommentIcon,
+  PostLikeIcon,
+  PostShareIcon,
+} from "@/components/feed/PostEngagementIcons";
 import type { FeedPost } from "@/lib/data/feed";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
@@ -24,12 +31,16 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
   const [likeError, setLikeError] = useState<string | null>(null);
   const [liked, setLiked] = useState(post.likedByMe);
   const [likeCount, setLikeCount] = useState(post.likeCount);
+  const [commentCount, setCommentCount] = useState(post.commentCount);
+  const [shareCount, setShareCount] = useState(post.shareCount);
+  const [shareOpen, setShareOpen] = useState(false);
 
-  // Sync only when server props change (after refresh), not when pendingLike ends.
   useEffect(() => {
     setLiked(post.likedByMe);
     setLikeCount(post.likeCount);
-  }, [post.id, post.likedByMe, post.likeCount]);
+    setCommentCount(post.commentCount);
+    setShareCount(post.shareCount);
+  }, [post.id, post.likedByMe, post.likeCount, post.commentCount, post.shareCount]);
 
   function handleLike() {
     if (pendingLike) return;
@@ -52,6 +63,12 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
     });
   }
 
+  function focusComment() {
+    const el = document.getElementById(`comment-input-${post.id}`);
+    el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    el?.focus();
+  }
+
   async function submitComment(formData: FormData) {
     setCommentError(null);
     startComment(async () => {
@@ -64,6 +81,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
         setCommentError(t("errors.comment-failed"));
         return;
       }
+      setCommentCount((c) => c + 1);
       router.refresh();
     });
   }
@@ -86,26 +104,8 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
     });
   }
 
-  function sharePost() {
-    const url = `${typeof window !== "undefined" ? window.location.origin : ""}/home#post-${post.id}`;
-    if (typeof navigator !== "undefined" && navigator.share) {
-      void navigator
-        .share({
-          title: post.authorName,
-          text: post.body.slice(0, 200),
-          url,
-        })
-        .catch(() => {});
-      return;
-    }
-    if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
-      void navigator.clipboard.writeText(url).then(() => {
-        window.alert(t("post.shareCopied"));
-      });
-      return;
-    }
-    window.prompt(t("post.shareManual"), url);
-  }
+  const engagementBtn =
+    "post-engagement-btn inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 text-muted-foreground transition hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25";
 
   return (
     <article id={`post-${post.id}`} className="feed-card p-4">
@@ -166,45 +166,56 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
       {post.body.trim() ? (
         <p className="mb-4 whitespace-pre-wrap text-start leading-relaxed text-foreground">{post.body}</p>
       ) : null}
-      <div className="flex items-center justify-between border-t border-border pt-3 text-xs text-muted-foreground">
-        <span>
-          {likeCount} {t("post.likes")} | {post.commentCount} {t("post.comments")}
-        </span>
-      </div>
+
       {likeError ? (
-        <p className="mt-2 text-xs text-red-600" role="alert">
+        <p className="mb-2 text-xs text-red-600" role="alert">
           {likeError}
         </p>
       ) : null}
-      <div className="mt-2 flex justify-around border-t border-border pt-2">
+
+      <div
+        className="post-engagement-bar -mx-1 flex items-stretch justify-between border-t border-border pt-1"
+        role="toolbar"
+        aria-label={t("post.engagementAria")}
+      >
         <button
           type="button"
           onClick={handleLike}
           disabled={pendingLike}
-          className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors hover:bg-muted ${
-            liked ? "text-primary" : "text-muted-foreground hover:text-primary"
-          }`}
+          aria-pressed={liked}
+          aria-label={t("post.likeAria")}
+          className={`${engagementBtn} ${liked ? "post-engagement-btn--liked text-primary" : ""}`}
         >
-          {t("post.like")}
+          <PostLikeIcon filled={liked} className="shrink-0" />
+          <span className="text-sm font-semibold tabular-nums">{formatEngagementCount(likeCount)}</span>
         </button>
         <button
           type="button"
-          onClick={() => {
-            const el = document.getElementById(`comment-input-${post.id}`);
-            el?.focus();
-          }}
-          className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
+          onClick={focusComment}
+          aria-label={t("post.commentAria")}
+          className={engagementBtn}
         >
-          {t("post.reply")}
+          <PostCommentIcon className="shrink-0" />
+          <span className="text-sm font-semibold tabular-nums">{formatEngagementCount(commentCount)}</span>
         </button>
         <button
           type="button"
-          onClick={sharePost}
-          className="rounded-lg px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-primary"
+          onClick={() => setShareOpen(true)}
+          aria-label={t("post.shareAria")}
+          className={engagementBtn}
         >
-          {t("post.share")}
+          <PostShareIcon className="shrink-0" />
+          <span className="text-sm font-semibold tabular-nums">{formatEngagementCount(shareCount)}</span>
         </button>
       </div>
+
+      <PostShareDialog
+        postId={post.id}
+        authorName={post.authorName}
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        onShared={() => setShareCount((c) => c + 1)}
+      />
 
       {post.comments.length > 0 ? (
         <ul className="mt-4 space-y-3 border-t border-border pt-4">

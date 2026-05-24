@@ -31,6 +31,7 @@ export type FeedPost = {
   authorInitials: string;
   likeCount: number;
   commentCount: number;
+  shareCount: number;
   likedByMe: boolean;
   comments: FeedComment[];
 };
@@ -130,28 +131,43 @@ export async function getFeedPosts(
   const { data: commentsRaw } = bundle[1];
   const { data: myLikes } = bundle[2];
   const rpcResult = bundle[3] as {
-    data: { post_id: string; like_count: number; comment_count: number }[] | null;
+    data:
+      | { post_id: string; like_count: number; comment_count: number; share_count?: number }[]
+      | null;
     error: { message: string } | null;
   };
 
-  const statsMap = new Map<string, { likeCount: number; commentCount: number }>();
+  const statsMap = new Map<string, { likeCount: number; commentCount: number; shareCount: number }>();
 
   if (rpcResult.error || !rpcResult.data) {
-    const [{ data: likeRows }, { data: commentCountRows }] = await Promise.all([
-      supabase.from("post_likes").select("post_id").in("post_id", postIds),
-      supabase.from("post_comments").select("post_id").in("post_id", postIds),
-    ]);
+    const [{ data: likeRows }, { data: commentCountRows }, { data: shareRows }] =
+      await Promise.all([
+        supabase.from("post_likes").select("post_id").in("post_id", postIds),
+        supabase.from("post_comments").select("post_id").in("post_id", postIds),
+        supabase.from("post_shares").select("post_id").in("post_id", postIds),
+      ]);
     for (const r of (likeRows ?? []) as LikeRow[]) {
+      const cur = statsMap.get(r.post_id) ?? { likeCount: 0, commentCount: 0, shareCount: 0 };
       statsMap.set(r.post_id, {
-        likeCount: (statsMap.get(r.post_id)?.likeCount ?? 0) + 1,
-        commentCount: statsMap.get(r.post_id)?.commentCount ?? 0,
+        likeCount: cur.likeCount + 1,
+        commentCount: cur.commentCount,
+        shareCount: cur.shareCount,
       });
     }
     for (const r of (commentCountRows ?? []) as CommentIdRow[]) {
-      const cur = statsMap.get(r.post_id) ?? { likeCount: 0, commentCount: 0 };
+      const cur = statsMap.get(r.post_id) ?? { likeCount: 0, commentCount: 0, shareCount: 0 };
       statsMap.set(r.post_id, {
         likeCount: cur.likeCount,
         commentCount: cur.commentCount + 1,
+        shareCount: cur.shareCount,
+      });
+    }
+    for (const r of (shareRows ?? []) as CommentIdRow[]) {
+      const cur = statsMap.get(r.post_id) ?? { likeCount: 0, commentCount: 0, shareCount: 0 };
+      statsMap.set(r.post_id, {
+        likeCount: cur.likeCount,
+        commentCount: cur.commentCount,
+        shareCount: cur.shareCount + 1,
       });
     }
   } else {
@@ -159,11 +175,13 @@ export async function getFeedPosts(
       post_id: string;
       like_count: number;
       comment_count: number;
+      share_count?: number;
     }[];
     for (const row of rows) {
       statsMap.set(row.post_id, {
         likeCount: Number(row.like_count),
         commentCount: Number(row.comment_count),
+        shareCount: Number(row.share_count ?? 0),
       });
     }
   }
@@ -270,6 +288,7 @@ export async function getFeedPosts(
       authorInitials: getInitials(fullName),
       likeCount: stats?.likeCount ?? 0,
       commentCount: stats?.commentCount ?? comments.length,
+      shareCount: stats?.shareCount ?? 0,
       likedByMe: likedByMe.has(p.id),
       comments,
     };

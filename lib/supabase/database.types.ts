@@ -201,6 +201,23 @@ export type Database = {
         };
         Update: never;
       };
+      post_shares: {
+        Row: {
+          id: string;
+          post_id: string;
+          sharer_id: string;
+          recipient_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          post_id: string;
+          sharer_id: string;
+          recipient_id: string;
+          created_at?: string;
+        };
+        Update: never;
+      };
       direct_messages: {
         Row: {
           id: string;
@@ -306,7 +323,12 @@ export type Database = {
     Functions: {
       feed_post_stats: {
         Args: { post_ids: string[] };
-        Returns: { post_id: string; like_count: number; comment_count: number }[];
+        Returns: {
+          post_id: string;
+          like_count: number;
+          comment_count: number;
+          share_count: number;
+        }[];
       };
       users_are_connected: {
         Args: { user_a: string; user_b: string };

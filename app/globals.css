@@ -243,6 +243,19 @@ body.composer-open .mobile-bottom-nav {
   display: none;
 }
 
+/* Post engagement (icon + count) */
+.post-engagement-btn--liked {
+  color: var(--primary);
+}
+
+.post-engagement-btn--liked:hover {
+  background: rgb(43 108 176 / 0.08);
+}
+
+.post-engagement-bar .post-engagement-btn:active {
+  transform: scale(0.97);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .composer-backdrop,
   .composer-fullscreen {

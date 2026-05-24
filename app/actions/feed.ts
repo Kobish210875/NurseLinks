@@ -14,12 +14,18 @@ import {
   postImageStoragePath,
   POST_IMAGES_BUCKET,
 } from "@/lib/storage/post-image-url";
+import { getAcceptedConnections } from "@/lib/data/connections";
+import { usersAreConnected } from "@/lib/data/messages";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { createT, getMessages } from "@/lib/i18n/messages";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type PostInsert = Database["public"]["Tables"]["posts"]["Insert"];
 type PostCommentInsert = Database["public"]["Tables"]["post_comments"]["Insert"];
+type PostShareInsert = Database["public"]["Tables"]["post_shares"]["Insert"];
+type MessageInsert = Database["public"]["Tables"]["direct_messages"]["Insert"];
 
 const MAX_POST_BODY = 4000;
 const MAX_COMMENT_BODY = 2000;
@@ -287,5 +293,138 @@ export async function deletePost(postId: string) {
   }
 
   revalidatePath("/home");
+  return { success: true as const };
+}
+
+export async function listConnectionsForShare() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "unauthorized" as const, connections: [] as const };
+  }
+
+  const connections = await getAcceptedConnections(supabase, user.id);
+  return {
+    connections: connections.map((c) => ({
+      id: c.id,
+      fullName: c.fullName,
+      avatarUrl: c.avatarUrl,
+      initials: c.initials,
+    })),
+  };
+}
+
+function postShareUrl(postId: string) {
+  const base =
+    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
+    (process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL.replace(/^https?:\/\//, "")}`
+      : "");
+  if (base) {
+    return `${base}/home#post-${postId}`;
+  }
+  return `/home#post-${postId}`;
+}
+
+export async function sharePostWithConnection(postId: string, peerId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "unauthorized" as const };
+  }
+
+  if (peerId === user.id) {
+    return { error: "self" as const };
+  }
+
+  const connected = await usersAreConnected(supabase, user.id, peerId);
+  if (!connected) {
+    return { error: "not-connected" as const };
+  }
+
+  const { data: post } = await supabase
+    .from("posts")
+    .select("id, author_id, body")
+    .eq("id", postId)
+    .maybeSingle<{ id: string; author_id: string; body: string }>();
+
+  if (!post) {
+    return { error: "not-found" as const };
+  }
+
+  const [{ data: sharerProfile }, { data: authorProfile }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .maybeSingle<{ full_name: string }>(),
+    supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", post.author_id)
+      .maybeSingle<{ full_name: string }>(),
+  ]);
+
+  const locale = await getLocale();
+  const t = createT(getMessages(locale));
+  const sharerName = sharerProfile?.full_name?.trim() || "User";
+  const authorName = authorProfile?.full_name?.trim() || "User";
+  const link = postShareUrl(postId);
+  const preview = post.body.trim().slice(0, 120);
+  const messageBody = t("post.shareMessageBody")
+    .replace("{sharer}", sharerName)
+    .replace("{author}", authorName)
+    .replace("{preview}", preview)
+    .replace("{url}", link);
+
+  const shareRow: PostShareInsert = {
+    post_id: postId,
+    sharer_id: user.id,
+    recipient_id: peerId,
+  };
+
+  const { error: shareError } = await supabase.from("post_shares").insert(shareRow as never);
+
+  if (shareError) {
+    const lower = shareError.message.toLowerCase();
+    if (lower.includes("post_shares") || lower.includes("does not exist")) {
+      return { error: "shares-not-configured" as const };
+    }
+    if (!lower.includes("duplicate") && !lower.includes("unique")) {
+      return { error: "share-failed" as const };
+    }
+  }
+
+  const messageRow: MessageInsert = {
+    sender_id: user.id,
+    recipient_id: peerId,
+    body: messageBody,
+  };
+
+  const { error: messageError } = await supabase
+    .from("direct_messages")
+    .insert(messageRow as never);
+
+  if (messageError) {
+    const lower = messageError.message.toLowerCase();
+    if (
+      lower.includes("direct_messages") ||
+      lower.includes("does not exist") ||
+      lower.includes("schema cache")
+    ) {
+      return { error: "messaging-not-configured" as const };
+    }
+    return { error: "share-failed" as const };
+  }
+
+  revalidatePath("/home");
+  revalidatePath("/messages");
+  revalidatePath(`/messages/${peerId}`);
   return { success: true as const };
 }
