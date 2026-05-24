@@ -1,4 +1,5 @@
 import FeedComposer from "@/components/feed/FeedComposer";
+import FeedPostsScroll from "@/components/feed/FeedPostsScroll";
 import { Suspense } from "react";
 import FeedAutoRefresh from "@/components/feed/FeedAutoRefresh";
 import PostCard from "@/components/feed/PostCard";
@@ -34,7 +35,7 @@ export default async function FeedColumn({ user }: FeedColumnProps) {
           <FeedComposer user={user} />
         </Suspense>
       </div>
-      <div className="home-feed-posts-scroll flex min-h-0 flex-1 flex-col gap-4 max-lg:min-h-[28rem] lg:overflow-y-auto lg:overscroll-contain">
+      <FeedPostsScroll>
         {firstPost ? (
           <PostCard post={firstPost} currentUserId={user.id} />
         ) : (
@@ -45,7 +46,7 @@ export default async function FeedColumn({ user }: FeedColumnProps) {
         {restPosts.map((post) => (
           <PostCard key={post.id} post={post} currentUserId={user.id} />
         ))}
-      </div>
+      </FeedPostsScroll>
     </section>
   );
 }

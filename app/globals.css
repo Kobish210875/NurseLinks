@@ -54,7 +54,7 @@ body {
   background: var(--background);
 }
 
-/* WEB home: navbar + sidebars fixed; only posts list scrolls */
+/* WEB home (+ messages uses .home-page-root): fixed shell; inner column scrolls (lg+) */
 @media (min-width: 1024px) {
   html:has(.home-page-root),
   body:has(.home-page-root) {
@@ -63,7 +63,6 @@ body {
     overscroll-behavior: none;
   }
 
-  /* Lock the whole home view — no page lift when feed hits scroll end */
   .home-page-root {
     position: fixed;
     inset: 0;
@@ -114,10 +113,26 @@ body {
     overflow: hidden;
   }
 
-  .home-feed-posts-scroll {
+  /* Feed scroll panel (mirror for RTL applied in FeedPostsScroll.tsx on WEB) */
+  .home-feed-posts-scroll-panel {
     scrollbar-gutter: stable;
     -webkit-overflow-scrolling: touch;
     overscroll-behavior-y: contain;
+  }
+
+  .home-feed-posts-scroll-inner {
+    direction: rtl;
+    min-height: min-content;
+  }
+
+  /* CSS fallback when JS runs: RTL → scrollbar on the right beside profile sidebar */
+  html[dir="rtl"] .home-feed-posts-scroll-panel {
+    transform: scaleX(-1);
+  }
+
+  html[dir="rtl"] .home-feed-posts-scroll-inner {
+    transform: scaleX(-1);
+    direction: rtl;
   }
 }
 

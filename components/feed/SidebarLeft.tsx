@@ -7,10 +7,7 @@ export default function SidebarLeft() {
   const t = useT();
 
   return (
-    <aside
-      className="hidden flex-col gap-4 lg:flex lg:min-h-[calc(100vh-7rem)]"
-      aria-label={t("feed.navAria")}
-    >
+    <aside className="flex flex-col gap-4" aria-label={t("feed.navAria")}>
       <HospitalsSidebar />
     </aside>
   );

@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import Footer from "@/components/Footer";
-import MessagesAutoRefresh from "@/components/messages/MessagesAutoRefresh";
-import MessagesInbox from "@/components/messages/MessagesInbox";
+import MessagesFeed from "@/components/messages/MessagesFeed";
 import Navbar from "@/components/Navbar";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getMessageThreads } from "@/lib/data/messages";
@@ -21,15 +20,14 @@ export default async function MessagesPage() {
   ]);
 
   return (
-    <>
+    <div className="home-page-root flex min-h-screen flex-col">
       <Navbar authenticated />
-      <main className="feed-page min-h-[calc(100vh-4rem)] py-4 md:py-6">
-        <div className="mx-auto max-w-2xl px-4">
-          <MessagesAutoRefresh initialVersion={messagesVersion} />
-          <MessagesInbox threads={threads} />
-        </div>
+      <main className="home-main-shell min-h-0 flex-1">
+        <MessagesFeed threads={threads} messagesVersion={messagesVersion} />
       </main>
-      <Footer />
-    </>
+      <div className="lg:hidden">
+        <Footer />
+      </div>
+    </div>
   );
 }
