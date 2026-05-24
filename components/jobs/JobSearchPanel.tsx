@@ -71,7 +71,7 @@ export default function JobSearchPanel({
             onChange={(event) => setQ(event.target.value)}
             placeholder={t("jobs.searchQueryPlaceholder")}
             maxLength={80}
-            className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 lg:px-2.5 lg:py-1.5 lg:text-xs"
+            className="w-full max-w-full rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm lg:px-2.5 lg:py-1.5 lg:text-xs"
           />
         </div>
 
@@ -86,7 +86,7 @@ export default function JobSearchPanel({
             id="job-search-institution"
             value={institution}
             onChange={(event) => setInstitution(event.target.value)}
-            className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 lg:px-2.5 lg:py-1.5 lg:text-xs"
+            className="w-full max-w-full rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm lg:px-2.5 lg:py-1.5 lg:text-xs"
           >
             <option value="">{t("jobs.searchInstitutionAll")}</option>
             {institutions.map((inst) => (

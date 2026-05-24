@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useT } from "@/components/i18n/LocaleProvider";
 
 const inputClassName =
-  "w-full rounded-lg border border-border bg-white py-2.5 pl-3 pr-10 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/15";
+  "w-full max-w-full rounded-lg border border-border bg-white py-2.5 pl-3 pr-10 text-base outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm";
 
 type PasswordInputProps = {
   id: string;

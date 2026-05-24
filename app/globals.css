@@ -246,15 +246,40 @@ body {
     text-align: right;
   }
 
-  #post-composer-body,
-  #network-search,
-  .message-thread-input {
-    font-size: 1rem;
+  /*
+   * iOS Safari zooms the whole page when focusing inputs below 16px — layout then
+   * looks "out of proportion" until refresh. Applies to all search/forms on mobile.
+   */
+  input:not(
+      [type="checkbox"],
+      [type="radio"],
+      [type="file"],
+      [type="hidden"],
+      [type="range"],
+      [type="color"],
+      [type="button"],
+      [type="submit"],
+      [type="reset"]
+    ),
+  select,
+  textarea {
+    font-size: 1rem !important;
     line-height: 1.5;
+    max-width: 100%;
   }
 
-  .network-search-input {
+  form,
+  .feed-card,
+  main,
+  .feed-page {
+    min-width: 0;
     max-width: 100%;
+  }
+
+  .network-search-input,
+  .institution-select-trigger {
+    max-width: 100%;
+    font-size: 1rem;
   }
 
   .message-thread-shell {

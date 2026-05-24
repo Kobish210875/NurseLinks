@@ -46,7 +46,7 @@ export default function JobComposer() {
           maxLength={200}
           disabled={pending}
           placeholder={t("jobs.fieldTitlePlaceholder")}
-          className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60"
+          className="w-full max-w-full rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60 md:text-sm"
         />
       </div>
       <InstitutionSelect
@@ -76,7 +76,7 @@ export default function JobComposer() {
               ? t("jobs.fieldDescriptionPlaceholderOther")
               : t("jobs.fieldDescriptionPlaceholder")
           }
-          className="w-full resize-y rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60"
+          className="w-full max-w-full resize-y rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60 md:text-sm"
         />
       </div>
       {error ? (

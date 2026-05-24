@@ -11,7 +11,7 @@ export default function JobsNav() {
   const onPublish = pathname.startsWith("/jobs/new");
 
   const tabClass = (active: boolean) =>
-    `min-w-0 rounded-lg px-2 py-2 text-center text-xs font-semibold leading-snug transition sm:px-3 sm:py-2.5 sm:text-sm ${
+    `min-w-0 rounded-lg px-2 py-2 text-center text-[15px] font-semibold leading-snug transition sm:px-3 sm:py-2.5 sm:text-sm ${
       active
         ? "bg-primary text-primary-foreground shadow-sm"
         : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
