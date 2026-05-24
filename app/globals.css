@@ -273,6 +273,19 @@ body.composer-open .mobile-bottom-nav {
   .post-engagement-action--liked {
     color: var(--primary);
   }
+
+  .post-comment-form {
+    scroll-margin-bottom: 5rem;
+  }
+
+  .post-comment-input {
+    font-size: 1rem;
+    scroll-margin-bottom: min(42vh, 18rem);
+  }
+
+  .post-comment-list {
+    border-top: none !important;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

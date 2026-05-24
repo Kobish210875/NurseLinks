@@ -12,7 +12,7 @@ import {
 } from "@/components/feed/PostEngagementIcons";
 import type { FeedPost } from "@/lib/data/feed";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 type PostCardProps = {
   post: FeedPost;
@@ -34,6 +34,8 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
   const [commentCount, setCommentCount] = useState(post.commentCount);
   const [shareCount, setShareCount] = useState(post.shareCount);
   const [shareOpen, setShareOpen] = useState(false);
+  const [commentOpen, setCommentOpen] = useState(false);
+  const commentInputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setLiked(post.likedByMe);
@@ -63,10 +65,27 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
     });
   }
 
+  useEffect(() => {
+    if (!commentOpen) {
+      return;
+    }
+    const frame = window.requestAnimationFrame(() => {
+      const el = commentInputRef.current;
+      if (!el) {
+        return;
+      }
+      el.focus({ preventScroll: true });
+      if (window.matchMedia("(max-width: 767px)").matches) {
+        window.setTimeout(() => {
+          el.scrollIntoView({ block: "nearest", behavior: "auto" });
+        }, 120);
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [commentOpen]);
+
   function focusComment() {
-    const el = document.getElementById(`comment-input-${post.id}`);
-    el?.scrollIntoView({ behavior: "smooth", block: "center" });
-    el?.focus();
+    setCommentOpen(true);
   }
 
   async function submitComment(formData: FormData) {
@@ -82,6 +101,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
         return;
       }
       setCommentCount((c) => c + 1);
+      setCommentOpen(false);
       router.refresh();
     });
   }
@@ -110,7 +130,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
   const hasEngagementStats = likeCount > 0 || commentCount > 0 || shareCount > 0;
 
   return (
-    <article id={`post-${post.id}`} className="feed-card p-4">
+    <article id={`post-${post.id}`} className="feed-card flex flex-col p-4">
       <header className="mb-3 flex items-start gap-3">
         <Link
           href={`/profile/${post.authorId}`}
@@ -246,7 +266,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
       />
 
       {post.comments.length > 0 ? (
-        <ul className="mt-4 space-y-3 border-t border-border pt-4">
+        <ul className="post-comment-list order-3 mt-3 space-y-3 md:order-none md:mt-4 md:border-t md:border-border md:pt-4">
           {post.comments.map((c) => (
             <li key={c.id} className="flex gap-2 text-start">
               <span className="flex size-8 shrink-0 overflow-hidden rounded-full border border-border bg-muted/40">
@@ -273,18 +293,23 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
         </ul>
       ) : null}
 
-      <form action={submitComment} className="mt-4 flex flex-col gap-2 border-t border-border pt-4">
+      <form
+        action={submitComment}
+        className={`post-comment-form order-2 mt-2 flex flex-col gap-2 md:order-none md:mt-4 md:border-t md:border-border md:pt-4 ${commentOpen ? "flex" : "hidden md:flex"}`}
+      >
         <label className="sr-only" htmlFor={`comment-input-${post.id}`}>
           {t("post.commentLabel")}
         </label>
         <textarea
+          ref={commentInputRef}
           id={`comment-input-${post.id}`}
           name="body"
           rows={2}
           maxLength={2000}
           disabled={pendingComment}
           placeholder={t("post.commentPlaceholder")}
-          className="w-full resize-y rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60"
+          onFocus={() => setCommentOpen(true)}
+          className="post-comment-input w-full resize-none rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60 md:resize-y md:text-sm"
         />
         {commentError ? (
           <p className="text-xs text-red-600" role="alert">
