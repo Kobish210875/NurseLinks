@@ -8,6 +8,8 @@ import {
   getPendingInvitations,
   searchPeople,
 } from "@/lib/data/connections";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { createT, getMessages } from "@/lib/i18n/messages";
 import { createClient } from "@/lib/supabase/server";
 
 type NetworkPageProps = {
@@ -20,6 +22,8 @@ export default async function NetworkPage({ searchParams }: NetworkPageProps) {
     redirect("/");
   }
 
+  const locale = await getLocale();
+  const t = createT(getMessages(locale));
   const params = await searchParams;
   const query = typeof params.q === "string" ? params.q.trim() : "";
   const supabase = await createClient();
@@ -33,8 +37,13 @@ export default async function NetworkPage({ searchParams }: NetworkPageProps) {
   return (
     <>
       <Navbar authenticated />
-      <main className="feed-page min-h-[calc(100vh-4rem)] py-4 md:py-8 lg:py-10">
-        <div className="mx-auto w-full max-w-2xl px-3 sm:px-4 md:max-w-3xl lg:max-w-4xl">
+      <main className="feed-page min-h-[calc(100vh-4rem)] overflow-x-clip py-4 md:py-6">
+        <div className="mx-auto w-full min-w-0 max-w-2xl space-y-4 px-3 sm:px-4">
+          <header className="min-w-0 text-start">
+            <h1 className="break-words text-lg font-bold text-foreground sm:text-xl">
+              {t("network.title")}
+            </h1>
+          </header>
           <NetworkPanel
             connections={connections}
             invitations={invitations}

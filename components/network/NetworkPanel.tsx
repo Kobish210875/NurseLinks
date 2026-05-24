@@ -14,6 +14,30 @@ type NetworkPanelProps = {
   searchResults: NetworkMember[];
 };
 
+function MemberList({
+  members,
+  variant,
+  emptyText,
+}: {
+  members: NetworkMember[];
+  variant: "connection" | "search" | "invitation";
+  emptyText: string;
+}) {
+  if (members.length === 0) {
+    return (
+      <p className="px-1 py-6 text-center text-sm text-muted-foreground">{emptyText}</p>
+    );
+  }
+
+  return (
+    <ul className="space-y-2" aria-live="polite">
+      {members.map((member) => (
+        <MemberRow key={member.id} member={member} variant={variant} />
+      ))}
+    </ul>
+  );
+}
+
 export default function NetworkPanel({
   connections,
   invitations,
@@ -35,6 +59,7 @@ export default function NetworkPanel({
     }, 400);
     return () => window.clearTimeout(timeout);
   }, [query, initialQuery, router]);
+
   const [tab, setTab] = useState<"connections" | "invitations">(
     invitations.length > 0 ? "invitations" : "connections",
   );
@@ -49,140 +74,108 @@ export default function NetworkPanel({
 
   const showSearch = query.trim().length >= 2;
 
-  return (
-    <div className="network-page-card feed-card overflow-hidden">
-      <header className="network-page-hero border-b border-border/60 px-5 py-6 text-start md:px-8 md:py-7 lg:px-10 lg:py-8">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground md:text-3xl">
-          {t("network.title")}
-        </h1>
-        <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted-foreground md:text-base">
-          {t("network.subtitle")}
-        </p>
-        <div className="mt-4 flex flex-wrap items-center gap-2 md:mt-5">
-          <span className="network-stat-pill">
-            {t("network.count").replace("{count}", String(connections.length))}
-          </span>
-          {invitations.length > 0 ? (
-            <span className="network-stat-pill network-stat-pill--accent">
-              {t("network.pendingCount").replace("{count}", String(invitations.length))}
-            </span>
-          ) : null}
-        </div>
-      </header>
+  const tabClass = (active: boolean) =>
+    `min-w-0 rounded-lg px-2 py-2 text-center text-xs font-semibold leading-snug transition sm:px-3 sm:py-2.5 sm:text-sm ${
+      active
+        ? "bg-primary text-primary-foreground shadow-sm"
+        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
+    }`;
 
-      <div className="px-5 py-5 md:px-8 md:py-6 lg:px-10 lg:py-7">
+  return (
+    <div className="space-y-4">
+      <section className="feed-card min-w-0 space-y-3 p-3 sm:p-4">
+        <div>
+          <h2 className="text-sm font-semibold text-foreground">{t("network.searchTitle")}</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">{t("network.searchHint")}</p>
+        </div>
         <label className="sr-only" htmlFor="network-search">
           {t("network.searchLabel")}
         </label>
-        <div className="relative mb-5 md:mb-6">
-          <svg
-            className="pointer-events-none absolute top-1/2 end-3 size-4 -translate-y-1/2 text-muted-foreground md:end-4 md:size-5"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <path d="m21 21-4.3-4.3" />
-          </svg>
-          <input
-            id="network-search"
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("network.searchPlaceholder")}
-            className="w-full rounded-xl border border-border bg-white py-2.5 pe-11 ps-3.5 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:py-3 md:text-base md:pe-12"
-          />
-        </div>
+        <input
+          id="network-search"
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder={t("network.searchPlaceholder")}
+          className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15"
+        />
+      </section>
 
-        {showSearch ? (
-          <section className="mb-5 text-start md:mb-6">
-            <h2 className="mb-2 text-sm font-semibold text-foreground md:text-base">
-              {t("network.searchResults")}
-            </h2>
-            {searchResults.length === 0 ? (
-              <p className="rounded-xl bg-muted/25 px-4 py-8 text-center text-sm text-muted-foreground">
-                {t("network.searchEmpty")}
-              </p>
-            ) : (
-              <ul className="network-member-list flex flex-col gap-1.5">
-                {searchResults.map((member) => (
-                  <MemberRow key={member.id} member={member} variant="search" />
-                ))}
-              </ul>
-            )}
-          </section>
-        ) : null}
+      {showSearch ? (
+        <section className="feed-card min-w-0 p-3 sm:p-4">
+          <h2 className="mb-2 text-start text-sm font-semibold text-foreground">
+            {t("network.searchResults")}
+          </h2>
+          <div className="network-members-scroll max-h-[min(16rem,calc(100vh-14rem))] overflow-y-auto overscroll-contain pe-0.5">
+            <MemberList
+              members={searchResults}
+              variant="search"
+              emptyText={t("network.searchEmpty")}
+            />
+          </div>
+        </section>
+      ) : null}
 
-        <div
-          className="mb-4 flex gap-0 border-b border-border md:mb-5"
-          role="tablist"
-          aria-label={t("network.title")}
+      <nav
+        className="feed-card grid min-w-0 grid-cols-2 gap-1 p-1"
+        role="tablist"
+        aria-label={t("network.title")}
+      >
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "connections"}
+          onClick={() => setTab("connections")}
+          className={tabClass(tab === "connections")}
         >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === "connections"}
-            onClick={() => setTab("connections")}
-            className={`network-tab -mb-px px-4 py-2 text-sm font-medium transition md:px-5 md:text-base ${
-              tab === "connections"
-                ? "network-tab--active text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {t("network.tabConnections")}
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === "invitations"}
-            onClick={() => setTab("invitations")}
-            className={`network-tab -mb-px flex items-center gap-1.5 px-4 py-2 text-sm font-medium transition md:px-5 md:text-base ${
-              tab === "invitations"
-                ? "network-tab--active text-primary"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            {t("network.tabInvitations")}
-            {invitations.length > 0 ? (
-              <NavUnreadDot
-                ariaLabel={t("nav.pendingInvitations").replace(
-                  "{count}",
-                  String(invitations.length),
-                )}
-              />
-            ) : null}
-          </button>
-        </div>
+          {t("network.tabConnections")}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === "invitations"}
+          onClick={() => setTab("invitations")}
+          className={`${tabClass(tab === "invitations")} inline-flex items-center justify-center gap-1`}
+        >
+          <span className="truncate">{t("network.tabInvitations")}</span>
+          {invitations.length > 0 ? (
+            <NavUnreadDot
+              ariaLabel={t("nav.pendingInvitations").replace(
+                "{count}",
+                String(invitations.length),
+              )}
+            />
+          ) : null}
+        </button>
+      </nav>
 
-        <div className="network-list-panel rounded-2xl bg-muted/20 p-2 md:p-3">
+      <section className="feed-card min-w-0 p-3 sm:p-4">
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-start text-sm font-semibold text-foreground">
+            {tab === "invitations" ? t("network.tabInvitations") : t("network.tabConnections")}
+          </h2>
+          <span className="text-xs text-muted-foreground">
+            {tab === "invitations"
+              ? t("network.pendingCount").replace("{count}", String(invitations.length))
+              : t("network.count").replace("{count}", String(connections.length))}
+          </span>
+        </div>
+        <div className="network-members-scroll max-h-[min(22rem,calc(100vh-18rem))] overflow-y-auto overscroll-contain pe-0.5">
           {tab === "invitations" ? (
-            invitations.length === 0 ? (
-              <p className="px-3 py-10 text-center text-sm text-muted-foreground md:py-12">
-                {t("network.noInvitations")}
-              </p>
-            ) : (
-              <ul className="network-member-list flex flex-col gap-1.5">
-                {invitations.map((member) => (
-                  <MemberRow key={member.id} member={member} variant="invitation" />
-                ))}
-              </ul>
-            )
-          ) : filteredConnections.length === 0 ? (
-            <p className="px-3 py-10 text-center text-sm text-muted-foreground md:py-12">
-              {t("network.noConnections")}
-            </p>
+            <MemberList
+              members={invitations}
+              variant="invitation"
+              emptyText={t("network.noInvitations")}
+            />
           ) : (
-            <ul className="network-member-list flex flex-col gap-1.5">
-              {filteredConnections.map((member) => (
-                <MemberRow key={member.id} member={member} variant="connection" />
-              ))}
-            </ul>
+            <MemberList
+              members={filteredConnections}
+              variant="connection"
+              emptyText={t("network.noConnections")}
+            />
           )}
         </div>
-      </div>
+      </section>
     </div>
   );
 }

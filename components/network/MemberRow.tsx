@@ -19,7 +19,10 @@ type MemberRowProps = {
 };
 
 const actionBtn =
-  "rounded-full border px-2.5 py-0.5 text-xs font-medium transition disabled:opacity-60 md:px-3 md:py-1 md:text-xs";
+  "shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-medium leading-tight transition disabled:opacity-60 sm:text-xs";
+
+const msgBtn =
+  "shrink-0 rounded-full border border-primary px-2 py-0.5 text-[11px] font-medium leading-tight text-primary transition hover:bg-primary/5 sm:text-xs";
 
 export default function MemberRow({ member, variant = "connection" }: MemberRowProps) {
   const t = useT();
@@ -42,84 +45,45 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
   );
 
   return (
-    <li className="network-member-row flex items-center gap-2 rounded-lg border border-border/80 bg-white px-2.5 py-2 shadow-sm transition hover:border-primary/35 hover:shadow-md md:gap-3 md:px-3 md:py-2">
-      <Link
-        href={`/profile/${member.id}`}
-        className="relative flex size-9 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10 md:size-10"
-      >
-        {member.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={member.avatarUrl} alt="" className="size-full object-cover" />
-        ) : (
-          <span className="flex size-full items-center justify-center text-[10px] font-semibold text-primary md:text-xs">
-            {member.initials}
-          </span>
-        )}
-      </Link>
+    <li>
+      <article className="feed-card overflow-hidden transition hover:border-primary/25">
+        <div className="flex items-center gap-2 p-2 sm:gap-2.5 sm:p-2.5">
+          <Link
+            href={`/profile/${member.id}`}
+            className="relative flex size-7 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10 sm:size-8"
+          >
+            {member.avatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={member.avatarUrl} alt="" className="size-full object-cover" />
+            ) : (
+              <span className="flex size-full items-center justify-center text-[9px] font-semibold text-primary sm:text-[10px]">
+                {member.initials}
+              </span>
+            )}
+          </Link>
 
-      <div className="min-w-0 flex-1 text-start">
-        <Link
-          href={`/profile/${member.id}`}
-          className="block truncate text-sm font-semibold leading-tight text-foreground hover:text-primary hover:underline"
-        >
-          {member.fullName}
-        </Link>
-        {professionalLine ? (
-          <p className="truncate text-xs text-muted-foreground">{professionalLine}</p>
-        ) : null}
-      </div>
-
-      <div className="flex shrink-0 items-center justify-end gap-1">
-        {variant === "invitation" ? (
-          <>
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() => run(() => acceptConnectionRequest(member.id))}
-              className={`${actionBtn} border-primary bg-primary text-primary-foreground hover:bg-primary/90`}
+          <div className="min-w-0 flex-1 text-start">
+            <Link
+              href={`/profile/${member.id}`}
+              className="block truncate text-xs font-semibold text-foreground hover:text-primary hover:underline sm:text-sm"
             >
-              {t("network.accept")}
-            </button>
-            <button
-              type="button"
-              disabled={pending}
-              onClick={() => run(() => rejectConnectionRequest(member.id))}
-              className={`${actionBtn} border-border text-muted-foreground hover:bg-muted/60`}
-            >
-              {t("network.ignore")}
-            </button>
-          </>
-        ) : null}
+              {member.fullName}
+            </Link>
+            {professionalLine ? (
+              <p className="truncate text-[11px] text-muted-foreground sm:text-xs">
+                {professionalLine}
+              </p>
+            ) : null}
+          </div>
 
-        {variant === "search" ? (
-          <>
-            {member.connectionStatus === "none" ? (
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => run(() => sendConnectionRequest(member.id))}
-                className={`${actionBtn} border-primary text-primary hover:bg-primary/5`}
-              >
-                {t("network.connect")}
-              </button>
-            ) : null}
-            {member.connectionStatus === "pending_out" ? (
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() => run(() => cancelConnectionRequest(member.id))}
-                className={`${actionBtn} border-border text-muted-foreground`}
-              >
-                {t("network.pending")}
-              </button>
-            ) : null}
-            {member.connectionStatus === "pending_in" ? (
+          <div className="flex max-w-[42%] shrink-0 flex-wrap items-center justify-end gap-1">
+            {variant === "invitation" ? (
               <>
                 <button
                   type="button"
                   disabled={pending}
                   onClick={() => run(() => acceptConnectionRequest(member.id))}
-                  className={`${actionBtn} border-primary bg-primary text-primary-foreground`}
+                  className={`${actionBtn} border-primary bg-primary text-primary-foreground hover:bg-primary/90`}
                 >
                   {t("network.accept")}
                 </button>
@@ -127,26 +91,71 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
                   type="button"
                   disabled={pending}
                   onClick={() => run(() => rejectConnectionRequest(member.id))}
-                  className={`${actionBtn} border-border text-muted-foreground`}
+                  className={`${actionBtn} border-border text-muted-foreground hover:bg-muted/60`}
                 >
                   {t("network.ignore")}
                 </button>
               </>
             ) : null}
-            {member.connectionStatus === "connected" && messageHref ? (
-              <Link href={messageHref} className="network-msg-btn">
+
+            {variant === "search" ? (
+              <>
+                {member.connectionStatus === "none" ? (
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => run(() => sendConnectionRequest(member.id))}
+                    className={`${actionBtn} border-primary text-primary hover:bg-primary/5`}
+                  >
+                    {t("network.connect")}
+                  </button>
+                ) : null}
+                {member.connectionStatus === "pending_out" ? (
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => run(() => cancelConnectionRequest(member.id))}
+                    className={`${actionBtn} border-border text-muted-foreground`}
+                  >
+                    {t("network.pending")}
+                  </button>
+                ) : null}
+                {member.connectionStatus === "pending_in" ? (
+                  <>
+                    <button
+                      type="button"
+                      disabled={pending}
+                      onClick={() => run(() => acceptConnectionRequest(member.id))}
+                      className={`${actionBtn} border-primary bg-primary text-primary-foreground`}
+                    >
+                      {t("network.accept")}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={pending}
+                      onClick={() => run(() => rejectConnectionRequest(member.id))}
+                      className={`${actionBtn} border-border text-muted-foreground`}
+                    >
+                      {t("network.ignore")}
+                    </button>
+                  </>
+                ) : null}
+                {member.connectionStatus === "connected" && messageHref ? (
+                  <Link href={messageHref} className={msgBtn}>
+                    {t("network.message")}
+                  </Link>
+                ) : null}
+              </>
+            ) : null}
+
+            {variant === "connection" && messageHref ? (
+              <Link href={messageHref} className={msgBtn}>
                 {t("network.message")}
               </Link>
             ) : null}
-          </>
-        ) : null}
-
-        {variant === "connection" && messageHref ? (
-          <Link href={messageHref} className="network-msg-btn">
-            {t("network.message")}
-          </Link>
-        ) : null}
-      </div>
+          </div>
+        </div>
+      </article>
     </li>
   );
 }

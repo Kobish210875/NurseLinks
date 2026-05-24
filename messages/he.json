@@ -193,9 +193,10 @@
   },
   "network": {
     "title": "הרשת שלי",
-    "subtitle": "חפשו קולגות, נהלו חיבורים והזמנות — והמשיכו שיחה בלחיצה אחת.",
-    "pendingCount": "{count} הזמנות ממתינות",
+    "pendingCount": "{count} הזמנות",
     "count": "{count} חיבורים",
+    "searchTitle": "חיפוש ברשת",
+    "searchHint": "הקלידו לפחות שתי אותיות לחיפוש לפי שם.",
     "searchLabel": "חיפוש אנשים",
     "searchPlaceholder": "חיפוש לפי שם…",
     "searchResults": "תוצאות חיפוש",
