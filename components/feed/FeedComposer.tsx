@@ -6,9 +6,6 @@ import type { CurrentUser } from "@/lib/auth/get-current-user";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
-/** Space above mobile browser URL bar (Safari/Chrome). */
-const MOBILE_BROWSER_CHROME = "4.75rem";
-
 type ComposerViewport = {
   height: number;
   top: number;
@@ -37,7 +34,7 @@ function useComposerViewport(open: boolean): ComposerViewport {
       setLayout({
         height: viewport.height,
         top: viewport.offsetTop,
-        keyboard: viewport.height < window.innerHeight * 0.82,
+        keyboard: viewport.height < window.innerHeight * 0.85,
       });
     };
 
@@ -76,11 +73,13 @@ export default function FeedComposer({ user }: FeedComposerProps) {
     }
     const scrollY = window.scrollY;
     const { overflow, position, top, width } = document.body.style;
+    document.body.classList.add("composer-open");
     document.body.style.overflow = "hidden";
     document.body.style.position = "fixed";
     document.body.style.top = `-${scrollY}px`;
     document.body.style.width = "100%";
     return () => {
+      document.body.classList.remove("composer-open");
       document.body.style.overflow = overflow;
       document.body.style.position = position;
       document.body.style.top = top;
@@ -96,6 +95,15 @@ export default function FeedComposer({ user }: FeedComposerProps) {
     }
   }
 
+  const mobileSheetStyle =
+    composerViewport.keyboard && composerViewport.height > 0
+      ? {
+          top: composerViewport.top,
+          height: composerViewport.height,
+          maxHeight: composerViewport.height,
+        }
+      : undefined;
+
   return (
     <>
       {open ? (
@@ -103,26 +111,13 @@ export default function FeedComposer({ user }: FeedComposerProps) {
           <button
             type="button"
             aria-label={t("profile.cancel")}
-            className="composer-backdrop fixed inset-0 z-[70] bg-black/45 md:hidden"
+            className="composer-backdrop fixed inset-0 z-[100] bg-black/55 md:hidden"
             onClick={closeComposer}
           />
           <div
-            className="composer-sheet fixed inset-x-0 z-[71] flex w-full max-w-[100vw] flex-col overflow-hidden rounded-b-2xl bg-white shadow-[0_8px_32px_rgb(44_74_110_/_0.15)] md:hidden"
-            style={
-              composerViewport.keyboard && composerViewport.height > 0
-                ? {
-                    top: composerViewport.top,
-                    height: composerViewport.height,
-                    maxHeight: composerViewport.height,
-                    paddingTop: "env(safe-area-inset-top, 0px)",
-                  }
-                : {
-                    top: 0,
-                    height: `min(56vh, calc(100dvh - ${MOBILE_BROWSER_CHROME}))`,
-                    maxHeight: `min(56vh, calc(100dvh - ${MOBILE_BROWSER_CHROME}))`,
-                    paddingTop: "env(safe-area-inset-top, 0px)",
-                  }
-            }
+            className="composer-fullscreen fixed inset-0 z-[101] flex w-full max-w-[100vw] flex-col overflow-hidden bg-white md:hidden"
+            style={mobileSheetStyle}
+            role="presentation"
           >
             <PostComposerPanel user={user} onClose={closeComposer} fullScreen />
           </div>

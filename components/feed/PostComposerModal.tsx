@@ -64,6 +64,7 @@ export default function PostComposerPanel({
   const router = useRouter();
   const fileInputId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [body, setBody] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -79,6 +80,16 @@ export default function PostComposerPanel({
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [onClose, saving]);
+
+  useEffect(() => {
+    if (!fullScreen) {
+      return;
+    }
+    const frame = window.requestAnimationFrame(() => {
+      textareaRef.current?.focus({ preventScroll: true });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [fullScreen]);
 
   useEffect(() => {
     return () => {
@@ -204,45 +215,35 @@ export default function PostComposerPanel({
     />
   );
 
-  const galleryToolbarButton = (
-    <button
-      type="button"
-      onClick={() => fileInputRef.current?.click()}
-      disabled={saving}
-      className="flex size-11 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted/60 hover:text-primary disabled:opacity-60"
-      aria-label={t("feed.postImageAdd")}
-    >
-      <GalleryIcon />
-    </button>
-  );
-
   const imageActionButtonClass =
-    "inline-flex cursor-pointer items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-semibold shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60";
+    "inline-flex cursor-pointer items-center gap-1.5 rounded-full border px-3 py-2 text-sm font-medium transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60";
 
-  function renderImageActions() {
+  function renderImageActions(compact = false) {
     if (!previewUrl) {
       return (
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={saving}
-          className={`${imageActionButtonClass} border-primary/30 bg-primary/5 text-primary hover:border-primary/50 hover:bg-primary/10 hover:shadow`}
+          className={`${imageActionButtonClass} border-border bg-white text-foreground hover:border-primary/40 hover:bg-primary/5 ${
+            compact ? "shrink-0" : ""
+          }`}
         >
-          <GalleryIcon className="size-[18px] text-primary" />
+          <GalleryIcon className="size-5 text-primary" />
           <span>{t("feed.postImageAdd")}</span>
         </button>
       );
     }
 
     return (
-      <div className="flex flex-wrap items-center gap-2">
+      <div className={`flex flex-wrap items-center gap-2 ${compact ? "min-w-0" : ""}`}>
         <button
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={saving}
-          className={`${imageActionButtonClass} border-primary/30 bg-primary/5 text-primary hover:border-primary/50 hover:bg-primary/10 hover:shadow`}
+          className={`${imageActionButtonClass} border-primary/30 bg-primary/5 text-primary hover:border-primary/50`}
         >
-          <GalleryIcon className="size-[18px] text-primary" />
+          <GalleryIcon className="size-5 text-primary" />
           <span>{t("feed.postImageChange")}</span>
         </button>
         <button
@@ -258,7 +259,7 @@ export default function PostComposerPanel({
   }
 
   const userAvatar = (
-    <span className="relative flex size-10 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10">
+    <span className="relative flex size-11 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10">
       {user.avatarUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={user.avatarUrl} alt="" className="size-full object-cover" />
@@ -273,79 +274,62 @@ export default function PostComposerPanel({
   if (fullScreen) {
     return (
       <div
-        className="flex min-h-0 flex-1 flex-col bg-white"
+        className="flex h-full min-h-0 flex-1 flex-col bg-white"
         role="dialog"
         aria-modal="true"
         aria-labelledby="post-composer-title"
       >
-        <header className="grid shrink-0 grid-cols-[auto_minmax(0,1fr)_auto_auto] items-center gap-1.5 border-b border-border px-3 py-2.5">
+        <header className="composer-mobile-header flex shrink-0 items-center gap-2 border-b border-border px-2 py-2">
           <button
             type="button"
             onClick={handleClose}
             disabled={saving}
-            className="flex size-10 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted disabled:opacity-60"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted disabled:opacity-60"
             aria-label={t("profile.cancel")}
           >
             <CloseIcon />
           </button>
-
-          <div className="flex min-w-0 items-center gap-2">
-            {userAvatar}
-            <p
-              id="post-composer-title"
-              className="truncate text-sm font-semibold text-foreground"
-            >
-              {user.fullName}
-            </p>
-          </div>
-
-          <div className="shrink-0">{previewUrl ? null : galleryToolbarButton}</div>
-
-          <button
-            type="button"
-            onClick={handlePublish}
-            disabled={!canPublish}
-            className="shrink-0 rounded-full bg-primary px-4 py-2 text-base font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
+          <h2
+            id="post-composer-title"
+            className="min-w-0 flex-1 truncate text-center text-base font-semibold text-foreground"
           >
-            {saving ? "…" : t("feed.composerSubmit")}
-          </button>
+            {t("feed.composerTitle")}
+          </h2>
+          <span className="size-11 shrink-0" aria-hidden="true" />
         </header>
 
-        <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-4 py-3" dir="auto">
+        <div className="flex shrink-0 items-center gap-3 border-b border-border/70 px-4 py-3">
+          {userAvatar}
+          <p className="min-w-0 truncate text-base font-semibold text-foreground">{user.fullName}</p>
+        </div>
+
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
           <label className="sr-only" htmlFor="post-composer-body">
             {t("feed.composerLabel")}
           </label>
           <textarea
+            ref={textareaRef}
             id="post-composer-body"
             value={body}
             onChange={(event) => setBody(event.target.value)}
-            rows={5}
             maxLength={4000}
             disabled={saving}
-            autoFocus
             placeholder={t("feed.composerModalPlaceholder")}
-            className="min-h-[5.5rem] w-full flex-1 resize-none border-0 bg-transparent p-0 text-start text-base leading-relaxed text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-60"
+            className="min-h-0 w-full flex-1 resize-none border-0 bg-transparent px-4 py-3 text-start text-base leading-relaxed text-foreground outline-none placeholder:text-muted-foreground disabled:opacity-60"
           />
 
           {previewUrl ? (
-            <div className="mt-2 w-full overflow-hidden rounded-lg border border-border bg-muted/20">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={previewUrl}
-                alt=""
-                className="max-h-[min(52vh,22rem)] w-full object-contain"
-              />
+            <div className="shrink-0 overflow-y-auto overscroll-contain px-4 pb-2">
+              <div className="overflow-hidden rounded-xl border border-border bg-muted/15">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={previewUrl} alt="" className="max-h-[40vh] w-full object-contain" />
+              </div>
             </div>
           ) : null}
 
-          <div className="mt-2">
-            {fileInput}
-            {renderImageActions()}
-          </div>
-
           {error ? (
             <p
-              className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
+              className="mx-4 mb-2 shrink-0 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700"
               role="alert"
             >
               {error}
@@ -353,6 +337,22 @@ export default function PostComposerPanel({
           ) : null}
         </div>
 
+        <footer className="composer-mobile-footer shrink-0 border-t border-border bg-white px-3 py-2.5">
+          <div className="flex items-center gap-2">
+            <div className="min-w-0 flex-1">
+              {fileInput}
+              {renderImageActions(true)}
+            </div>
+            <button
+              type="button"
+              onClick={handlePublish}
+              disabled={!canPublish}
+              className="shrink-0 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {saving ? "…" : t("feed.composerSubmit")}
+            </button>
+          </div>
+        </footer>
       </div>
     );
   }
@@ -387,6 +387,7 @@ export default function PostComposerPanel({
           {t("feed.composerLabel")}
         </label>
         <textarea
+          ref={textareaRef}
           id="post-composer-body"
           value={body}
           onChange={(event) => setBody(event.target.value)}
