@@ -9,7 +9,7 @@ import { formatFeedTimestamp } from "@/lib/i18n/format-feed-time";
 import type { DirectMessage, NetworkMember } from "@/lib/network/types";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 
 type MessageThreadViewProps = {
   peer: NetworkMember;
@@ -22,8 +22,30 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesListRef = useRef<HTMLUListElement>(null);
 
   const canMessage = peer.connectionStatus === "connected";
+
+  useEffect(() => {
+    if (!canMessage || messages.length === 0) {
+      return;
+    }
+
+    function scrollToLatest() {
+      const list = messagesListRef.current;
+      if (list && list.scrollHeight > list.clientHeight) {
+        list.scrollTop = list.scrollHeight;
+      }
+
+      messagesEndRef.current?.scrollIntoView({ block: "end", behavior: "auto" });
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      window.setTimeout(scrollToLatest, 80);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [canMessage, messages, peer.id]);
   const professionalLine = formatProfileHeadline(
     peer.headline,
     peer.workplaceInstitutionSlug,
@@ -86,7 +108,10 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
         <p className="p-4 text-sm text-muted-foreground">{t("messages.notConnected")}</p>
       ) : (
         <>
-          <ul className="message-thread-messages flex-1 space-y-3 overflow-y-auto overscroll-contain p-4">
+          <ul
+            ref={messagesListRef}
+            className="message-thread-messages flex-1 space-y-3 overflow-y-auto overscroll-contain p-4"
+          >
             {messages.length === 0 ? (
               <li className="text-center text-sm text-muted-foreground">
                 {t("messages.threadEmpty")}
@@ -125,6 +150,11 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
               ))
             )}
           </ul>
+          <div
+            ref={messagesEndRef}
+            className="message-thread-end-anchor h-px shrink-0"
+            aria-hidden="true"
+          />
 
           <form action={submit} className="message-thread-compose shrink-0 border-t border-border p-4">
             <label className="sr-only" htmlFor="message-body">

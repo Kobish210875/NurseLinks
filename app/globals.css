@@ -265,6 +265,10 @@ body {
     padding-bottom: 0.5rem;
   }
 
+  .message-thread-end-anchor {
+    scroll-margin-bottom: calc(var(--mobile-bottom-nav-offset) + 11rem);
+  }
+
   .message-thread-compose {
     position: sticky;
     bottom: var(--mobile-bottom-nav-offset);
