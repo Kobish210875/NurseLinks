@@ -105,7 +105,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
   }
 
   const actionBtn =
-    "post-engagement-action inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-[15px] font-semibold text-muted-foreground transition hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20";
+    "post-engagement-action inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-semibold text-muted-foreground transition hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:gap-2 md:py-2.5 md:text-[15px]";
 
   const hasEngagementStats = likeCount > 0 || commentCount > 0 || shareCount > 0;
 
@@ -172,7 +172,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
         </div>
       ) : null}
 
-      <div className="post-engagement-block mt-3 border-t border-border">
+      <div className="post-engagement-block mt-2 md:mt-3 md:border-t md:border-border">
         {hasEngagementStats ? (
           <div className="flex items-center justify-between gap-3 py-2.5 text-[13px] text-muted-foreground">
             <span className="inline-flex min-h-[18px] items-center gap-1.5">
@@ -201,7 +201,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
         ) : null}
 
         <div
-          className={`flex items-stretch justify-between gap-1 ${hasEngagementStats ? "border-t border-border" : ""}`}
+          className={`post-engagement-actions flex items-stretch justify-between gap-0.5 ${hasEngagementStats ? "md:border-t md:border-border" : ""}`}
           role="toolbar"
           aria-label={t("post.engagementAria")}
         >
@@ -213,7 +213,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
             aria-label={t("post.likeAria")}
             className={`${actionBtn} ${liked ? "post-engagement-action--liked text-primary" : ""}`}
           >
-            <PostLikeIcon filled={liked} size={20} />
+            <PostLikeIcon filled={liked} />
             <span>{t("post.like")}</span>
           </button>
           <button
@@ -222,7 +222,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
             aria-label={t("post.commentAria")}
             className={actionBtn}
           >
-            <PostCommentIcon size={20} />
+            <PostCommentIcon />
             <span>{t("post.reply")}</span>
           </button>
           <button
@@ -231,7 +231,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
             aria-label={t("post.shareAria")}
             className={actionBtn}
           >
-            <PostShareIcon size={20} />
+            <PostShareIcon />
             <span>{t("post.share")}</span>
           </button>
         </div>

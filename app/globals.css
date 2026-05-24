@@ -261,6 +261,20 @@ body.composer-open .mobile-bottom-nav {
   box-shadow: 0 0 0 1px rgb(255 255 255 / 0.35);
 }
 
+@media (max-width: 767px) {
+  .post-engagement-block {
+    border-top: none !important;
+  }
+
+  .post-engagement-actions {
+    border-top: none !important;
+  }
+
+  .post-engagement-action--liked {
+    color: var(--primary);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .composer-backdrop,
   .composer-fullscreen {
