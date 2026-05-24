@@ -243,41 +243,22 @@ body.composer-open .mobile-bottom-nav {
   display: none;
 }
 
-/* Post engagement (icon + count) */
+/* Post engagement (summary + action row) */
 .post-engagement-svg {
   display: block;
+  flex-shrink: 0;
 }
 
-.post-engagement-icon-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 9999px;
-  transition:
-    background-color 0.15s ease,
-    color 0.15s ease;
-}
-
-.post-engagement-btn--liked {
+.post-engagement-action--liked .post-engagement-svg--liked {
   color: var(--primary);
 }
 
-.post-engagement-btn--liked .post-engagement-icon-wrap {
-  background: rgb(43 108 176 / 0.14);
+.post-engagement-action:active {
+  transform: scale(0.98);
 }
 
-.post-engagement-btn--liked .post-engagement-svg--liked {
-  color: var(--primary);
-}
-
-.post-engagement-bar .post-engagement-btn:hover .post-engagement-icon-wrap {
-  background: rgb(43 108 176 / 0.08);
-}
-
-.post-engagement-bar .post-engagement-btn:active {
-  transform: scale(0.97);
+.post-like-badge {
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.35);
 }
 
 @media (prefers-reduced-motion: reduce) {

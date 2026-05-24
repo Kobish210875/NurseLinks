@@ -106,6 +106,8 @@
     "options": "Post options",
     "likes": "likes",
     "comments": "comments",
+    "commentsCountLine": "{count} comments",
+    "sharesCountLine": "{count} shares",
     "like": "Like",
     "reply": "Comment",
     "share": "Share",

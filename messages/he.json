@@ -106,6 +106,8 @@
     "options": "אפשרויות פוסט",
     "likes": "אהבו",
     "comments": "תגובות",
+    "commentsCountLine": "{count} תגובות",
+    "sharesCountLine": "{count} שיתופים",
     "like": "אהבתי",
     "reply": "תגובה",
     "share": "שיתוף",

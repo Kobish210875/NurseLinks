@@ -1,54 +1,70 @@
 /**
- * Custom engagement icons (Feather-style geometry, MIT — not Meta/IG assets).
- * @see https://github.com/feathericons/feather
+ * Social-style engagement icons (generic geometry, MIT-compatible).
  */
 
 type IconProps = {
   className?: string;
   filled?: boolean;
+  size?: number;
 };
 
-const SVG_BASE = {
-  xmlns: "http://www.w3.org/2000/svg",
-  viewBox: "0 0 24 24",
-  width: 24,
-  height: 24,
-  fill: "none",
-  stroke: "currentColor",
-  strokeWidth: 2,
-  strokeLinecap: "round" as const,
-  strokeLinejoin: "round" as const,
-};
+function svgProps(size: number, className: string) {
+  return {
+    xmlns: "http://www.w3.org/2000/svg",
+    viewBox: "0 0 24 24",
+    width: size,
+    height: size,
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.75,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    className,
+    "aria-hidden": true as const,
+  };
+}
 
-/** Thumbs up — outline; filled with brand blue when liked. */
-export function PostLikeIcon({ className = "", filled = false }: IconProps) {
+/** Small blue badge thumb (summary row). */
+export function PostLikeBadge({ className = "" }: { className?: string }) {
+  return (
+    <span
+      className={`post-like-badge inline-flex size-[18px] shrink-0 items-center justify-center rounded-full bg-primary text-white ${className}`}
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width={11} height={11} aria-hidden="true">
+        <path
+          fill="currentColor"
+          d="M9.2 2.8V5a2 2 0 0 0-3.7-.9L3 8.5v5.5h4.6a1.4 1.4 0 0 0 1.36-1.06l.5-2.5A1.4 1.4 0 0 0 8.5 9H9.2V2.8Z"
+        />
+        <path
+          fill="currentColor"
+          d="M3 8.5V14H2.1A1.2 1.2 0 0 1 1 12.8V9.2A1.2 1.2 0 0 1 2.1 8h.9Z"
+        />
+      </svg>
+    </span>
+  );
+}
+
+/** Thumbs up — action button (outline / filled blue). */
+export function PostLikeIcon({ className = "", filled = false, size = 20 }: IconProps) {
   if (filled) {
     return (
-      <svg
-        {...SVG_BASE}
-        className={`post-engagement-svg post-engagement-svg--liked ${className}`}
-        aria-hidden="true"
-      >
+      <svg {...svgProps(size, `post-engagement-svg post-engagement-svg--liked ${className}`)}>
         <path
           fill="currentColor"
           stroke="none"
-          d="M14 8.5V5.2a2.8 2.8 0 0 0-5.2-1.2L4.5 11.8V20h7.1a1.9 1.9 0 0 0 1.85-1.45l.76-3.8a1.9 1.9 0 0 0-1.85-2.35H14V8.5Z"
+          d="M14 9V5a3 3 0 0 0-5.6-1.4L4 12v8h7.5a2 2 0 0 0 1.94-1.515l.81-4.046A2 2 0 0 0 14.47 14H14V9z"
         />
         <path
           fill="currentColor"
           stroke="none"
-          d="M4.5 11.8V20H3.2a1.7 1.7 0 0 1-1.7-1.7v-5.2a1.7 1.7 0 0 1 1.7-1.7h1.3Z"
+          d="M4 12v8H3a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2h1"
         />
       </svg>
     );
   }
 
   return (
-    <svg
-      {...SVG_BASE}
-      className={`post-engagement-svg ${className}`}
-      aria-hidden="true"
-    >
+    <svg {...svgProps(size, `post-engagement-svg ${className}`)}>
       <path d="M14 9V5a3 3 0 0 0-5.6-1.4L4 12v8h7.5a2 2 0 0 0 1.94-1.515l.81-4.046A2 2 0 0 0 14.47 14H14V9z" />
       <path d="M4 12v8H3a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2h1" />
     </svg>
@@ -56,27 +72,20 @@ export function PostLikeIcon({ className = "", filled = false }: IconProps) {
 }
 
 /** Speech bubble — comment. */
-export function PostCommentIcon({ className = "" }: IconProps) {
+export function PostCommentIcon({ className = "", size = 20 }: IconProps) {
   return (
-    <svg
-      {...SVG_BASE}
-      className={`post-engagement-svg ${className}`}
-      aria-hidden="true"
-    >
-      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+    <svg {...svgProps(size, `post-engagement-svg ${className}`)}>
+      <path d="M21 15a2 2 0 0 1-2 2H8l-4 3V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z" />
     </svg>
   );
 }
 
-/** Send — share link with a colleague (not repost). */
-export function PostShareIcon({ className = "" }: IconProps) {
+/** Forward arrow — share with a colleague. */
+export function PostShareIcon({ className = "", size = 20 }: IconProps) {
   return (
-    <svg
-      {...SVG_BASE}
-      className={`post-engagement-svg ${className}`}
-      aria-hidden="true"
-    >
-      <path d="m22 2-7 20-4-9-9-4 20-7z" />
+    <svg {...svgProps(size, `post-engagement-svg ${className}`)}>
+      <path d="M15 5l4 4-4 4" />
+      <path d="M19 9H9a4 4 0 0 0-4 4v1" />
     </svg>
   );
 }

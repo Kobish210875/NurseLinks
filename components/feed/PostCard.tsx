@@ -5,8 +5,8 @@ import { addPostComment, deletePost, togglePostLike } from "@/app/actions/feed";
 import { useT } from "@/components/i18n/LocaleProvider";
 import PostShareDialog from "@/components/feed/PostShareDialog";
 import {
-  formatEngagementCount,
   PostCommentIcon,
+  PostLikeBadge,
   PostLikeIcon,
   PostShareIcon,
 } from "@/components/feed/PostEngagementIcons";
@@ -104,8 +104,10 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
     });
   }
 
-  const engagementBtn =
-    "post-engagement-btn inline-flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-2 text-muted-foreground transition hover:bg-muted/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 sm:flex-row sm:gap-2 sm:py-2.5";
+  const actionBtn =
+    "post-engagement-action inline-flex min-w-0 flex-1 items-center justify-center gap-2 rounded-lg py-2.5 text-[15px] font-semibold text-muted-foreground transition hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20";
+
+  const hasEngagementStats = likeCount > 0 || commentCount > 0 || shareCount > 0;
 
   return (
     <article id={`post-${post.id}`} className="feed-card p-4">
@@ -152,8 +154,14 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
           {deleteError}
         </p>
       ) : null}
+      {post.body.trim() ? (
+        <p className="mb-3 whitespace-pre-wrap text-start text-[15px] leading-relaxed text-foreground">
+          {post.body}
+        </p>
+      ) : null}
+
       {post.imageUrl ? (
-        <div className="mb-3 overflow-hidden rounded-lg border border-border bg-muted/15">
+        <div className="mb-0 overflow-hidden rounded-lg border border-border bg-muted/15">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={post.imageUrl}
@@ -163,62 +171,70 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
           />
         </div>
       ) : null}
-      {post.body.trim() ? (
-        <p className="mb-4 whitespace-pre-wrap text-start leading-relaxed text-foreground">{post.body}</p>
-      ) : null}
 
-      {likeError ? (
-        <p className="mb-2 text-xs text-red-600" role="alert">
-          {likeError}
-        </p>
-      ) : null}
+      <div className="post-engagement-block mt-3 border-t border-border">
+        {hasEngagementStats ? (
+          <div className="flex items-center justify-between gap-3 py-2.5 text-[13px] text-muted-foreground">
+            <span className="inline-flex min-h-[18px] items-center gap-1.5">
+              {likeCount > 0 ? (
+                <>
+                  <PostLikeBadge />
+                  <span className="font-medium tabular-nums">{likeCount}</span>
+                </>
+              ) : null}
+            </span>
+            <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-0.5 text-end">
+              {commentCount > 0 ? (
+                <span>{t("post.commentsCountLine").replace("{count}", String(commentCount))}</span>
+              ) : null}
+              {shareCount > 0 ? (
+                <span>{t("post.sharesCountLine").replace("{count}", String(shareCount))}</span>
+              ) : null}
+            </div>
+          </div>
+        ) : null}
 
-      <div
-        className="post-engagement-bar -mx-1 flex items-stretch justify-between border-t border-border pt-1"
-        role="toolbar"
-        aria-label={t("post.engagementAria")}
-      >
-        <button
-          type="button"
-          onClick={handleLike}
-          disabled={pendingLike}
-          aria-pressed={liked}
-          aria-label={t("post.likeAria")}
-          className={`${engagementBtn} ${liked ? "post-engagement-btn--liked" : ""}`}
+        {likeError ? (
+          <p className="px-1 pb-2 text-xs text-red-600" role="alert">
+            {likeError}
+          </p>
+        ) : null}
+
+        <div
+          className={`flex items-stretch justify-between gap-1 ${hasEngagementStats ? "border-t border-border" : ""}`}
+          role="toolbar"
+          aria-label={t("post.engagementAria")}
         >
-          <span className="post-engagement-icon-wrap">
-            <PostLikeIcon filled={liked} />
-          </span>
-          <span className="text-xs font-semibold tabular-nums sm:text-sm">
-            {formatEngagementCount(likeCount)}
-          </span>
-        </button>
-        <button
-          type="button"
-          onClick={focusComment}
-          aria-label={t("post.commentAria")}
-          className={engagementBtn}
-        >
-          <span className="post-engagement-icon-wrap">
-            <PostCommentIcon />
-          </span>
-          <span className="text-xs font-semibold tabular-nums sm:text-sm">
-            {formatEngagementCount(commentCount)}
-          </span>
-        </button>
-        <button
-          type="button"
-          onClick={() => setShareOpen(true)}
-          aria-label={t("post.shareAria")}
-          className={engagementBtn}
-        >
-          <span className="post-engagement-icon-wrap">
-            <PostShareIcon />
-          </span>
-          <span className="text-xs font-semibold tabular-nums sm:text-sm">
-            {formatEngagementCount(shareCount)}
-          </span>
-        </button>
+          <button
+            type="button"
+            onClick={handleLike}
+            disabled={pendingLike}
+            aria-pressed={liked}
+            aria-label={t("post.likeAria")}
+            className={`${actionBtn} ${liked ? "post-engagement-action--liked text-primary" : ""}`}
+          >
+            <PostLikeIcon filled={liked} size={20} />
+            <span>{t("post.like")}</span>
+          </button>
+          <button
+            type="button"
+            onClick={focusComment}
+            aria-label={t("post.commentAria")}
+            className={actionBtn}
+          >
+            <PostCommentIcon size={20} />
+            <span>{t("post.reply")}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setShareOpen(true)}
+            aria-label={t("post.shareAria")}
+            className={actionBtn}
+          >
+            <PostShareIcon size={20} />
+            <span>{t("post.share")}</span>
+          </button>
+        </div>
       </div>
 
       <PostShareDialog
