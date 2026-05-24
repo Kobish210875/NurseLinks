@@ -216,17 +216,46 @@ export default function PostComposerPanel({
     </button>
   );
 
-  const galleryButtonDesktop = (
-    <button
-      type="button"
-      onClick={() => fileInputRef.current?.click()}
-      disabled={saving}
-      className="inline-flex cursor-pointer items-center gap-1.5 rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1.5 text-xs font-semibold text-primary shadow-sm transition hover:border-primary/50 hover:bg-primary/10 hover:shadow active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
-    >
-      <GalleryIcon className="size-[18px] text-primary" />
-      <span>{t("feed.postImageAdd")}</span>
-    </button>
-  );
+  const imageActionButtonClass =
+    "inline-flex cursor-pointer items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-semibold shadow-sm transition active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60";
+
+  function renderImageActions() {
+    if (!previewUrl) {
+      return (
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={saving}
+          className={`${imageActionButtonClass} border-primary/30 bg-primary/5 text-primary hover:border-primary/50 hover:bg-primary/10 hover:shadow`}
+        >
+          <GalleryIcon className="size-[18px] text-primary" />
+          <span>{t("feed.postImageAdd")}</span>
+        </button>
+      );
+    }
+
+    return (
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={saving}
+          className={`${imageActionButtonClass} border-primary/30 bg-primary/5 text-primary hover:border-primary/50 hover:bg-primary/10 hover:shadow`}
+        >
+          <GalleryIcon className="size-[18px] text-primary" />
+          <span>{t("feed.postImageChange")}</span>
+        </button>
+        <button
+          type="button"
+          onClick={removeImage}
+          disabled={saving}
+          className={`${imageActionButtonClass} border-border bg-white text-muted-foreground hover:border-red-200 hover:bg-red-50 hover:text-red-700`}
+        >
+          <span>{t("feed.postImageRemove")}</span>
+        </button>
+      </div>
+    );
+  }
 
   const userAvatar = (
     <span className="relative flex size-10 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10">
@@ -270,7 +299,7 @@ export default function PostComposerPanel({
             </p>
           </div>
 
-          <div className="shrink-0">{galleryToolbarButton}</div>
+          <div className="shrink-0">{previewUrl ? null : galleryToolbarButton}</div>
 
           <button
             type="button"
@@ -299,35 +328,20 @@ export default function PostComposerPanel({
           />
 
           {previewUrl ? (
-            <div className="relative mt-2 w-full overflow-hidden rounded-lg bg-muted/30">
+            <div className="mt-2 w-full overflow-hidden rounded-lg border border-border bg-muted/20">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={previewUrl}
                 alt=""
                 className="max-h-[min(52vh,22rem)] w-full object-contain"
               />
-              <div className="absolute end-2 top-2 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={saving}
-                  className="flex size-9 items-center justify-center rounded-full bg-white/95 text-foreground shadow-md transition hover:bg-white disabled:opacity-60"
-                  aria-label={t("feed.postImageAdd")}
-                >
-                  <GalleryIcon className="size-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={removeImage}
-                  disabled={saving}
-                  className="flex size-9 items-center justify-center rounded-full bg-white/95 text-foreground shadow-md transition hover:bg-white disabled:opacity-60"
-                  aria-label={t("feed.postImageRemove")}
-                >
-                  <CloseIcon />
-                </button>
-              </div>
             </div>
           ) : null}
+
+          <div className="mt-2">
+            {fileInput}
+            {renderImageActions()}
+          </div>
 
           {error ? (
             <p
@@ -339,7 +353,6 @@ export default function PostComposerPanel({
           ) : null}
         </div>
 
-        {fileInput}
       </div>
     );
   }
@@ -386,23 +399,15 @@ export default function PostComposerPanel({
         />
 
         {previewUrl ? (
-          <div className="relative mt-3 overflow-hidden rounded-lg border border-border bg-muted/20">
+          <div className="mt-3 overflow-hidden rounded-lg border border-border bg-muted/20">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={previewUrl} alt="" className="max-h-48 w-full object-contain" />
-            <button
-              type="button"
-              onClick={removeImage}
-              disabled={saving}
-              className="absolute end-2 top-2 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white shadow-sm transition hover:bg-black/75"
-            >
-              {t("feed.postImageRemove")}
-            </button>
           </div>
         ) : null}
 
         <div className="mt-2">
           {fileInput}
-          {galleryButtonDesktop}
+          {renderImageActions()}
         </div>
 
         {error ? (

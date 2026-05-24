@@ -93,6 +93,7 @@
     "postGallery": "גלריה",
     "composerSubmit": "פרסם",
     "postImageAdd": "הוספת תמונה",
+    "postImageChange": "שינוי תמונה",
     "postImageRemove": "הסרת תמונה",
     "postImageInvalid": "יש לבחור תמונה JPG, PNG או WebP (עד 10MB).",
     "postImageTooLarge": "התמונה גדולה מדי אחרי הדחיסה. נסו תמונה קטנה יותר.",

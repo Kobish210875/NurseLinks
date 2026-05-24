@@ -93,6 +93,7 @@
     "postGallery": "Gallery",
     "composerSubmit": "Post",
     "postImageAdd": "Add photo",
+    "postImageChange": "Change photo",
     "postImageRemove": "Remove photo",
     "postImageInvalid": "Choose a JPG, PNG, or WebP image (up to 10MB).",
     "postImageTooLarge": "Image is too large after compression. Try a smaller photo.",
