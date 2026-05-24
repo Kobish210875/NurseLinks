@@ -56,14 +56,36 @@ body {
 
 /* WEB home: navbar + sidebars fixed; only posts list scrolls */
 @media (min-width: 1024px) {
+  html:has(.home-page-root),
+  body:has(.home-page-root) {
+    height: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  /* Lock the whole home view — no page lift when feed hits scroll end */
   .home-page-root {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    display: flex;
+    width: 100%;
     height: 100dvh;
     max-height: 100dvh;
     overflow: hidden;
+    overscroll-behavior: none;
   }
 
   .home-page-root > header {
     flex-shrink: 0;
+  }
+
+  .home-main-shell,
+  .home-feed-shell,
+  .home-feed-grid,
+  .home-feed-center,
+  .home-feed-sidebar {
+    overscroll-behavior: none;
   }
 
   .home-main-shell {
@@ -95,6 +117,7 @@ body {
   .home-feed-posts-scroll {
     scrollbar-gutter: stable;
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
   }
 }
 
