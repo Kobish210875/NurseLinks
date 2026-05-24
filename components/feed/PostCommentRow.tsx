@@ -101,13 +101,13 @@ export default function PostCommentRow({
           </div>
           <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{comment.body}</p>
           {isAuthor ? (
-            <div className="post-comment-delete-row mt-2 border-t border-border/50 pt-1.5 text-left">
+            <div className="post-comment-delete-row mt-1.5 text-left">
               <button
                 type="button"
                 onClick={handleDelete}
                 disabled={pendingDelete}
                 aria-label={t("post.commentDelete")}
-                className="post-comment-delete rounded-md px-1 py-0.5 text-[11px] font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-60"
+                className="post-comment-delete rounded-md px-0.5 py-0.5 text-[11px] font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-60"
               >
                 {pendingDelete ? "…" : t("post.commentDelete")}
               </button>
