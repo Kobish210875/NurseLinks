@@ -20,7 +20,7 @@
   --secondary: #e8f2fa;
   --secondary-foreground: #1e4f7a;
   --nav-bg: #f7fafc;
-  --like-heart: #e0245e;
+  --like-heart: var(--primary);
 }
 
 @theme inline {

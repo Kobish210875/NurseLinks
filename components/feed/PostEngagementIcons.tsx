@@ -23,7 +23,7 @@ function svgProps(size: number, className: string) {
   };
 }
 
-/** Small red heart badge (summary row). */
+/** Small heart badge in brand blue (summary row). */
 export function PostLikeBadge({ className = "" }: { className?: string }) {
   return (
     <span
@@ -36,7 +36,7 @@ export function PostLikeBadge({ className = "" }: { className?: string }) {
   );
 }
 
-/** Heart — outline when idle, filled red when liked. */
+/** Heart — outline when idle, filled brand blue when liked. */
 export function PostLikeIcon({ className = "", filled = false, size = 22 }: IconProps) {
   return (
     <svg {...svgProps(size, `post-engagement-svg ${filled ? "post-engagement-svg--liked" : ""} ${className}`)}>
