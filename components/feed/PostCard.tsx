@@ -105,7 +105,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
   }
 
   const engagementBtn =
-    "post-engagement-btn inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2.5 text-muted-foreground transition hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25";
+    "post-engagement-btn inline-flex min-w-0 flex-1 flex-col items-center justify-center gap-0.5 rounded-lg px-1 py-2 text-muted-foreground transition hover:bg-muted/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 sm:flex-row sm:gap-2 sm:py-2.5";
 
   return (
     <article id={`post-${post.id}`} className="feed-card p-4">
@@ -184,10 +184,14 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
           disabled={pendingLike}
           aria-pressed={liked}
           aria-label={t("post.likeAria")}
-          className={`${engagementBtn} ${liked ? "post-engagement-btn--liked text-primary" : ""}`}
+          className={`${engagementBtn} ${liked ? "post-engagement-btn--liked" : ""}`}
         >
-          <PostLikeIcon filled={liked} className="shrink-0" />
-          <span className="text-sm font-semibold tabular-nums">{formatEngagementCount(likeCount)}</span>
+          <span className="post-engagement-icon-wrap">
+            <PostLikeIcon filled={liked} />
+          </span>
+          <span className="text-xs font-semibold tabular-nums sm:text-sm">
+            {formatEngagementCount(likeCount)}
+          </span>
         </button>
         <button
           type="button"
@@ -195,8 +199,12 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
           aria-label={t("post.commentAria")}
           className={engagementBtn}
         >
-          <PostCommentIcon className="shrink-0" />
-          <span className="text-sm font-semibold tabular-nums">{formatEngagementCount(commentCount)}</span>
+          <span className="post-engagement-icon-wrap">
+            <PostCommentIcon />
+          </span>
+          <span className="text-xs font-semibold tabular-nums sm:text-sm">
+            {formatEngagementCount(commentCount)}
+          </span>
         </button>
         <button
           type="button"
@@ -204,8 +212,12 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
           aria-label={t("post.shareAria")}
           className={engagementBtn}
         >
-          <PostShareIcon className="shrink-0" />
-          <span className="text-sm font-semibold tabular-nums">{formatEngagementCount(shareCount)}</span>
+          <span className="post-engagement-icon-wrap">
+            <PostShareIcon />
+          </span>
+          <span className="text-xs font-semibold tabular-nums sm:text-sm">
+            {formatEngagementCount(shareCount)}
+          </span>
         </button>
       </div>
 

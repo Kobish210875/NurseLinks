@@ -1,81 +1,82 @@
+/**
+ * Custom engagement icons (Feather-style geometry, MIT — not Meta/IG assets).
+ * @see https://github.com/feathericons/feather
+ */
+
 type IconProps = {
   className?: string;
   filled?: boolean;
 };
 
-/** Thumbs-up — NurseLinks like (outline / filled primary blue). */
+const SVG_BASE = {
+  xmlns: "http://www.w3.org/2000/svg",
+  viewBox: "0 0 24 24",
+  width: 24,
+  height: 24,
+  fill: "none",
+  stroke: "currentColor",
+  strokeWidth: 2,
+  strokeLinecap: "round" as const,
+  strokeLinejoin: "round" as const,
+};
+
+/** Thumbs up — outline; filled with brand blue when liked. */
 export function PostLikeIcon({ className = "", filled = false }: IconProps) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="22"
-      height="22"
-      className={className}
-      aria-hidden="true"
-    >
-      {filled ? (
+  if (filled) {
+    return (
+      <svg
+        {...SVG_BASE}
+        className={`post-engagement-svg post-engagement-svg--liked ${className}`}
+        aria-hidden="true"
+      >
         <path
           fill="currentColor"
-          d="M9.5 3.75c-.55 0-1 .45-1 1v7.25H5.75c-.97 0-1.75.78-1.75 1.75v1.5c0 2.35 1.9 4.25 4.25 4.25h5.9c1.55 0 2.95-.85 3.65-2.2l2.35-4.7c.35-.7.55-1.5.55-2.3V8.5c0-1.65-1.35-3-3-3h-3.35c-.55 0-1-.45-1-1 0-1.1-.9-2-2-2h-.2Z"
+          stroke="none"
+          d="M14 8.5V5.2a2.8 2.8 0 0 0-5.2-1.2L4.5 11.8V20h7.1a1.9 1.9 0 0 0 1.85-1.45l.76-3.8a1.9 1.9 0 0 0-1.85-2.35H14V8.5Z"
         />
-      ) : (
         <path
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.65"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M9.5 4.25V12H6.5a1.75 1.75 0 0 0-1.75 1.75v1.5c0 2.35 1.9 4.25 4.25 4.25h5.9c1.55 0 2.95-.85 3.65-2.2l2.35-4.7c.35-.7.55-1.5.55-2.3V9c0-1.65-1.35-3-3-3H9.5v-1.75c0-1.1-.9-2-2-2s-2 .9-2 2Z"
+          fill="currentColor"
+          stroke="none"
+          d="M4.5 11.8V20H3.2a1.7 1.7 0 0 1-1.7-1.7v-5.2a1.7 1.7 0 0 1 1.7-1.7h1.3Z"
         />
-      )}
+      </svg>
+    );
+  }
+
+  return (
+    <svg
+      {...SVG_BASE}
+      className={`post-engagement-svg ${className}`}
+      aria-hidden="true"
+    >
+      <path d="M14 9V5a3 3 0 0 0-5.6-1.4L4 12v8h7.5a2 2 0 0 0 1.94-1.515l.81-4.046A2 2 0 0 0 14.47 14H14V9z" />
+      <path d="M4 12v8H3a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2h1" />
     </svg>
   );
 }
 
-/** Rounded chat bubble with reply tail. */
+/** Speech bubble — comment. */
 export function PostCommentIcon({ className = "" }: IconProps) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="22"
-      height="22"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.65"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
+      {...SVG_BASE}
+      className={`post-engagement-svg ${className}`}
       aria-hidden="true"
     >
-      <path d="M5 6.5a3.5 3.5 0 0 1 3.5-3.5h7A3.5 3.5 0 0 1 19 6.5v5.5a3.5 3.5 0 0 1-3.5 3.5H11l-3.5 3v-3H8.5A3.5 3.5 0 0 1 5 12V6.5Z" />
-      <circle cx="9.25" cy="10" r="0.85" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="10" r="0.85" fill="currentColor" stroke="none" />
-      <circle cx="14.75" cy="10" r="0.85" fill="currentColor" stroke="none" />
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
     </svg>
   );
 }
 
-/** Send link to colleague (plane + link ring). */
+/** Send — share link with a colleague (not repost). */
 export function PostShareIcon({ className = "" }: IconProps) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      width="22"
-      height="22"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.65"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
+      {...SVG_BASE}
+      className={`post-engagement-svg ${className}`}
       aria-hidden="true"
     >
-      <path d="M4.5 12 19 5.5 14.5 19l-2.2-5.3L4.5 12Z" />
-      <circle cx="18" cy="18" r="2.75" />
-      <path d="M16.6 16.6 13.5 13.5" />
+      <path d="m22 2-7 20-4-9-9-4 20-7z" />
     </svg>
   );
 }

@@ -244,11 +244,35 @@ body.composer-open .mobile-bottom-nav {
 }
 
 /* Post engagement (icon + count) */
+.post-engagement-svg {
+  display: block;
+}
+
+.post-engagement-icon-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
 .post-engagement-btn--liked {
   color: var(--primary);
 }
 
-.post-engagement-btn--liked:hover {
+.post-engagement-btn--liked .post-engagement-icon-wrap {
+  background: rgb(43 108 176 / 0.14);
+}
+
+.post-engagement-btn--liked .post-engagement-svg--liked {
+  color: var(--primary);
+}
+
+.post-engagement-bar .post-engagement-btn:hover .post-engagement-icon-wrap {
   background: rgb(43 108 176 / 0.08);
 }
 
