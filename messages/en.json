@@ -197,7 +197,7 @@
     "pendingCount": "{count} pending invitations",
     "count": "{count} connections",
     "searchLabel": "Search people",
-    "searchPlaceholder": "Search by name (Hebrew or English)…",
+    "searchPlaceholder": "Search by name…",
     "searchResults": "Search results",
     "searchEmpty": "No people found with that name.",
     "tabConnections": "My connections",
