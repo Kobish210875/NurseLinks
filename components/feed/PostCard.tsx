@@ -133,7 +133,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
   const hasEngagementStats = likeCount > 0 || commentCount > 0 || shareCount > 0;
 
   return (
-    <article id={`post-${post.id}`} className="feed-card flex flex-col p-4">
+    <article id={`post-${post.id}`} className="feed-card post-card flex flex-col p-4">
       <header className="mb-3 flex items-start gap-3">
         <Link
           href={`/profile/${post.authorId}`}

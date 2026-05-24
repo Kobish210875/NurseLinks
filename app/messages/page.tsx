@@ -20,9 +20,9 @@ export default async function MessagesPage() {
   ]);
 
   return (
-    <div className="home-page-root flex min-h-screen flex-col">
+    <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
       <Navbar authenticated />
-      <main className="home-main-shell min-h-0 flex-1">
+      <main className="home-main-shell min-h-0 flex-1 max-md:block max-md:flex-none">
         <MessagesFeed threads={threads} messagesVersion={messagesVersion} />
       </main>
       <div className="lg:hidden">

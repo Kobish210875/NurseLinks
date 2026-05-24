@@ -203,12 +203,34 @@ body {
     scroll-padding-bottom: var(--mobile-bottom-nav-offset);
   }
 
+  /* flex-1 on main caps height to viewport — content overflows past padding; use block layout on mobile */
+  body.has-mobile-app-shell .home-page-root {
+    display: block;
+    min-height: 0;
+  }
+
+  body.has-mobile-app-shell .home-main-shell {
+    display: block;
+    flex: none;
+    min-height: 0;
+    padding-bottom: 0;
+  }
+
   body.has-mobile-app-shell main {
-    padding-bottom: calc(var(--mobile-bottom-nav-offset) + 1rem);
+    padding-bottom: calc(var(--mobile-bottom-nav-offset) + 1.25rem);
+  }
+
+  body.has-mobile-app-shell .mobile-feed-bottom-spacer {
+    height: calc(var(--mobile-bottom-nav-offset) + 1.25rem);
+    pointer-events: none;
   }
 
   body.has-mobile-app-shell .home-feed-posts-scroll-inner {
-    padding-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
+  }
+
+  body.has-mobile-app-shell .post-card:last-of-type {
+    margin-bottom: 0.5rem;
   }
 
   body.has-mobile-app-shell .site-footer {

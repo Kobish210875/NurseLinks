@@ -49,6 +49,7 @@ export default function FeedPostsScroll({ children }: FeedPostsScrollProps) {
     >
       <div className="home-feed-posts-scroll-inner flex flex-col gap-4" dir="rtl">
         {children}
+        <div className="mobile-feed-bottom-spacer shrink-0 md:hidden" aria-hidden="true" />
       </div>
     </div>
   );
