@@ -93,26 +93,26 @@ export default function PostCommentRow({
       </span>
       <div className="min-w-0 flex-1">
         <div className="post-comment-bubble rounded-lg bg-muted/25 px-3 py-2">
-          <div className="flex items-start justify-between gap-2">
-            <div className="min-w-0 flex flex-wrap items-baseline gap-2">
-              <span className="text-sm font-semibold text-foreground">{comment.authorName}</span>
-              <time className="text-[10px] text-muted-foreground" dateTime={comment.createdAt}>
-                {comment.timeLabel}
-              </time>
-            </div>
-            {isAuthor ? (
+          <div className="flex flex-wrap items-baseline gap-2">
+            <span className="text-sm font-semibold text-foreground">{comment.authorName}</span>
+            <time className="text-[10px] text-muted-foreground" dateTime={comment.createdAt}>
+              {comment.timeLabel}
+            </time>
+          </div>
+          <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{comment.body}</p>
+          {isAuthor ? (
+            <div className="post-comment-delete-row mt-2 border-t border-border/50 pt-1.5 text-left">
               <button
                 type="button"
                 onClick={handleDelete}
                 disabled={pendingDelete}
                 aria-label={t("post.commentDelete")}
-                className="post-comment-delete shrink-0 rounded-md px-1 py-0.5 text-[11px] font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-60"
+                className="post-comment-delete rounded-md px-1 py-0.5 text-[11px] font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-60"
               >
                 {pendingDelete ? "…" : t("post.commentDelete")}
               </button>
-            ) : null}
-          </div>
-          <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{comment.body}</p>
+            </div>
+          ) : null}
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-2 px-1">
           <button
