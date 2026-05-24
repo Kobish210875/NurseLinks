@@ -201,6 +201,19 @@ export type Database = {
         };
         Update: never;
       };
+      post_comment_likes: {
+        Row: {
+          comment_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          comment_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: never;
+      };
       post_shares: {
         Row: {
           id: string;

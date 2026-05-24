@@ -257,6 +257,86 @@ export async function addPostComment(postId: string, formData: FormData) {
   return { success: true as const };
 }
 
+export async function toggleCommentLike(commentId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "unauthorized" as const };
+  }
+
+  const { data: existing, error: selectError } = await supabase
+    .from("post_comment_likes")
+    .select("comment_id")
+    .eq("comment_id", commentId)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (selectError) {
+    const lower = selectError.message.toLowerCase();
+    if (lower.includes("post_comment_likes") || lower.includes("does not exist")) {
+      return { error: "likes-not-configured" as const };
+    }
+    return { error: "toggle-failed" as const };
+  }
+
+  if (existing) {
+    const { error: deleteError } = await supabase
+      .from("post_comment_likes")
+      .delete()
+      .eq("comment_id", commentId)
+      .eq("user_id", user.id);
+
+    if (deleteError) {
+      return { error: "toggle-failed" as const };
+    }
+
+    revalidatePath("/home");
+    return { success: true as const, liked: false as const };
+  }
+
+  const { error: insertError } = await supabase
+    .from("post_comment_likes")
+    .insert({ comment_id: commentId, user_id: user.id } as never);
+
+  if (insertError) {
+    const lower = insertError.message.toLowerCase();
+    if (lower.includes("post_comment_likes") || lower.includes("does not exist")) {
+      return { error: "likes-not-configured" as const };
+    }
+    return { error: "toggle-failed" as const };
+  }
+
+  revalidatePath("/home");
+  return { success: true as const, liked: true as const };
+}
+
+export async function deletePostComment(commentId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "unauthorized" as const };
+  }
+
+  const { error } = await supabase
+    .from("post_comments")
+    .delete()
+    .eq("id", commentId)
+    .eq("author_id", user.id);
+
+  if (error) {
+    return { error: "delete-failed" as const };
+  }
+
+  revalidatePath("/home");
+  return { success: true as const };
+}
+
 export async function deletePost(postId: string) {
   const supabase = await createClient();
   const {

@@ -132,6 +132,10 @@
     "commentLabel": "Reply to post",
     "commentPlaceholder": "Write a comment…",
     "sendComment": "Post comment",
+    "commentLikeAria": "Like comment",
+    "commentDelete": "Delete comment",
+    "commentDeleteConfirm": "Delete this comment? This cannot be undone.",
+    "commentLikesNotConfigured": "Comment likes are not set up. Run supabase/post-comment-likes.sql in Supabase.",
     "delete": "Delete",
     "deleteConfirm": "Delete this post and all its comments and likes? This cannot be undone."
   },
@@ -336,6 +340,8 @@
     "post-failed": "Could not publish your post. Please try again.",
     "comment-empty": "Please write a comment.",
     "comment-failed": "Could not publish your comment. Please try again.",
+    "comment-delete-failed": "Could not delete your comment. Please try again.",
+    "comment-like-failed": "Could not save your comment like. Please try again.",
     "like-failed": "Could not save your like. Make sure like tables are set up in Supabase (feed-social.sql) and try again.",
     "post-delete-failed": "Could not delete the post. Please try again."
   }

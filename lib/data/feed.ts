@@ -10,12 +10,15 @@ import type { Database } from "@/lib/supabase/database.types";
 export type FeedComment = {
   id: string;
   postId: string;
+  authorId: string;
   body: string;
   createdAt: string;
   timeLabel: string;
   authorName: string;
   authorAvatarUrl: string | null;
   authorInitials: string;
+  likeCount: number;
+  likedByMe: boolean;
 };
 
 export type FeedPost = {
@@ -58,6 +61,7 @@ type CommentRow = {
 
 type LikeRow = { post_id: string };
 type CommentIdRow = { post_id: string };
+type CommentLikeRow = { comment_id: string };
 
 type ProfileRow = {
   id: string;
@@ -215,6 +219,40 @@ export async function getFeedPosts(
     commentsByPost.set(pid, list.slice(0, MAX_COMMENTS_PER_POST).reverse());
   }
 
+  const allCommentIds: string[] = [];
+  for (const list of commentsByPost.values()) {
+    for (const c of list) {
+      allCommentIds.push(c.id);
+    }
+  }
+
+  const commentLikeCount = new Map<string, number>();
+  const commentLikedByMe = new Set<string>();
+
+  if (allCommentIds.length > 0) {
+    const [allLikesRes, myLikesRes] = await Promise.all([
+      supabase.from("post_comment_likes").select("comment_id").in("comment_id", allCommentIds),
+      supabase
+        .from("post_comment_likes")
+        .select("comment_id")
+        .eq("user_id", currentUserId)
+        .in("comment_id", allCommentIds),
+    ]);
+
+    const likesMissing =
+      allLikesRes.error?.message?.toLowerCase().includes("post_comment_likes") ||
+      allLikesRes.error?.message?.toLowerCase().includes("does not exist");
+
+    if (!likesMissing) {
+      for (const row of (allLikesRes.data ?? []) as CommentLikeRow[]) {
+        commentLikeCount.set(row.comment_id, (commentLikeCount.get(row.comment_id) ?? 0) + 1);
+      }
+      for (const row of (myLikesRes.data ?? []) as CommentLikeRow[]) {
+        commentLikedByMe.add(row.comment_id);
+      }
+    }
+  }
+
   const commentAuthorIds = new Set<string>();
   for (const list of commentsByPost.values()) {
     for (const c of list) {
@@ -261,12 +299,15 @@ export async function getFeedPosts(
       return {
         id: c.id,
         postId: c.post_id,
+        authorId: c.author_id,
         body: c.body,
         createdAt: c.created_at,
         timeLabel: formatFeedTimestamp(c.created_at, locale),
         authorName: name,
         authorAvatarUrl: cp?.avatar_url ?? null,
         authorInitials: getInitials(name),
+        likeCount: commentLikeCount.get(c.id) ?? 0,
+        likedByMe: commentLikedByMe.has(c.id),
       };
     });
 
@@ -296,17 +337,26 @@ export async function getFeedPosts(
 }
 
 export async function getFeedVersion(supabase: SupabaseClient<Database>) {
-  const [postsRes, likesRes, commentsRes] = await Promise.all([
+  const [postsRes, likesRes, commentsRes, commentLikesRes] = await Promise.all([
     supabase.from("posts").select("created_at").order("created_at", { ascending: false }).limit(1),
     supabase.from("post_likes").select("created_at").order("created_at", { ascending: false }).limit(1),
     supabase.from("post_comments").select("created_at").order("created_at", { ascending: false }).limit(1),
+    supabase
+      .from("post_comment_likes")
+      .select("created_at")
+      .order("created_at", { ascending: false })
+      .limit(1),
   ]);
 
   const latestPost = (postsRes.data?.[0] as { created_at?: string } | undefined)?.created_at;
   const latestLike = (likesRes.data?.[0] as { created_at?: string } | undefined)?.created_at;
   const latestComment = (commentsRes.data?.[0] as { created_at?: string } | undefined)?.created_at;
+  const latestCommentLike = (commentLikesRes.data?.[0] as { created_at?: string } | undefined)
+    ?.created_at;
 
-  const candidates = [latestPost, latestLike, latestComment].filter(Boolean) as string[];
+  const candidates = [latestPost, latestLike, latestComment, latestCommentLike].filter(
+    Boolean,
+  ) as string[];
 
   if (candidates.length === 0) {
     return "empty";

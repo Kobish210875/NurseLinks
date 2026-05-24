@@ -132,6 +132,10 @@
     "commentLabel": "תגובה לפוסט",
     "commentPlaceholder": "כתבו תגובה…",
     "sendComment": "פרסום תגובה",
+    "commentLikeAria": "לייק לתגובה",
+    "commentDelete": "מחיקת תגובה",
+    "commentDeleteConfirm": "למחוק את התגובה? לא ניתן לבטל.",
+    "commentLikesNotConfigured": "לייקים לתגובות לא הוגדרו. הריצו את supabase/post-comment-likes.sql ב-Supabase.",
     "delete": "מחיקה",
     "deleteConfirm": "למחוק את הפוסט ואת כל התגובות והלייקים שלו? לא ניתן לבטל."
   },
@@ -336,6 +340,8 @@
     "post-failed": "לא ניתן לפרסם את הפוסט. נסו שוב.",
     "comment-empty": "נא לכתוב תגובה.",
     "comment-failed": "לא ניתן לפרסם את התגובה. נסו שוב.",
+    "comment-delete-failed": "לא ניתן למחוק את התגובה. נסו שוב.",
+    "comment-like-failed": "לא ניתן לשמור את הלייק לתגובה. נסו שוב.",
     "like-failed": "לא ניתן לשמור את הלייק. ודאו שטבלאות הלייקים הוגדרו ב-Supabase (feed-social.sql) ונסו שוב.",
     "post-delete-failed": "לא ניתן למחוק את הפוסט. נסו שוב."
   }

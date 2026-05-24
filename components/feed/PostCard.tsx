@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { addPostComment, deletePost, togglePostLike } from "@/app/actions/feed";
 import { useT } from "@/components/i18n/LocaleProvider";
+import PostCommentRow from "@/components/feed/PostCommentRow";
 import PostShareDialog from "@/components/feed/PostShareDialog";
 import {
   PostCommentIcon,
@@ -10,7 +11,7 @@ import {
   PostLikeIcon,
   PostShareIcon,
 } from "@/components/feed/PostEngagementIcons";
-import type { FeedPost } from "@/lib/data/feed";
+import type { FeedComment, FeedPost } from "@/lib/data/feed";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 
@@ -35,6 +36,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
   const [shareCount, setShareCount] = useState(post.shareCount);
   const [shareOpen, setShareOpen] = useState(false);
   const [commentOpen, setCommentOpen] = useState(false);
+  const [comments, setComments] = useState<FeedComment[]>(post.comments);
   const commentInputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -42,7 +44,8 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
     setLikeCount(post.likeCount);
     setCommentCount(post.commentCount);
     setShareCount(post.shareCount);
-  }, [post.id, post.likedByMe, post.likeCount, post.commentCount, post.shareCount]);
+    setComments(post.comments);
+  }, [post.id, post.likedByMe, post.likeCount, post.commentCount, post.shareCount, post.comments]);
 
   function handleLike() {
     if (pendingLike) return;
@@ -265,30 +268,18 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
         onShared={() => setShareCount((c) => c + 1)}
       />
 
-      {post.comments.length > 0 ? (
+      {comments.length > 0 ? (
         <ul className="post-comment-list order-3 mt-3 space-y-3 md:order-none md:mt-4 md:border-t md:border-border md:pt-4">
-          {post.comments.map((c) => (
-            <li key={c.id} className="flex gap-2 text-start">
-              <span className="flex size-8 shrink-0 overflow-hidden rounded-full border border-border bg-muted/40">
-                {c.authorAvatarUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={c.authorAvatarUrl} alt="" className="size-full object-cover" />
-                ) : (
-                  <span className="flex size-full items-center justify-center text-[10px] font-semibold text-primary">
-                    {c.authorInitials}
-                  </span>
-                )}
-              </span>
-              <div className="min-w-0 flex-1 rounded-lg bg-muted/25 px-3 py-2">
-                <div className="flex flex-wrap items-baseline gap-2">
-                  <span className="text-sm font-semibold text-foreground">{c.authorName}</span>
-                  <time className="text-[10px] text-muted-foreground" dateTime={c.createdAt}>
-                    {c.timeLabel}
-                  </time>
-                </div>
-                <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{c.body}</p>
-              </div>
-            </li>
+          {comments.map((c) => (
+            <PostCommentRow
+              key={c.id}
+              comment={c}
+              currentUserId={currentUserId}
+              onDeleted={() => {
+                setComments((prev) => prev.filter((row) => row.id !== c.id));
+                setCommentCount((n) => Math.max(0, n - 1));
+              }}
+            />
           ))}
         </ul>
       ) : null}
