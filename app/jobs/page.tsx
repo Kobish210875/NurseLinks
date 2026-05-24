@@ -1,10 +1,7 @@
 import JobFeedList from "@/components/jobs/JobFeedList";
 import JobSearchPanel from "@/components/jobs/JobSearchPanel";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
-import {
-  INSTITUTION_OTHER_SLUG,
-  MEDICAL_INSTITUTIONS,
-} from "@/lib/data/medical-institutions";
+import { MEDICAL_INSTITUTIONS } from "@/lib/data/medical-institutions";
 import { getJobFeed } from "@/lib/data/jobs";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
@@ -31,13 +28,10 @@ export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
   const supabase = await createClient();
   const feed = await getJobFeed(supabase, user.id, locale, filters);
 
-  const institutions = [
-    ...MEDICAL_INSTITUTIONS.map((inst) => ({
-      slug: inst.slug,
-      label: institutionCityLabel(inst),
-    })),
-    { slug: INSTITUTION_OTHER_SLUG, label: t("profile.institutionOther") },
-  ].sort((a, b) => a.label.localeCompare(b.label, "he"));
+  const institutions = MEDICAL_INSTITUTIONS.map((inst) => ({
+    slug: inst.slug,
+    label: institutionCityLabel(inst),
+  })).sort((a, b) => a.label.localeCompare(b.label, "he"));
 
   const hasSearchFilters = Boolean(filters.q || filters.institutionSlug);
 
