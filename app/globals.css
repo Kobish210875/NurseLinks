@@ -20,6 +20,7 @@
   --secondary: #e8f2fa;
   --secondary-foreground: #1e4f7a;
   --nav-bg: #f7fafc;
+  --like-heart: #e0245e;
 }
 
 @theme inline {
@@ -321,8 +322,9 @@ body.composer-open .mobile-bottom-nav {
   flex-shrink: 0;
 }
 
-.post-engagement-action--liked .post-engagement-svg--liked {
-  color: var(--primary);
+.post-engagement-action--liked .post-engagement-svg--liked,
+.post-comment-like.text-primary .post-engagement-svg--liked {
+  color: var(--like-heart);
 }
 
 .post-engagement-action:active {
@@ -342,8 +344,9 @@ body.composer-open .mobile-bottom-nav {
     border-top: none !important;
   }
 
-  .post-engagement-action--liked {
-    color: var(--primary);
+  .post-engagement-action--liked,
+  .post-comment-like.text-primary {
+    color: var(--like-heart);
   }
 
   body.has-mobile-app-shell .post-comment-form {

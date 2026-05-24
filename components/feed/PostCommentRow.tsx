@@ -121,7 +121,7 @@ export default function PostCommentRow({
             disabled={pendingLike}
             aria-pressed={liked}
             aria-label={t("post.commentLikeAria")}
-            className={`post-comment-like inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-semibold transition hover:bg-muted/50 disabled:opacity-60 ${liked ? "text-primary" : "text-muted-foreground"}`}
+            className={`post-comment-like inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-semibold transition hover:bg-muted/50 disabled:opacity-60 ${liked ? "text-[var(--like-heart)]" : "text-muted-foreground"}`}
           >
             <PostLikeIcon filled={liked} size={16} />
             <span>{likeCount > 0 ? formatEngagementCount(likeCount) : t("post.like")}</span>

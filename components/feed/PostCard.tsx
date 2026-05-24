@@ -234,7 +234,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
             disabled={pendingLike}
             aria-pressed={liked}
             aria-label={t("post.likeAria")}
-            className={`${actionBtn} ${liked ? "post-engagement-action--liked text-primary" : ""}`}
+            className={`${actionBtn} ${liked ? "post-engagement-action--liked" : ""}`}
           >
             <PostLikeIcon filled={liked} />
             <span>{t("post.like")}</span>

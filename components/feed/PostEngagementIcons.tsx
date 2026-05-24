@@ -8,9 +8,9 @@ type IconProps = {
   size?: number;
 };
 
-/** Hand thumb-up outline (Heroicons 24 — clear at small sizes). */
-const THUMB_PATH =
-  "M6.633 10.25c.806 0 1.533-.184 2.154-.518l1.847-1.11A2.25 2.25 0 0013.5 6.75V4.5A2.25 2.25 0 0011.25 2.25h-1.5m0 0V1.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V4.5m0 0V6.75m-6 0h12.75c.621 0 1.125.504 1.125 1.125v7.125c0 .621-.504 1.125-1.125 1.125H9.033a2.25 2.25 0 01-2.144-1.556l-.905-2.715m0 0A2.251 2.251 0 005.25 12.75v-1.5c0-.83.672-1.5 1.5-1.5h.878m-3.75 3.75h.008v.008H6.878v-.008z";
+/** Classic heart — reads clearly at 16–24px (filled = liked). */
+const HEART_PATH =
+  "M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z";
 
 function svgProps(size: number, className: string) {
   return {
@@ -23,28 +23,28 @@ function svgProps(size: number, className: string) {
   };
 }
 
-/** Small blue badge thumb (summary row). */
+/** Small red heart badge (summary row). */
 export function PostLikeBadge({ className = "" }: { className?: string }) {
   return (
     <span
-      className={`post-like-badge inline-flex size-[18px] shrink-0 items-center justify-center rounded-full bg-primary text-white ${className}`}
+      className={`post-like-badge inline-flex size-[18px] shrink-0 items-center justify-center rounded-full bg-[var(--like-heart)] text-white ${className}`}
     >
       <svg {...svgProps(11, "block")}>
-        <path fill="currentColor" d={THUMB_PATH} />
+        <path fill="currentColor" d={HEART_PATH} />
       </svg>
     </span>
   );
 }
 
-/** Thumbs up — action button (outline / filled blue). */
+/** Heart — outline when idle, filled red when liked. */
 export function PostLikeIcon({ className = "", filled = false, size = 22 }: IconProps) {
   return (
     <svg {...svgProps(size, `post-engagement-svg ${filled ? "post-engagement-svg--liked" : ""} ${className}`)}>
       <path
-        d={THUMB_PATH}
+        d={HEART_PATH}
         fill={filled ? "currentColor" : "none"}
         stroke="currentColor"
-        strokeWidth={filled ? 0 : 1.35}
+        strokeWidth={filled ? 0 : 1.5}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
