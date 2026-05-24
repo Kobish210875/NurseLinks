@@ -252,7 +252,6 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
 
       <PostShareDialog
         postId={post.id}
-        authorName={post.authorName}
         open={shareOpen}
         onClose={() => setShareOpen(false)}
         onShared={() => setShareCount((c) => c + 1)}

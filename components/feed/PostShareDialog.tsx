@@ -16,7 +16,6 @@ type ShareConnection = {
 
 type PostShareDialogProps = {
   postId: string;
-  authorName: string;
   open: boolean;
   onClose: () => void;
   onShared?: () => void;
@@ -24,7 +23,6 @@ type PostShareDialogProps = {
 
 export default function PostShareDialog({
   postId,
-  authorName,
   open,
   onClose,
   onShared,
@@ -148,7 +146,7 @@ export default function PostShareDialog({
         </header>
 
         <p className="shrink-0 px-4 pt-2 text-sm text-muted-foreground">
-          {t("post.shareDialogHint").replace("{author}", authorName)}
+          {t("post.shareDialogHint")}
         </p>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 py-2">
