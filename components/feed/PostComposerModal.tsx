@@ -221,9 +221,9 @@ export default function PostComposerPanel({
       type="button"
       onClick={() => fileInputRef.current?.click()}
       disabled={saving}
-      className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-3 py-2 text-sm font-medium text-muted-foreground transition hover:border-primary/30 hover:text-primary disabled:opacity-60"
+      className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-primary/25 bg-primary/5 px-4 py-2.5 text-sm font-semibold text-primary shadow-sm transition hover:border-primary/45 hover:bg-primary/10 hover:shadow-md active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
     >
-      <GalleryIcon className="size-[22px]" />
+      <GalleryIcon className="size-[22px] text-primary" />
       <span>{t("feed.postImageAdd")}</span>
     </button>
   );
@@ -346,7 +346,7 @@ export default function PostComposerPanel({
 
   return (
     <div
-      className="flex max-h-[min(85vh,34rem)] flex-col"
+      className="flex max-h-[min(85vh,28rem)] flex-col"
       role="dialog"
       aria-modal="true"
       aria-labelledby="post-composer-title"
@@ -377,23 +377,23 @@ export default function PostComposerPanel({
           id="post-composer-body"
           value={body}
           onChange={(event) => setBody(event.target.value)}
-          rows={5}
+          rows={2}
           maxLength={4000}
           disabled={saving}
           autoFocus
           placeholder={t("feed.composerModalPlaceholder")}
-          className="min-h-[7rem] w-full resize-none rounded-xl border border-border bg-muted/20 px-3 py-2.5 text-start text-base text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60 md:text-sm"
+          className="min-h-[3.25rem] max-h-[6rem] w-full resize-none rounded-xl border border-border bg-muted/20 px-3 py-2 text-start text-base text-foreground outline-none transition placeholder:text-muted-foreground focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60 md:text-sm"
         />
 
         {previewUrl ? (
           <div className="relative mt-3 overflow-hidden rounded-lg border border-border bg-muted/20">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={previewUrl} alt="" className="max-h-56 w-full object-contain" />
+            <img src={previewUrl} alt="" className="max-h-48 w-full object-contain" />
             <button
               type="button"
               onClick={removeImage}
               disabled={saving}
-              className="absolute start-2 top-2 rounded-full bg-black/55 px-2 py-0.5 text-xs text-white transition hover:bg-black/70"
+              className="absolute end-2 top-2 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white shadow-sm transition hover:bg-black/75"
             >
               {t("feed.postImageRemove")}
             </button>
