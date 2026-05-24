@@ -76,16 +76,9 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
     return <NavUnreadDot ariaLabel={badgeLabel(kind, count)} />;
   }
 
-  const isHomeDesktopNav = authenticated && pathname === "/home";
-  const isAuthDesktopNav = authenticated;
-
-  function renderDesktopNavLinks(homeLayout = false) {
+  function renderDesktopNavLinks() {
     return (
-      <div
-        className={`hidden md:flex ${
-          homeLayout ? "shrink-0 items-center gap-0.5" : "items-stretch gap-1"
-        }`}
-      >
+      <div className="hidden shrink-0 items-center gap-0.5 md:flex">
         {authenticated
           ? navItems.map((item) => {
               const count = badgeCount(item.badge);
@@ -93,9 +86,7 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`relative flex items-center justify-center whitespace-nowrap text-xs font-medium transition-colors ${
-                    homeLayout ? "px-2.5 py-2" : "min-w-[4.5rem] flex-col px-2 py-1"
-                  } ${
+                  className={`relative flex items-center justify-center whitespace-nowrap px-2.5 py-2 text-xs font-medium transition-colors ${
                     isActive(item.href)
                       ? "nav-link-active"
                       : "text-muted-foreground hover:text-primary"
@@ -187,19 +178,15 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
       {/* Desktop + logged-out mobile */}
       <nav
         className={`mx-auto h-14 w-full min-w-0 max-w-[1128px] px-3 sm:px-4 ${
-          authenticated && mobileUser
-            ? "hidden md:block"
-            : isAuthDesktopNav
-              ? "hidden md:block"
-              : "flex items-center gap-1.5 sm:gap-2"
+          authenticated ? "hidden md:block" : "flex items-center gap-1.5 sm:gap-2"
         }`}
       >
-        {isHomeDesktopNav ? (
+        {authenticated ? (
           <div className="grid h-14 w-full items-center gap-3 max-lg:grid-cols-[minmax(0,1fr)] lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)_minmax(0,260px)] lg:gap-6">
             <div className="hidden lg:col-start-1 lg:block" aria-hidden="true" />
 
             <div className="col-start-1 flex min-w-0 items-center justify-end gap-2 sm:gap-3 lg:col-start-2 lg:justify-start">
-              {renderDesktopNavLinks(true)}
+              {renderDesktopNavLinks()}
               <div className="w-full min-w-0 max-w-[14rem] sm:max-w-xs md:max-w-sm lg:max-w-md">
                 <NavPeopleSearch />
               </div>
@@ -212,27 +199,6 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
             >
               <NurseLinkWordmark textClassName="text-primary text-base sm:text-lg" />
             </Link>
-          </div>
-        ) : isAuthDesktopNav ? (
-          <div
-            dir="ltr"
-            className="flex h-14 w-full items-center gap-2 sm:gap-3"
-          >
-            <Link
-              href="/home"
-              className="shrink-0 text-base font-bold text-primary"
-              aria-label={t("nav.homeAria")}
-            >
-              <NurseLinkWordmark textClassName="text-primary text-base sm:text-lg" />
-            </Link>
-
-            <div className="flex min-w-0 flex-1 justify-center px-2">
-              <div className="w-full min-w-0 max-w-md">
-                <NavPeopleSearch />
-              </div>
-            </div>
-
-            {renderDesktopNavLinks(true)}
           </div>
         ) : (
           <div className="flex h-14 w-full items-center gap-1.5 sm:gap-2">
