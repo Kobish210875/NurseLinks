@@ -41,8 +41,8 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
   );
 
   return (
-    <li className="flex items-center gap-2.5 border-b border-border py-2.5 last:border-b-0 md:items-start md:gap-3 md:py-4">
-      <span className="relative flex size-10 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10 md:size-14 md:border-2">
+    <li className="network-member-row flex items-center gap-2.5 rounded-xl border border-border bg-white px-3 py-2.5 shadow-sm transition hover:border-primary/30 hover:shadow-md md:items-center md:gap-3 md:px-3.5 md:py-3">
+      <span className="relative flex size-10 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10 md:size-11">
         {member.avatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={member.avatarUrl} alt="" className="size-full object-cover" />
@@ -56,12 +56,12 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
       <div className="min-w-0 flex-1 text-start">
         <Link
           href={`/profile/${member.id}`}
-          className="text-sm font-semibold text-foreground hover:text-primary hover:underline md:text-base"
+          className="text-sm font-semibold text-foreground hover:text-primary hover:underline"
         >
           {member.fullName}
         </Link>
         {professionalLine ? (
-          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground md:line-clamp-none md:text-sm">
+          <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
             {professionalLine}
           </p>
         ) : null}
@@ -157,7 +157,7 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
         {variant === "connection" && messageHref ? (
           <Link
             href={messageHref}
-            className="rounded-full border border-primary px-3 py-1 text-xs font-medium text-primary transition hover:bg-primary/5 md:px-4 md:py-1.5 md:text-sm"
+            className="rounded-full border border-primary bg-primary/5 px-3 py-1.5 text-xs font-medium text-primary transition hover:bg-primary/10 md:px-3.5 md:py-1.5 md:text-sm"
           >
             {t("network.message")}
           </Link>

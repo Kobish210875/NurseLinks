@@ -143,6 +143,14 @@ body {
   box-shadow: 0 1px 3px rgb(44 74 110 / 0.06);
 }
 
+/* Network member cards (WEB list) */
+.network-member-row {
+  border-color: #b8c9db;
+  box-shadow:
+    0 1px 2px rgb(44 74 110 / 0.06),
+    0 0 0 1px rgb(255 255 255 / 0.5) inset;
+}
+
 /* Messages inbox: visible frame on page background (WEB + mobile) */
 .messages-thread-card {
   background: var(--card);

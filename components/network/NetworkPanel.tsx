@@ -50,10 +50,10 @@ export default function NetworkPanel({
   const showSearch = query.trim().length >= 2;
 
   return (
-    <div className="feed-card p-3 md:p-6">
-      <header className="mb-3 text-start md:mb-4">
+    <div className="feed-card overflow-hidden p-4 md:p-5">
+      <header className="mb-4 text-start md:mb-3">
         <h1 className="text-lg font-bold text-foreground md:text-xl">{t("network.title")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-0.5 text-sm text-muted-foreground">
           {t("network.count").replace("{count}", String(connections.length))}
         </p>
       </header>
@@ -61,7 +61,7 @@ export default function NetworkPanel({
       <label className="sr-only" htmlFor="network-search">
         {t("network.searchLabel")}
       </label>
-      <div className="relative mb-3 md:mb-4">
+      <div className="relative mb-4 md:mb-3">
         <svg
           className="pointer-events-none absolute top-1/2 end-3 size-4 -translate-y-1/2 text-muted-foreground"
           xmlns="http://www.w3.org/2000/svg"
@@ -80,17 +80,19 @@ export default function NetworkPanel({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("network.searchPlaceholder")}
-          className="w-full rounded-lg border border-border bg-white py-2.5 pe-10 ps-3 text-sm outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15"
+          className="w-full rounded-xl border border-border bg-white py-2 pe-10 ps-3 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:py-2.5"
         />
       </div>
 
       {showSearch ? (
-        <section className="mb-4 text-start md:mb-6">
+        <section className="mb-4 text-start md:mb-3">
           <h2 className="mb-2 text-sm font-semibold text-foreground">{t("network.searchResults")}</h2>
           {searchResults.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t("network.searchEmpty")}</p>
+            <p className="rounded-xl bg-muted/20 px-3 py-4 text-center text-sm text-muted-foreground">
+              {t("network.searchEmpty")}
+            </p>
           ) : (
-            <ul>
+            <ul className="flex flex-col gap-2">
               {searchResults.map((member) => (
                 <MemberRow key={member.id} member={member} variant="search" />
               ))}
@@ -99,25 +101,33 @@ export default function NetworkPanel({
         </section>
       ) : null}
 
-      <div className="mb-4 flex gap-2 border-b border-border">
+      <div
+        className="mb-4 flex gap-1 rounded-xl bg-muted/35 p-1 md:mb-3"
+        role="tablist"
+        aria-label={t("network.title")}
+      >
         <button
           type="button"
+          role="tab"
+          aria-selected={tab === "connections"}
           onClick={() => setTab("connections")}
-          className={`border-b-2 px-3 py-2 text-sm font-medium transition ${
+          className={`flex-1 rounded-lg px-3 py-2 text-sm font-medium transition ${
             tab === "connections"
-              ? "border-primary text-primary"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "bg-white text-primary shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           {t("network.tabConnections")}
         </button>
         <button
           type="button"
+          role="tab"
+          aria-selected={tab === "invitations"}
           onClick={() => setTab("invitations")}
-          className={`flex items-center gap-2 border-b-2 px-3 py-2 text-sm font-medium transition ${
+          className={`flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium transition ${
             tab === "invitations"
-              ? "border-primary text-primary"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "bg-white text-primary shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
           {t("network.tabInvitations")}
@@ -134,18 +144,22 @@ export default function NetworkPanel({
 
       {tab === "invitations" ? (
         invitations.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t("network.noInvitations")}</p>
+          <p className="rounded-xl bg-muted/20 px-3 py-6 text-center text-sm text-muted-foreground">
+            {t("network.noInvitations")}
+          </p>
         ) : (
-          <ul>
+          <ul className="flex flex-col gap-2">
             {invitations.map((member) => (
               <MemberRow key={member.id} member={member} variant="invitation" />
             ))}
           </ul>
         )
       ) : filteredConnections.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("network.noConnections")}</p>
+        <p className="rounded-xl bg-muted/20 px-3 py-6 text-center text-sm text-muted-foreground">
+          {t("network.noConnections")}
+        </p>
       ) : (
-        <ul>
+        <ul className="flex flex-col gap-2">
           {filteredConnections.map((member) => (
             <MemberRow key={member.id} member={member} variant="connection" />
           ))}
