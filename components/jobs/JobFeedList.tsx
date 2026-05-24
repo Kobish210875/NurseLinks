@@ -33,10 +33,7 @@ export default async function JobFeedList({
   }
 
   return (
-    <div
-      className="jobs-browse-panels flex flex-col gap-4 lg:max-h-[calc(100vh-11rem)] lg:min-h-0"
-      aria-label={t("jobs.feedAria")}
-    >
+    <div className="flex flex-col gap-4" aria-label={t("jobs.feedAria")}>
       {feed.mine.length > 0 ? (
         <section className="feed-card flex min-h-0 min-w-0 flex-col p-3 sm:p-4">
           <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2">
@@ -45,7 +42,7 @@ export default async function JobFeedList({
             </h2>
             <MarkAllApplicationsRead visible={hasUnreadApplications} />
           </div>
-          <div className="jobs-panel-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain pe-0.5 lg:max-h-[min(16rem,40vh)]">
+          <div className="jobs-panel-scroll max-h-[min(16rem,calc(100vh-14rem))] overflow-y-auto overscroll-contain pe-0.5 lg:max-h-[min(14rem,calc(100vh-18rem))]">
             <div className="space-y-2">
               {feed.mine.map((job) => (
                 <JobCard key={job.id} job={job} defaultApplicantName={defaultApplicantName} />
@@ -60,7 +57,7 @@ export default async function JobFeedList({
           <h2 className="mb-2 shrink-0 text-start text-sm font-semibold text-foreground">
             {hasSearchFilters ? t("jobs.sectionSearchResults") : t("jobs.sectionCommunity")}
           </h2>
-          <div className="jobs-panel-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain pe-0.5 lg:max-h-[min(20rem,48vh)]">
+          <div className="jobs-panel-scroll max-h-[min(20rem,calc(100vh-14rem))] overflow-y-auto overscroll-contain pe-0.5 lg:max-h-[min(18rem,calc(100vh-18rem))]">
             <div className="space-y-2">
               {feed.community.map((job) => (
                 <JobCard key={job.id} job={job} defaultApplicantName={defaultApplicantName} />

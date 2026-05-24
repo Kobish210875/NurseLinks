@@ -48,7 +48,7 @@ export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
           {t("jobs.publishedBanner")}
         </p>
       ) : null}
-      <div className="jobs-browse-grid grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,17.5rem)] lg:gap-5">
+      <div className="jobs-browse-grid grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,13.5rem)] lg:gap-4">
         <div className="jobs-browse-feed order-2 min-w-0 lg:order-1">
           <JobFeedList
             feed={feed}
