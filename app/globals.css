@@ -54,6 +54,32 @@ body {
   background: var(--background);
 }
 
+/* WEB home: only the posts column scrolls; nav + sidebars stay put */
+@media (min-width: 1024px) {
+  body:has(.home-main-shell) {
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  .home-main-shell {
+    height: calc(100vh - 3.5rem);
+  }
+
+  .home-feed-shell {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .home-feed-sidebar {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  .home-feed-posts-scroll {
+    scrollbar-gutter: stable;
+  }
+}
+
 .feed-card {
   background: var(--card);
   border: 1px solid var(--border);

@@ -14,10 +14,12 @@ export default async function HomePage() {
   return (
     <>
       <Navbar authenticated />
-      <main>
+      <main className="home-main-shell lg:h-[calc(100vh-3.5rem)] lg:overflow-hidden">
         <HomeFeed user={user} />
       </main>
-      <Footer />
+      <div className="lg:hidden">
+        <Footer />
+      </div>
     </>
   );
 }

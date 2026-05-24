@@ -9,16 +9,16 @@ type HomeFeedProps = {
 
 export default function HomeFeed({ user }: HomeFeedProps) {
   return (
-    <div className="feed-page min-h-[calc(100vh-4rem)] overflow-x-clip py-3 md:py-6">
-      <div className="mx-auto w-full min-w-0 max-w-[1128px] px-3 sm:px-4">
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)_minmax(0,260px)] lg:items-start lg:gap-6">
-          <div className="order-1 hidden lg:block">
+    <div className="feed-page home-feed-shell min-h-[calc(100vh-4rem)] overflow-x-clip py-3 md:py-6 lg:py-4">
+      <div className="mx-auto flex h-full w-full min-w-0 max-w-[1128px] flex-col px-3 sm:px-4">
+        <div className="home-feed-grid grid min-h-0 flex-1 grid-cols-1 gap-4 lg:h-full lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)_minmax(0,260px)] lg:items-start lg:gap-6 lg:overflow-hidden">
+          <div className="home-feed-sidebar order-1 hidden lg:block lg:h-full lg:overflow-hidden">
             <SidebarRight user={user} />
           </div>
-          <div className="order-2 min-w-0">
+          <div className="order-2 flex min-h-0 min-w-0 flex-col lg:h-full">
             <FeedColumn user={user} />
           </div>
-          <div className="order-3 hidden lg:block">
+          <div className="home-feed-sidebar order-3 hidden lg:block lg:h-full lg:overflow-hidden">
             <SidebarLeft />
           </div>
         </div>
