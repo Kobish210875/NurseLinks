@@ -11,9 +11,10 @@ import {
   PostLikeIcon,
   PostShareIcon,
 } from "@/components/feed/PostEngagementIcons";
+import { scrollElementInFeedPanel } from "@/lib/client/scroll-element-in-feed-panel";
 import type { FeedComment, FeedPost } from "@/lib/data/feed";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
 type PostCardProps = {
   post: FeedPost;
@@ -68,28 +69,17 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
     });
   }
 
-  useEffect(() => {
-    if (!commentOpen) {
-      return;
-    }
-    const frame = window.requestAnimationFrame(() => {
+  const focusComment = useCallback(() => {
+    setCommentOpen(true);
+    window.requestAnimationFrame(() => {
       const el = commentInputRef.current;
       if (!el) {
         return;
       }
-      el.focus({ preventScroll: true });
-      if (window.matchMedia("(max-width: 767px)").matches) {
-        window.setTimeout(() => {
-          el.scrollIntoView({ block: "nearest", behavior: "auto" });
-        }, 120);
-      }
+      scrollElementInFeedPanel(el);
+      el.focus();
     });
-    return () => window.cancelAnimationFrame(frame);
-  }, [commentOpen]);
-
-  function focusComment() {
-    setCommentOpen(true);
-  }
+  }, []);
 
   async function submitComment(formData: FormData) {
     setCommentError(null);

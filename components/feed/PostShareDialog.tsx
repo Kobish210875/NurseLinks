@@ -5,6 +5,7 @@ import { useT } from "@/components/i18n/LocaleProvider";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 
 type ShareConnection = {
   id: string;
@@ -35,6 +36,11 @@ export default function PostShareDialog({
   const [connections, setConnections] = useState<ShareConnection[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [sentToId, setSentToId] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!open) {
@@ -42,13 +48,18 @@ export default function PostShareDialog({
       setSentToId(null);
       return;
     }
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape" && !pending) {
         onClose();
       }
     }
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previous;
+      document.removeEventListener("keydown", onKeyDown);
+    };
   }, [open, onClose, pending]);
 
   useEffect(() => {
@@ -75,7 +86,7 @@ export default function PostShareDialog({
     };
   }, [open, t]);
 
-  if (!open) {
+  if (!open || !mounted) {
     return null;
   }
 
@@ -106,9 +117,9 @@ export default function PostShareDialog({
     });
   }
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-[90] flex items-end justify-center bg-black/45 p-0 sm:items-center sm:p-4"
+      className="post-share-overlay fixed inset-0 z-[200] flex items-center justify-center bg-black/45 p-4 max-sm:items-end max-sm:p-0"
       role="presentation"
       onClick={(e) => {
         if (e.target === e.currentTarget && !pending) {
@@ -117,7 +128,7 @@ export default function PostShareDialog({
       }}
     >
       <div
-        className="flex max-h-[min(85dvh,32rem)] w-full max-w-md flex-col overflow-hidden rounded-t-2xl bg-white shadow-xl sm:rounded-2xl"
+        className="flex max-h-[min(85dvh,32rem)] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-xl max-sm:max-w-none max-sm:rounded-b-none max-sm:rounded-t-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="post-share-title"
@@ -196,6 +207,7 @@ export default function PostShareDialog({
           </p>
         ) : null}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
