@@ -1,6 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revokeOtherAuthSessions } from "@/lib/auth/single-session";
 import { createClient } from "@/lib/supabase/server";
 
 function getRequiredString(formData: FormData, key: string) {
@@ -22,6 +23,8 @@ export async function signIn(formData: FormData) {
   if (error) {
     redirect(`/login?error=${encodeURIComponent(error.message)}`);
   }
+
+  await revokeOtherAuthSessions(supabase);
 
   redirect("/home");
 }
