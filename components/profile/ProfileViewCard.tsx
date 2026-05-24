@@ -5,6 +5,7 @@ import { useLocale, useT } from "@/components/i18n/LocaleProvider";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { getCityDisplayName } from "@/lib/data/israeli-cities";
 import type { ProfileView } from "@/lib/data/profile-view";
+import { formatFeedTimestamp } from "@/lib/i18n/format-feed-time";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
 
 type ProfileViewCardProps = {
@@ -52,6 +53,14 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
             {profile.licenseNumber ? (
               <p className="mt-1 text-xs text-muted-foreground">
                 {t("profile.licenseNumber")}: {profile.licenseNumber}
+              </p>
+            ) : null}
+            {!isOwnProfile && profile.connectionStatus === "connected" && profile.connectedAt ? (
+              <p className="mt-2 text-xs text-muted-foreground">
+                <time dateTime={profile.connectedAt}>
+                  {t("network.connectedOn")}{" "}
+                  {formatFeedTimestamp(profile.connectedAt, locale)}
+                </time>
               </p>
             ) : null}
           </div>

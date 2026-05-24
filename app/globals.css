@@ -143,7 +143,73 @@ body {
   box-shadow: 0 1px 3px rgb(44 74 110 / 0.06);
 }
 
-/* Network member cards (WEB list) */
+/* Network page (WEB) */
+.network-page-card {
+  min-height: min(32rem, calc(100vh - 8rem));
+}
+
+@media (min-width: 1024px) {
+  .network-page-card {
+    min-height: min(36rem, calc(100vh - 9rem));
+  }
+}
+
+.network-page-hero {
+  background: linear-gradient(
+    165deg,
+    rgb(43 108 176 / 0.1) 0%,
+    rgb(43 108 176 / 0.04) 42%,
+    transparent 100%
+  );
+}
+
+.network-stat-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 9999px;
+  border: 1px solid var(--border);
+  background: rgb(255 255 255 / 0.85);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--foreground);
+}
+
+.network-stat-pill--accent {
+  border-color: rgb(43 108 176 / 0.35);
+  background: rgb(43 108 176 / 0.08);
+  color: var(--primary);
+}
+
+.network-tab {
+  border-bottom: 2px solid transparent;
+}
+
+.network-tab--active {
+  border-bottom-color: var(--primary);
+}
+
+.network-msg-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid var(--primary);
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+  color: var(--primary);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.network-msg-btn:hover {
+  background: rgb(43 108 176 / 0.08);
+}
+
+/* Network member rows */
 .network-member-row {
   border-color: #b8c9db;
   box-shadow:

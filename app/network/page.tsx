@@ -33,8 +33,8 @@ export default async function NetworkPage({ searchParams }: NetworkPageProps) {
   return (
     <>
       <Navbar authenticated />
-      <main className="feed-page min-h-[calc(100vh-4rem)] py-4 md:py-6">
-        <div className="mx-auto w-full max-w-2xl px-3 md:max-w-xl md:px-4 lg:max-w-lg">
+      <main className="feed-page min-h-[calc(100vh-4rem)] py-4 md:py-8 lg:py-10">
+        <div className="mx-auto w-full max-w-2xl px-3 sm:px-4 md:max-w-3xl lg:max-w-4xl">
           <NetworkPanel
             connections={connections}
             invitations={invitations}

@@ -17,6 +17,7 @@ export type ProfileView = {
   initials: string;
   cvDraft: CvDraft;
   connectionStatus: ConnectionStatus;
+  connectedAt: string | null;
 };
 
 type ProfileRow = {
@@ -122,7 +123,7 @@ export async function getProfileView(
   );
 
   const connectionRows = await loadConnectionRows(supabase, viewerId);
-  const { status: connectionStatus } = resolveConnectionStatus(
+  const { status: connectionStatus, connectedAt } = resolveConnectionStatus(
     viewerId,
     profileId,
     connectionRows,
@@ -142,5 +143,6 @@ export async function getProfileView(
     initials: getInitials(fullName),
     cvDraft,
     connectionStatus,
+    connectedAt: connectionStatus === "connected" ? connectedAt : null,
   };
 }

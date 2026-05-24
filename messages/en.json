@@ -193,6 +193,8 @@
   },
   "network": {
     "title": "My network",
+    "subtitle": "Find colleagues, manage connections and invitations, and start a chat in one tap.",
+    "pendingCount": "{count} pending invitations",
     "count": "{count} connections",
     "searchLabel": "Search people",
     "searchPlaceholder": "Search by name (Hebrew or English)…",
