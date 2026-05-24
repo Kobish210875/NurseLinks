@@ -82,9 +82,9 @@ export default function MobileBottomNav() {
     <nav
       className="mobile-bottom-nav fixed inset-x-0 bottom-0 z-[60] border-t border-border bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
       aria-label={t("nav.mobileBottomAria")}
-      dir="ltr"
+      dir="rtl"
     >
-      <ul className="mx-auto grid h-14 max-w-lg grid-cols-5">
+      <ul className="mx-auto grid h-14 max-w-lg grid-cols-5" dir="rtl">
         {items.map((item) => {
           const active = item.match(pathname, searchParams);
           const count = badgeCount(item.badge);
@@ -93,7 +93,7 @@ export default function MobileBottomNav() {
             <li key={item.href}>
               <Link
                 href={item.href}
-                className={`relative flex h-full flex-col items-center justify-center gap-0.5 px-1 text-center text-[11px] font-semibold leading-snug transition ${
+                className={`relative flex h-full flex-col items-center justify-center gap-0.5 px-1 text-center text-[13px] font-semibold leading-snug transition ${
                   active
                     ? "text-foreground after:absolute after:inset-x-2 after:top-0 after:h-0.5 after:rounded-full after:bg-foreground"
                     : "text-muted-foreground hover:text-primary"

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { sendDirectMessage } from "@/app/actions/messages";
 import { useLocale, useT } from "@/components/i18n/LocaleProvider";
+import MessageBody from "@/components/messages/MessageBody";
+import NavUnreadDot from "@/components/nav/NavUnreadDot";
 import { formatFeedTimestamp } from "@/lib/i18n/format-feed-time";
 import type { DirectMessage, NetworkMember } from "@/lib/network/types";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
@@ -49,7 +51,7 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
   }
 
   return (
-    <div className="feed-card flex min-h-[480px] flex-col overflow-hidden">
+    <div className="message-thread-shell feed-card flex min-h-[min(480px,70dvh)] flex-col overflow-hidden max-md:min-h-0">
       <header className="flex items-center gap-3 border-b border-border px-4 py-3">
         <Link
           href="/messages"
@@ -84,7 +86,7 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
         <p className="p-4 text-sm text-muted-foreground">{t("messages.notConnected")}</p>
       ) : (
         <>
-          <ul className="flex-1 space-y-3 overflow-y-auto p-4">
+          <ul className="message-thread-messages flex-1 space-y-3 overflow-y-auto overscroll-contain p-4">
             {messages.length === 0 ? (
               <li className="text-center text-sm text-muted-foreground">
                 {t("messages.threadEmpty")}
@@ -93,8 +95,13 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
               messages.map((m) => (
                 <li
                   key={m.id}
-                  className={`flex ${m.isMine ? "justify-end" : "justify-start"}`}
+                  className={`flex items-end gap-1.5 ${m.isMine ? "justify-end" : "justify-start"}`}
                 >
+                  {!m.isMine && m.isUnread ? (
+                    <span className="mb-2 shrink-0">
+                      <NavUnreadDot ariaLabel={t("messages.unreadMessage")} />
+                    </span>
+                  ) : null}
                   <div
                     className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
                       m.isMine
@@ -102,7 +109,9 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
                         : "bg-muted/50 text-foreground"
                     }`}
                   >
-                    <p className="whitespace-pre-wrap">{m.body}</p>
+                    <p className="text-sm leading-relaxed">
+                      <MessageBody body={m.body} isMine={m.isMine} />
+                    </p>
                     <time
                       className={`mt-1 block text-[10px] ${
                         m.isMine ? "text-primary-foreground/80" : "text-muted-foreground"
@@ -117,7 +126,7 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
             )}
           </ul>
 
-          <form action={submit} className="border-t border-border p-4">
+          <form action={submit} className="message-thread-compose shrink-0 border-t border-border p-4">
             <label className="sr-only" htmlFor="message-body">
               {t("messages.inputLabel")}
             </label>
@@ -128,7 +137,7 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
               maxLength={4000}
               disabled={pending}
               placeholder={t("messages.inputPlaceholder")}
-              className="w-full resize-y rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60"
+              className="message-thread-input w-full resize-none rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60 md:resize-y md:text-sm"
             />
             {error ? (
               <p className="mt-2 text-xs text-red-600" role="alert">

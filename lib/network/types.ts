@@ -30,4 +30,5 @@ export type DirectMessage = {
   body: string;
   createdAt: string;
   isMine: boolean;
+  isUnread: boolean;
 };

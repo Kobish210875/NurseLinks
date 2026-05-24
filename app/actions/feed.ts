@@ -20,6 +20,7 @@ import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
+import { postShareUrl } from "@/lib/links/post-share-url";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type PostInsert = Database["public"]["Tables"]["posts"]["Insert"];
@@ -395,18 +396,6 @@ export async function listConnectionsForShare() {
       initials: c.initials,
     })),
   };
-}
-
-function postShareUrl(postId: string) {
-  const base =
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
-    (process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL.replace(/^https?:\/\//, "")}`
-      : "");
-  if (base) {
-    return `${base}/home#post-${postId}`;
-  }
-  return `/home#post-${postId}`;
 }
 
 export async function sharePostWithConnection(postId: string, peerId: string) {

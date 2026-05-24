@@ -245,9 +245,35 @@ body {
     text-align: right;
   }
 
-  #post-composer-body {
+  #post-composer-body,
+  #network-search,
+  .message-thread-input {
     font-size: 1rem;
     line-height: 1.5;
+  }
+
+  .network-search-input {
+    max-width: 100%;
+  }
+
+  .message-thread-shell {
+    margin-bottom: 0;
+  }
+
+  .message-thread-messages {
+    padding-bottom: 0.5rem;
+  }
+
+  .message-thread-compose {
+    position: sticky;
+    bottom: var(--mobile-bottom-nav-offset);
+    z-index: 20;
+    background: var(--card);
+    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
+  }
+
+  .job-detail-dialog-panel {
+    margin-bottom: var(--mobile-bottom-nav-offset);
   }
 }
 
@@ -320,8 +346,13 @@ body.composer-open .mobile-bottom-nav {
     color: var(--primary);
   }
 
-  .post-comment-form {
-    scroll-margin-bottom: 5rem;
+  body.has-mobile-app-shell .post-comment-form {
+    position: sticky;
+    bottom: var(--mobile-bottom-nav-offset);
+    z-index: 15;
+    background: var(--card);
+    padding-top: 0.5rem;
+    scroll-margin-bottom: calc(var(--mobile-bottom-nav-offset) + 4rem);
   }
 
   .post-comment-input {

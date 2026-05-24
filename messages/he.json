@@ -324,6 +324,7 @@
     "sendFailed": "לא ניתן לשלוח את ההודעה.",
     "notConnected": "ניתן לשלוח הודעות רק למשתמשים שמחוברים אליכם.",
     "threadEmpty": "עדיין אין הודעות בשיחה הזו. כתבו את ההודעה הראשונה.",
+    "unreadMessage": "הודעה חדשה",
     "notConfigured": "מערכת ההודעות לא הוגדרה ב-Supabase. הריצו את supabase/connections-messaging.sql (או connections-messaging-fix.sql)."
   },
   "errors": {

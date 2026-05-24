@@ -2,6 +2,7 @@ import FeedComposer from "@/components/feed/FeedComposer";
 import FeedPostsScroll from "@/components/feed/FeedPostsScroll";
 import { Suspense } from "react";
 import FeedAutoRefresh from "@/components/feed/FeedAutoRefresh";
+import FeedHashScroll from "@/components/feed/FeedHashScroll";
 import PostCard from "@/components/feed/PostCard";
 import type { CurrentUser } from "@/lib/auth/get-current-user";
 import { getFeedPosts, getFeedVersion } from "@/lib/data/feed";
@@ -30,6 +31,7 @@ export default async function FeedColumn({ user }: FeedColumnProps) {
       aria-label={t("feed.feedAria")}
     >
       <FeedAutoRefresh initialVersion={feedVersion} />
+      <FeedHashScroll />
       <div className="shrink-0">
         <Suspense fallback={null}>
           <FeedComposer user={user} />

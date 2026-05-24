@@ -8,9 +8,9 @@ type IconProps = {
   size?: number;
 };
 
-/** Classic thumb silhouette (reads clearly at small sizes). */
+/** Hand thumb-up outline (Heroicons 24 — clear at small sizes). */
 const THUMB_PATH =
-  "M2 21h4V9H2v12zm4-12c0-1.1.9-2 2-2h1V5c0-1.66 1.34-3 3-3s3 1.34 3 3v2h3.5c.82 0 1.5.67 1.5 1.5v6.9l-1.85 5.55c-.2.6-.74 1.05-1.35 1.05H6V9z";
+  "M6.633 10.25c.806 0 1.533-.184 2.154-.518l1.847-1.11A2.25 2.25 0 0013.5 6.75V4.5A2.25 2.25 0 0011.25 2.25h-1.5m0 0V1.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V4.5m0 0V6.75m-6 0h12.75c.621 0 1.125.504 1.125 1.125v7.125c0 .621-.504 1.125-1.125 1.125H9.033a2.25 2.25 0 01-2.144-1.556l-.905-2.715m0 0A2.251 2.251 0 005.25 12.75v-1.5c0-.83.672-1.5 1.5-1.5h.878m-3.75 3.75h.008v.008H6.878v-.008z";
 
 function svgProps(size: number, className: string) {
   return {
@@ -43,8 +43,8 @@ export function PostLikeIcon({ className = "", filled = false, size = 22 }: Icon
       <path
         d={THUMB_PATH}
         fill={filled ? "currentColor" : "none"}
-        stroke={filled ? "none" : "currentColor"}
-        strokeWidth={filled ? 0 : 1.5}
+        stroke="currentColor"
+        strokeWidth={filled ? 0 : 1.35}
         strokeLinecap="round"
         strokeLinejoin="round"
       />

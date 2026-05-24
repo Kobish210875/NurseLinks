@@ -324,6 +324,7 @@
     "sendFailed": "Could not send your message.",
     "notConnected": "You can only message people you are connected with.",
     "threadEmpty": "No messages in this conversation yet. Send the first one.",
+    "unreadMessage": "New message",
     "notConfigured": "Messaging is not set up in Supabase. Run supabase/connections-messaging.sql (or connections-messaging-fix.sql)."
   },
   "errors": {

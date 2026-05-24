@@ -68,7 +68,7 @@ export default function JobDetailDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-4 sm:items-center"
+      className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-0 sm:items-center sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="job-detail-title"
@@ -80,7 +80,7 @@ export default function JobDetailDialog({
     >
       <div
         ref={dialogRef}
-        className="feed-card max-h-[min(85vh,32rem)] w-full max-w-md overflow-y-auto p-5 shadow-lg"
+        className="feed-card max-h-[min(88dvh,calc(100dvh-var(--mobile-bottom-nav-offset)-1rem))] w-full max-w-md overflow-y-auto rounded-t-2xl p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] shadow-lg sm:max-h-[min(85vh,32rem)] sm:rounded-2xl sm:pb-5"
       >
         <header className="text-start">
           <h2 id="job-detail-title" className="text-base font-semibold text-foreground">

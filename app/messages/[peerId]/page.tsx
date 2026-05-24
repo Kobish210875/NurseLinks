@@ -45,8 +45,8 @@ export default async function MessageThreadPage({ params }: ThreadPageProps) {
   return (
     <>
       <Navbar authenticated />
-      <main className="feed-page min-h-[calc(100vh-4rem)] py-4 md:py-6">
-        <div className="mx-auto max-w-2xl px-4">
+      <main className="feed-page min-h-0 py-4 max-md:pb-[calc(var(--mobile-bottom-nav-offset)+0.5rem)] md:min-h-[calc(100vh-4rem)] md:py-6">
+        <div className="mx-auto max-w-2xl px-3 sm:px-4">
           {!connected ? (
             <div className="feed-card p-6 text-center">
               <p className="text-sm text-muted-foreground">{t("messages.notConnected")}</p>
@@ -66,7 +66,9 @@ export default async function MessageThreadPage({ params }: ThreadPageProps) {
           )}
         </div>
       </main>
-      <Footer />
+      <div className="lg:hidden">
+        <Footer />
+      </div>
     </>
   );
 }

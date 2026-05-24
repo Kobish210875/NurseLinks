@@ -107,20 +107,21 @@ export async function getThreadMessages(
 ): Promise<DirectMessage[]> {
   const { data } = await supabase
     .from("direct_messages")
-    .select("id, sender_id, recipient_id, body, created_at")
+    .select("id, sender_id, recipient_id, body, created_at, read_at")
     .or(
       `and(sender_id.eq.${userId},recipient_id.eq.${peerId}),and(sender_id.eq.${peerId},recipient_id.eq.${userId})`,
     )
     .order("created_at", { ascending: true })
     .limit(limit);
 
-  return ((data ?? []) as Omit<MessageRow, "read_at">[]).map((m) => ({
+  return ((data ?? []) as MessageRow[]).map((m) => ({
     id: m.id,
     senderId: m.sender_id,
     recipientId: m.recipient_id,
     body: m.body,
     createdAt: m.created_at,
     isMine: m.sender_id === userId,
+    isUnread: m.recipient_id === userId && m.read_at == null,
   }));
 }
 
