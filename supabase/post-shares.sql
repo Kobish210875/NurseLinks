@@ -22,8 +22,10 @@ create policy "Users can share as themselves"
   to authenticated
   with check (auth.uid() = sharer_id);
 
--- Extend feed stats RPC (replaces feed-social.sql version)
-create or replace function public.feed_post_stats(post_ids uuid[])
+-- Extend feed stats RPC (adds share_count; must drop old return type first)
+drop function if exists public.feed_post_stats(uuid[]);
+
+create function public.feed_post_stats(post_ids uuid[])
 returns table (
   post_id uuid,
   like_count bigint,
