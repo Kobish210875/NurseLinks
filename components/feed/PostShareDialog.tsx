@@ -102,6 +102,7 @@ export default function PostShareDialog({
       setSentToId(peerId);
       onShared?.();
       router.refresh();
+      window.setTimeout(() => onClose(), 400);
     });
   }
 
