@@ -48,17 +48,23 @@ export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
           {t("jobs.publishedBanner")}
         </p>
       ) : null}
-      <JobSearchPanel
-        initialQ={filters.q}
-        initialInstitution={filters.institutionSlug}
-        institutions={institutions}
-      />
-      <JobFeedList
-        feed={feed}
-        filters={filters}
-        defaultApplicantName={user.fullName}
-        hasSearchFilters={hasSearchFilters}
-      />
+      <div className="jobs-browse-grid grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,17.5rem)] lg:gap-5">
+        <div className="jobs-browse-feed order-2 min-w-0 lg:order-1">
+          <JobFeedList
+            feed={feed}
+            filters={filters}
+            defaultApplicantName={user.fullName}
+            hasSearchFilters={hasSearchFilters}
+          />
+        </div>
+        <aside className="jobs-browse-search order-1 min-w-0 lg:sticky lg:top-20 lg:order-2 lg:self-start">
+          <JobSearchPanel
+            initialQ={filters.q}
+            initialInstitution={filters.institutionSlug}
+            institutions={institutions}
+          />
+        </aside>
+      </div>
     </>
   );
 }

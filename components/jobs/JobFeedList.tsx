@@ -33,36 +33,43 @@ export default async function JobFeedList({
   }
 
   return (
-    <div className="space-y-4" aria-label={t("jobs.feedAria")}>
+    <div
+      className="jobs-browse-panels flex flex-col gap-4 lg:max-h-[calc(100vh-11rem)] lg:min-h-0"
+      aria-label={t("jobs.feedAria")}
+    >
       {feed.mine.length > 0 ? (
-        <section className="space-y-2">
-          <div className="flex flex-wrap items-center justify-between gap-2">
+        <section className="feed-card flex min-h-0 min-w-0 flex-col p-3 sm:p-4">
+          <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2">
             <h2 className="text-start text-sm font-semibold text-foreground">
               {t("jobs.sectionMyPublished")}
             </h2>
             <MarkAllApplicationsRead visible={hasUnreadApplications} />
           </div>
-          <div className="space-y-2">
-            {feed.mine.map((job) => (
-              <JobCard key={job.id} job={job} defaultApplicantName={defaultApplicantName} />
-            ))}
+          <div className="jobs-panel-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain pe-0.5 lg:max-h-[min(16rem,40vh)]">
+            <div className="space-y-2">
+              {feed.mine.map((job) => (
+                <JobCard key={job.id} job={job} defaultApplicantName={defaultApplicantName} />
+              ))}
+            </div>
           </div>
         </section>
       ) : null}
 
       {feed.community.length > 0 ? (
-        <section className="space-y-2">
-          {feed.mine.length > 0 ? (
-            <h2 className="text-start text-sm font-semibold text-foreground">
-              {t("jobs.sectionCommunity")}
-            </h2>
-          ) : null}
-          <div className="space-y-2">
-            {feed.community.map((job) => (
-              <JobCard key={job.id} job={job} defaultApplicantName={defaultApplicantName} />
-            ))}
+        <section className="feed-card flex min-h-0 min-w-0 flex-col p-3 sm:p-4">
+          <h2 className="mb-2 shrink-0 text-start text-sm font-semibold text-foreground">
+            {hasSearchFilters ? t("jobs.sectionSearchResults") : t("jobs.sectionCommunity")}
+          </h2>
+          <div className="jobs-panel-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain pe-0.5 lg:max-h-[min(20rem,48vh)]">
+            <div className="space-y-2">
+              {feed.community.map((job) => (
+                <JobCard key={job.id} job={job} defaultApplicantName={defaultApplicantName} />
+              ))}
+            </div>
           </div>
-          <JobsPagination filters={filters} page={feed.page} totalPages={feed.totalPages} />
+          <div className="shrink-0 pt-2">
+            <JobsPagination filters={filters} page={feed.page} totalPages={feed.totalPages} />
+          </div>
         </section>
       ) : null}
     </div>

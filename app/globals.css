@@ -148,6 +148,11 @@ body {
   scrollbar-gutter: stable;
 }
 
+/* Jobs browse: two-column layout + scrollable panels */
+.jobs-panel-scroll {
+  scrollbar-gutter: stable;
+}
+
 /* Messages inbox: visible frame on page background (WEB + mobile) */
 .messages-thread-card {
   background: var(--card);
