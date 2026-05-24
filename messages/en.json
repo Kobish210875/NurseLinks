@@ -269,6 +269,7 @@
     "paginationNext": "Next",
     "paginationPage": "Page {page} of {total}",
     "openDetails": "Open job details",
+    "closeDetails": "Close",
     "noDescription": "No additional description provided.",
     "applySentShort": "Applied",
     "newApplication": "New application",

@@ -54,7 +54,7 @@ export default function JobCard({ job, defaultApplicantName }: JobCardProps) {
         >
           <div className="min-w-0 flex-1">
             <div className="flex min-w-0 flex-wrap items-center gap-1">
-              <h2 className="max-w-full truncate text-xs font-semibold text-foreground sm:text-sm">
+              <h2 className="max-w-full truncate text-sm font-semibold text-foreground sm:text-sm">
                 {job.title}
               </h2>
               {job.isUnread ? (
@@ -76,12 +76,12 @@ export default function JobCard({ job, defaultApplicantName }: JobCardProps) {
               ) : null}
             </div>
             {locationLine ? (
-              <p className="mt-0.5 truncate text-[11px] text-muted-foreground sm:text-xs">
+              <p className="mt-0.5 truncate text-xs text-muted-foreground sm:text-xs">
                 <span className="font-medium text-foreground/75">{t("jobs.jobLocation")}: </span>
                 {locationLine}
               </p>
             ) : null}
-            <p className="mt-0.5 text-[10px] text-muted-foreground sm:text-[11px]">
+            <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-[11px]">
               <time dateTime={job.createdAt}>{job.timeLabel}</time>
             </p>
           </div>

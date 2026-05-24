@@ -277,8 +277,18 @@ body {
     padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
   }
 
-  .job-detail-dialog-panel {
-    margin-bottom: var(--mobile-bottom-nav-offset);
+  body.job-detail-open .mobile-bottom-nav {
+    display: none;
+  }
+
+  .job-detail-panel {
+    max-height: min(78dvh, calc(100dvh - var(--mobile-bottom-nav-offset) - 2.5rem));
+  }
+}
+
+@media (min-width: 768px) {
+  body.job-detail-open .mobile-bottom-nav {
+    display: none;
   }
 }
 

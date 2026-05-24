@@ -46,8 +46,8 @@ export default function JobSearchPanel({
   return (
     <section className="feed-card min-w-0 space-y-3 p-3 sm:p-4 lg:space-y-2.5 lg:p-3">
       <div>
-        <h2 className="text-sm font-semibold text-foreground">{t("jobs.searchTitle")}</h2>
-        <p className="mt-0.5 text-xs text-muted-foreground lg:leading-snug">{t("jobs.searchHint")}</p>
+        <h2 className="text-[15px] font-semibold text-foreground sm:text-sm">{t("jobs.searchTitle")}</h2>
+        <p className="mt-0.5 text-sm text-muted-foreground sm:text-xs lg:leading-snug">{t("jobs.searchHint")}</p>
       </div>
 
       <form

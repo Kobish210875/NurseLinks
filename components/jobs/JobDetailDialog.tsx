@@ -32,6 +32,7 @@ export default function JobDetailDialog({
   const router = useRouter();
   const dialogRef = useRef<HTMLDivElement>(null);
   const markedReadRef = useRef(false);
+  const scrollLockYRef = useRef(0);
   const locationLine = formatJobLocation(job.hospital, job.city, locale);
   const canApply = !job.isOwner && !job.hasApplied;
 
@@ -40,13 +41,31 @@ export default function JobDetailDialog({
       markedReadRef.current = false;
       return;
     }
+
+    scrollLockYRef.current = window.scrollY;
+    const { overflow, position, top, width } = document.body.style;
+    document.body.classList.add("job-detail-open");
+    document.body.style.overflow = "hidden";
+    document.body.style.position = "fixed";
+    document.body.style.top = `-${scrollLockYRef.current}px`;
+    document.body.style.width = "100%";
+
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape" && !markFilledPending) {
         onClose();
       }
     }
     document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.classList.remove("job-detail-open");
+      document.body.style.overflow = overflow;
+      document.body.style.position = position;
+      document.body.style.top = top;
+      document.body.style.width = width;
+      window.scrollTo(0, scrollLockYRef.current);
+    };
   }, [open, onClose, markFilledPending]);
 
   const hasUnreadApplications = job.applications.some((app) => app.isUnread);
@@ -68,7 +87,7 @@ export default function JobDetailDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/45 p-0 sm:items-center sm:p-4"
+      className="job-detail-overlay fixed inset-0 z-[70] flex items-center justify-center bg-black/45 p-3 max-md:px-4 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="job-detail-title"
@@ -80,107 +99,112 @@ export default function JobDetailDialog({
     >
       <div
         ref={dialogRef}
-        className="feed-card max-h-[min(88dvh,calc(100dvh-var(--mobile-bottom-nav-offset)-1rem))] w-full max-w-md overflow-y-auto rounded-t-2xl p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom,0px))] shadow-lg sm:max-h-[min(85vh,32rem)] sm:rounded-2xl sm:pb-5"
+        className="job-detail-panel feed-card flex max-h-[min(78dvh,calc(100dvh-var(--mobile-bottom-nav-offset)-4rem))] w-full max-w-md flex-col overflow-hidden rounded-2xl shadow-xl sm:max-h-[min(85vh,32rem)]"
       >
-        <header className="text-start">
-          <h2 id="job-detail-title" className="text-base font-semibold text-foreground">
-            {job.title}
-          </h2>
-          {locationLine ? (
-            <p className="mt-1 text-sm text-muted-foreground">
-              <span className="font-medium text-foreground/80">{t("jobs.jobLocation")}: </span>
-              {locationLine}
+        <header className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-4 py-3 text-start sm:px-5 sm:py-4">
+          <div className="min-w-0 flex-1">
+            <h2 id="job-detail-title" className="text-base font-semibold text-foreground sm:text-lg">
+              {job.title}
+            </h2>
+            {locationLine ? (
+              <p className="mt-1 text-sm text-muted-foreground md:text-[15px]">
+                <span className="font-medium text-foreground/80">{t("jobs.jobLocation")}: </span>
+                {locationLine}
+              </p>
+            ) : null}
+            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">
+              <time dateTime={job.createdAt}>{job.timeLabel}</time>
             </p>
-          ) : null}
-          <p className="mt-1 text-xs text-muted-foreground">
-            <time dateTime={job.createdAt}>{job.timeLabel}</time>
-          </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={markFilledPending}
+            aria-label={t("jobs.closeDetails")}
+            className="job-detail-close shrink-0 rounded-full border border-border bg-white px-3 py-1.5 text-sm font-semibold text-muted-foreground transition hover:bg-muted disabled:opacity-60"
+          >
+            {t("jobs.closeDetails")}
+          </button>
         </header>
 
-        {job.body.trim() ? (
-          <p className="mt-4 whitespace-pre-wrap text-start text-sm leading-relaxed text-foreground">
-            {job.body}
-          </p>
-        ) : (
-          <p className="mt-4 text-sm text-muted-foreground">{t("jobs.noDescription")}</p>
-        )}
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3 sm:px-5 sm:py-4">
+          {job.body.trim() ? (
+            <p className="whitespace-pre-wrap text-start text-[15px] leading-relaxed text-foreground sm:text-sm">
+              {job.body}
+            </p>
+          ) : (
+            <p className="text-[15px] text-muted-foreground sm:text-sm">{t("jobs.noDescription")}</p>
+          )}
 
-        {job.isOwner && job.applications.length > 0 ? (
-          <section className="mt-4 rounded-lg border border-border bg-muted/25 p-3 text-start">
-            <h3 className="mb-2 text-xs font-semibold text-foreground">{t("jobs.applicationsTitle")}</h3>
-            <ul className="space-y-2">
-              {job.applications.map((app) => (
-                <li
-                  key={app.id}
-                  className="rounded-md border border-border/80 bg-white px-3 py-2 text-sm"
-                >
-                  <div className="flex items-center gap-2">
-                    {app.isUnread ? (
-                      <span
-                        className="inline-block size-2 shrink-0 rounded-full bg-primary"
-                        aria-hidden="true"
-                      />
+          {job.isOwner && job.applications.length > 0 ? (
+            <section className="mt-4 rounded-lg border border-border bg-muted/25 p-3 text-start">
+              <h3 className="mb-2 text-sm font-semibold text-foreground">{t("jobs.applicationsTitle")}</h3>
+              <ul className="space-y-2">
+                {job.applications.map((app) => (
+                  <li
+                    key={app.id}
+                    className="rounded-md border border-border/80 bg-white px-3 py-2 text-[15px] sm:text-sm"
+                  >
+                    <div className="flex items-center gap-2">
+                      {app.isUnread ? (
+                        <span
+                          className="inline-block size-2 shrink-0 rounded-full bg-primary"
+                          aria-hidden="true"
+                        />
+                      ) : null}
+                      <Link
+                        href={`/profile/${app.applicantId}`}
+                        className="font-medium text-primary hover:underline"
+                        onClick={() => onClose()}
+                      >
+                        {app.fullName}
+                      </Link>
+                    </div>
+                    <p className="mt-0.5 text-foreground" dir="ltr">
+                      <a href={`tel:${app.phone}`} className="hover:text-primary hover:underline">
+                        {app.phone}
+                      </a>
+                    </p>
+                    {app.note ? (
+                      <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{app.note}</p>
                     ) : null}
-                    <Link
-                      href={`/profile/${app.applicantId}`}
-                      className="font-medium text-primary hover:underline"
-                      onClick={() => onClose()}
-                    >
-                      {app.fullName}
-                    </Link>
-                  </div>
-                  <p className="mt-0.5 text-foreground" dir="ltr">
-                    <a href={`tel:${app.phone}`} className="hover:text-primary hover:underline">
-                      {app.phone}
-                    </a>
-                  </p>
-                  {app.note ? (
-                    <p className="mt-1 whitespace-pre-wrap text-xs text-muted-foreground">{app.note}</p>
-                  ) : null}
-                  <p className="mt-1 text-[10px] text-muted-foreground">{app.timeLabel}</p>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ) : null}
+                    <p className="mt-1 text-xs text-muted-foreground">{app.timeLabel}</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
 
-        {footerError ? (
-          <p className="mt-3 text-xs text-red-600" role="alert">
-            {footerError}
-          </p>
-        ) : null}
+          {footerError ? (
+            <p className="mt-3 text-sm text-red-600" role="alert">
+              {footerError}
+            </p>
+          ) : null}
+        </div>
 
-        <div className="mt-4 flex flex-wrap gap-2 border-t border-border pt-4">
+        <div className="flex shrink-0 flex-wrap gap-2 border-t border-border px-4 py-3 sm:px-5 sm:py-4">
           {canApply ? (
             <button
               type="button"
               onClick={onApply}
-              className="rounded-full border border-primary px-4 py-1.5 text-sm font-medium text-primary transition hover:bg-primary/5"
+              className="rounded-full border border-primary px-4 py-2 text-sm font-medium text-primary transition hover:bg-primary/5"
             >
               {t("jobs.apply")}
             </button>
           ) : null}
           {!job.isOwner && job.hasApplied ? (
-            <span className="self-center text-xs font-medium text-primary">{t("jobs.applySent")}</span>
+            <span className="self-center text-sm font-medium text-primary">{t("jobs.applySent")}</span>
           ) : null}
           {job.isOwner ? (
             <button
               type="button"
               onClick={onMarkFilled}
               disabled={markFilledPending}
-              className="rounded-full border border-border bg-white px-4 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted disabled:opacity-60"
+              className="rounded-full border border-border bg-white px-4 py-2 text-sm font-medium text-muted-foreground transition hover:bg-muted disabled:opacity-60"
             >
               {markFilledPending ? "..." : t("jobs.markFilled")}
             </button>
           ) : null}
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={markFilledPending}
-            className="rounded-full border border-border bg-white px-4 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted disabled:opacity-60"
-          >
-            {t("profile.cancel")}
-          </button>
         </div>
       </div>
     </div>
