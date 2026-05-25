@@ -86,7 +86,11 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
         >
           {t("messages.back")}
         </Link>
-        <span className="flex size-10 overflow-hidden rounded-full border border-border bg-primary/10">
+        <Link
+          href={`/profile/${peer.id}`}
+          className="flex size-10 overflow-hidden rounded-full border border-border bg-primary/10 transition hover:ring-2 hover:ring-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          aria-label={peer.fullName}
+        >
           {peer.avatarUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={peer.avatarUrl} alt="" className="size-full object-cover" />
@@ -95,7 +99,7 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
               {peer.initials}
             </span>
           )}
-        </span>
+        </Link>
         <div className="min-w-0 text-start">
           <Link
             href={`/profile/${peer.id}`}

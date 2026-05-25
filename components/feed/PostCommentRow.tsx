@@ -4,6 +4,7 @@ import { deletePostComment, toggleCommentLike } from "@/app/actions/feed";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { PostLikeIcon, formatEngagementCount } from "@/components/feed/PostEngagementIcons";
 import type { FeedComment } from "@/lib/data/feed";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
@@ -81,7 +82,11 @@ export default function PostCommentRow({
 
   return (
     <li className="flex gap-2 text-start">
-      <span className="flex size-8 shrink-0 overflow-hidden rounded-full border border-border bg-muted/40">
+      <Link
+        href={`/profile/${comment.authorId}`}
+        className="flex size-8 shrink-0 overflow-hidden rounded-full border border-border bg-muted/40 transition hover:ring-2 hover:ring-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+        aria-label={comment.authorName}
+      >
         {comment.authorAvatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={comment.authorAvatarUrl} alt="" className="size-full object-cover" />
@@ -90,7 +95,7 @@ export default function PostCommentRow({
             {comment.authorInitials}
           </span>
         )}
-      </span>
+      </Link>
       <div className="min-w-0 flex-1">
         <div className="post-comment-bubble rounded-lg bg-muted/25 px-3 py-2">
           <div className="flex flex-wrap items-baseline gap-2">

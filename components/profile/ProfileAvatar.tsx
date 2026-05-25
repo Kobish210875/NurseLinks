@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { uploadAvatar } from "@/app/profile/actions";
 import AvatarCropModal from "@/components/profile/AvatarCropModal";
 import { useT } from "@/components/i18n/LocaleProvider";
@@ -20,6 +21,7 @@ type ProfileAvatarProps = {
   initials: string;
   name: string;
   editable?: boolean;
+  profileHref?: string;
   sizeClassName?: string;
 };
 
@@ -28,6 +30,7 @@ export default function ProfileAvatar({
   initials,
   name,
   editable = false,
+  profileHref,
   sizeClassName = "size-28 text-2xl",
 }: ProfileAvatarProps) {
   const t = useT();
@@ -126,25 +129,47 @@ export default function ProfileAvatar({
     <>
       <div className="grid gap-1">
         <div className="relative inline-block w-fit shrink-0">
-          <div
-            className={`relative flex items-center justify-center overflow-hidden rounded-full border-4 border-card bg-primary/15 font-bold text-primary ${sizeClassName} ${
-              pending ? "opacity-80" : ""
-            }`}
-            role="img"
-            aria-label={name}
-          >
-            {shownUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={shownUrl}
-                alt=""
-                className="absolute inset-0 z-10 size-full object-cover"
-                referrerPolicy="no-referrer"
-              />
-            ) : (
-              <span className="relative z-0">{initials}</span>
-            )}
-          </div>
+          {profileHref ? (
+            <Link
+              href={profileHref}
+              className={`relative flex items-center justify-center overflow-hidden rounded-full border-4 border-card bg-primary/15 font-bold text-primary transition hover:ring-2 hover:ring-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${sizeClassName} ${
+                pending ? "opacity-80" : ""
+              }`}
+              aria-label={name}
+            >
+              {shownUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={shownUrl}
+                  alt=""
+                  className="absolute inset-0 z-10 size-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <span className="relative z-0">{initials}</span>
+              )}
+            </Link>
+          ) : (
+            <div
+              className={`relative flex items-center justify-center overflow-hidden rounded-full border-4 border-card bg-primary/15 font-bold text-primary ${sizeClassName} ${
+                pending ? "opacity-80" : ""
+              }`}
+              role="img"
+              aria-label={name}
+            >
+              {shownUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={shownUrl}
+                  alt=""
+                  className="absolute inset-0 z-10 size-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <span className="relative z-0">{initials}</span>
+              )}
+            </div>
+          )}
 
           {editable ? (
             <>

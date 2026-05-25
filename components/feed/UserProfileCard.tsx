@@ -48,6 +48,7 @@ export default function UserProfileCard({ user }: UserProfileCardProps) {
             initials={user.initials}
             name={user.fullName}
             editable
+            profileHref="/profile"
           />
         </div>
         <div className="text-center">
@@ -60,9 +61,9 @@ export default function UserProfileCard({ user }: UserProfileCardProps) {
         </div>
         <Link
           href="/profile"
-          className="mt-3 flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm font-semibold text-primary transition hover:border-primary/40 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+          className="mt-1.5 block text-center text-sm font-semibold text-foreground transition hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
         >
-          <span>{t("profile.myProfile")}</span>
+          {t("profile.myProfile")} <span aria-hidden="true">-</span>{" "}
           <span dir="ltr">{completionPercent}%</span>
         </Link>
         <form action={signOut} className="mt-4">
