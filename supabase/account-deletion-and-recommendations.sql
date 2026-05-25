@@ -20,8 +20,10 @@ create policy "Users can delete follows they are part of"
   to authenticated
   using (auth.uid() in (follower_id, following_id));
 
-create or replace function public.connection_recommendations(limit_count int default 10)
-returns table (profile_id uuid, mutual_count bigint)
+drop function if exists public.connection_recommendations(int);
+
+create function public.connection_recommendations(limit_count int default 10)
+returns table (profile_id uuid, mutual_count bigint, mutual_ids uuid[])
 language sql
 stable
 security definer
@@ -58,7 +60,10 @@ as $$
       on c.status = 'accepted'
       and mc.friend_id in (c.requester_id, c.addressee_id)
   )
-  select sd.candidate_id as profile_id, count(distinct sd.friend_id)::bigint as mutual_count
+  select
+    sd.candidate_id as profile_id,
+    count(distinct sd.friend_id)::bigint as mutual_count,
+    array_agg(distinct sd.friend_id order by sd.friend_id) as mutual_ids
   from second_degree sd
   join public.profiles p on p.id = sd.candidate_id
   where sd.candidate_id <> auth.uid()

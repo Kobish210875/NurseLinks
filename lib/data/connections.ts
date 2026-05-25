@@ -233,8 +233,12 @@ export async function getConnectionRecommendations(
 ): Promise<NetworkRecommendation[]> {
   const rows = await loadConnectionRows(supabase, userId);
   const rpc = await supabase.rpc("connection_recommendations", { limit_count: limit } as never);
-  const data = (rpc.data ?? []) as { profile_id: string; mutual_count: number }[];
-  const ids = data.map((row) => row.profile_id);
+  const data = (rpc.data ?? []) as {
+    profile_id: string;
+    mutual_count: number;
+    mutual_ids?: string[] | null;
+  }[];
+  const ids = [...new Set(data.flatMap((row) => [row.profile_id, ...(row.mutual_ids ?? [])]))];
   const profiles = await loadProfilesByIds(supabase, ids);
 
   return data
@@ -246,6 +250,21 @@ export async function getConnectionRecommendations(
       return {
         ...toMember(profile, resolveConnectionStatus(userId, row.profile_id, rows)),
         mutualCount: Number(row.mutual_count),
+        mutualConnections: (row.mutual_ids ?? [])
+          .map((id) => {
+            const mutual = profiles.get(id);
+            if (!mutual) {
+              return null;
+            }
+            const fullName = mutual.full_name.trim() || "User";
+            return {
+              id,
+              fullName,
+              avatarUrl: mutual.avatar_url,
+              initials: getInitials(fullName),
+            };
+          })
+          .filter((m): m is NonNullable<typeof m> => m !== null),
       } satisfies NetworkRecommendation;
     })
     .filter((m): m is NetworkRecommendation => m !== null);

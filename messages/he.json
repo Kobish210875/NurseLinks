@@ -224,6 +224,7 @@
   },
   "network": {
     "title": "הרשת שלי",
+    "backToNetwork": "חזרה לרשת שלי",
     "pendingCount": "{count} הזמנות",
     "count": "{count} חיבורים",
     "searchTitle": "חיפוש ברשת",
@@ -245,7 +246,9 @@
     "recommendationsTitle": "המלצות לחיבורים חדשים",
     "recommendationsHint": "מבוסס על חברים משותפים ברשת שלכם.",
     "noRecommendations": "אין כרגע המלצות חדשות.",
-    "mutualConnections": "{count} חיבורים משותפים"
+    "mutualConnections": "{count} חיבורים משותפים",
+    "mutualConnectionsTitle": "חברים משותפים",
+    "back": "חזרה"
   },
   "hospitals": {
     "sidebarTitle": "בתי חולים ומוסדות רפואיים",

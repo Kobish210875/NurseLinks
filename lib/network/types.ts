@@ -12,8 +12,16 @@ export type NetworkMember = {
   requesterId: string | null;
 };
 
+export type NetworkProfileSummary = {
+  id: string;
+  fullName: string;
+  avatarUrl: string | null;
+  initials: string;
+};
+
 export type NetworkRecommendation = NetworkMember & {
   mutualCount: number;
+  mutualConnections: NetworkProfileSummary[];
 };
 
 export type MessageThread = {

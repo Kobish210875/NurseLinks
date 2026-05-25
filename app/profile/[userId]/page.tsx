@@ -27,10 +27,10 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
 
   const supabase = await createClient();
   const profile = await getProfileView(supabase, userId, viewer.id);
+  const locale = await getLocale();
+  const t = createT(getMessages(locale));
 
   if (!profile) {
-    const locale = await getLocale();
-    const t = createT(getMessages(locale));
     return (
       <>
         <Navbar authenticated />
@@ -49,6 +49,11 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
     <>
       <Navbar authenticated />
       <main className="mx-auto max-w-[1128px] px-4 py-8">
+        <div className="mx-auto mb-4 max-w-xl text-start">
+          <Link href="/network" className="text-sm font-medium text-primary hover:underline">
+            {t("network.backToNetwork")}
+          </Link>
+        </div>
         <ProfileViewCard profile={profile} isOwnProfile={false} />
       </main>
       <Footer />

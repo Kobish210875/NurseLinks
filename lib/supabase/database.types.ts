@@ -355,6 +355,7 @@ export type Database = {
         Returns: {
           profile_id: string;
           mutual_count: number;
+          mutual_ids: string[];
         }[];
       };
       get_profile_cv_draft: {

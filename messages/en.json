@@ -224,6 +224,7 @@
   },
   "network": {
     "title": "My network",
+    "backToNetwork": "Back to my network",
     "pendingCount": "{count} invitations",
     "count": "{count} connections",
     "searchTitle": "Search network",
@@ -245,7 +246,9 @@
     "recommendationsTitle": "Recommended new connections",
     "recommendationsHint": "Based on mutual connections in your network.",
     "noRecommendations": "No new recommendations right now.",
-    "mutualConnections": "{count} mutual connections"
+    "mutualConnections": "{count} mutual connections",
+    "mutualConnectionsTitle": "Mutual connections",
+    "back": "Back"
   },
   "hospitals": {
     "sidebarTitle": "Hospitals & medical centers",
