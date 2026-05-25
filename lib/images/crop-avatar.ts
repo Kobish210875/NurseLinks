@@ -64,3 +64,25 @@ export function getAvatarCenteredOffset(
     y: (viewportSize - imageHeight * scale) / 2,
   };
 }
+
+export function clampAvatarOffset(
+  imageWidth: number,
+  imageHeight: number,
+  scale: number,
+  viewportSize: number,
+  offset: { x: number; y: number },
+) {
+  const scaledWidth = imageWidth * scale;
+  const scaledHeight = imageHeight * scale;
+
+  return {
+    x:
+      scaledWidth <= viewportSize
+        ? (viewportSize - scaledWidth) / 2
+        : Math.min(0, Math.max(viewportSize - scaledWidth, offset.x)),
+    y:
+      scaledHeight <= viewportSize
+        ? (viewportSize - scaledHeight) / 2
+        : Math.min(0, Math.max(viewportSize - scaledHeight, offset.y)),
+  };
+}

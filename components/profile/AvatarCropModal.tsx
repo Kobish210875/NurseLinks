@@ -2,6 +2,7 @@
 
 import { useT } from "@/components/i18n/LocaleProvider";
 import {
+  clampAvatarOffset,
   cropAvatarFile,
   getAvatarCenteredOffset,
   getAvatarCoverScale,
@@ -44,7 +45,15 @@ export default function AvatarCropModal({
       const h = img.naturalHeight;
       setImageSize({ w, h });
       const scale = getAvatarCoverScale(w, h, AVATAR_CROP_VIEWPORT, 1);
-      setOffset(getAvatarCenteredOffset(w, h, scale, AVATAR_CROP_VIEWPORT));
+      setOffset(
+        clampAvatarOffset(
+          w,
+          h,
+          scale,
+          AVATAR_CROP_VIEWPORT,
+          getAvatarCenteredOffset(w, h, scale, AVATAR_CROP_VIEWPORT),
+        ),
+      );
       setZoom(1);
     };
     img.src = previewUrl;
@@ -79,10 +88,12 @@ export default function AvatarCropModal({
       const focalY = (centerY - offset.y) / prevScale;
 
       setZoom(nextZoom);
-      setOffset({
-        x: centerX - focalX * nextScale,
-        y: centerY - focalY * nextScale,
-      });
+      setOffset(
+        clampAvatarOffset(imageSize.w, imageSize.h, nextScale, AVATAR_CROP_VIEWPORT, {
+          x: centerX - focalX * nextScale,
+          y: centerY - focalY * nextScale,
+        }),
+      );
     },
     [imageSize, offset.x, offset.y, zoom],
   );
@@ -101,13 +112,15 @@ export default function AvatarCropModal({
   }
 
   function onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
-    if (!dragRef.current) {
+    if (!dragRef.current || !imageSize) {
       return;
     }
-    setOffset({
-      x: dragRef.current.originX + (event.clientX - dragRef.current.startX),
-      y: dragRef.current.originY + (event.clientY - dragRef.current.startY),
-    });
+    setOffset(
+      clampAvatarOffset(imageSize.w, imageSize.h, scale, AVATAR_CROP_VIEWPORT, {
+        x: dragRef.current.originX + (event.clientX - dragRef.current.startX),
+        y: dragRef.current.originY + (event.clientY - dragRef.current.startY),
+      }),
+    );
   }
 
   function endDrag(event: React.PointerEvent<HTMLDivElement>) {
@@ -123,10 +136,17 @@ export default function AvatarCropModal({
     }
     setSaving(true);
     try {
+      const safeOffset = clampAvatarOffset(
+        imageSize.w,
+        imageSize.h,
+        scale,
+        AVATAR_CROP_VIEWPORT,
+        offset,
+      );
       const cropped = await cropAvatarFile(file, {
         viewportSize: AVATAR_CROP_VIEWPORT,
-        offsetX: offset.x,
-        offsetY: offset.y,
+        offsetX: safeOffset.x,
+        offsetY: safeOffset.y,
         scale,
       });
       const url = URL.createObjectURL(cropped);

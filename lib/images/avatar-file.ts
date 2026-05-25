@@ -23,3 +23,7 @@ export function isAllowedAvatarFile(file: File, maxBytes: number) {
   }
   return file.size > 0 && file.size <= maxBytes;
 }
+
+export function isSupportedAvatarFile(file: File) {
+  return file.size > 0 && resolveAvatarContentType(file) !== null;
+}

@@ -3,7 +3,7 @@
 import { uploadAvatar } from "@/app/profile/actions";
 import AvatarCropModal from "@/components/profile/AvatarCropModal";
 import { useT } from "@/components/i18n/LocaleProvider";
-import { isAllowedAvatarFile } from "@/lib/images/avatar-file";
+import { isSupportedAvatarFile } from "@/lib/images/avatar-file";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 
@@ -113,7 +113,7 @@ export default function ProfileAvatar({
 
     setUploadError(null);
 
-    if (!isAllowedAvatarFile(file, 2 * 1024 * 1024)) {
+    if (!isSupportedAvatarFile(file)) {
       setUploadError("invalid-file");
       return;
     }

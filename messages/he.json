@@ -211,7 +211,7 @@
     "cvEmptyOwn": "עדיין לא מילאתם את קורות החיים. ערכו את הפרופיל שלכם כדי להוסיף תוכן.",
     "cvEmptyOther": "המשתמש עדיין לא פרסם קורות חיים.",
     "photoUploadFailed": "לא ניתן להעלות את התמונה. נסו שוב.",
-    "photoInvalidFile": "יש לבחור תמונה JPG, PNG או WebP (עד 2MB).",
+    "photoInvalidFile": "יש לבחור תמונה JPG, PNG או WebP. תמונות גדולות יוקטנו אוטומטית.",
     "photoStorageMissing": "אחסון התמונות לא הוגדר ב-Supabase. הריצו את supabase/storage.sql."
   },
   "network": {

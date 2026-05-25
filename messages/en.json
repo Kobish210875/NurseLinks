@@ -211,7 +211,7 @@
     "cvEmptyOwn": "You have not filled in your CV yet. Edit your profile to add content.",
     "cvEmptyOther": "This user has not published a CV yet.",
     "photoUploadFailed": "Could not upload your photo. Please try again.",
-    "photoInvalidFile": "Please choose a JPG, PNG, or WebP image (up to 2MB).",
+    "photoInvalidFile": "Please choose a JPG, PNG, or WebP image. Large images will be resized automatically.",
     "photoStorageMissing": "Photo storage is not set up in Supabase. Run supabase/storage.sql."
   },
   "network": {
