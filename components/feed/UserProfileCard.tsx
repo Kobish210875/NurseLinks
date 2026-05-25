@@ -6,11 +6,25 @@ import { useT } from "@/components/i18n/LocaleProvider";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import type { CurrentUser } from "@/lib/auth/get-current-user";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
-import NurseLinkWordmark from "@/components/NurseLinkWordmark";
 
 type UserProfileCardProps = {
   user: CurrentUser;
 };
+
+function getProfileCompletionPercent(user: CurrentUser) {
+  const fields = [
+    user.headline,
+    user.workplaceInstitutionSlug,
+    user.licenseNumber,
+    user.city,
+    user.cvDraft.bio,
+    user.cvDraft.experience,
+    user.cvDraft.education,
+    user.cvDraft.certifications,
+  ];
+  const filled = fields.filter((value) => value?.trim()).length;
+  return Math.round((filled / fields.length) * 100);
+}
 
 export default function UserProfileCard({ user }: UserProfileCardProps) {
   const t = useT();
@@ -19,6 +33,7 @@ export default function UserProfileCard({ user }: UserProfileCardProps) {
     user.workplaceInstitutionSlug,
     t("profile.institutionOther"),
   );
+  const completionPercent = getProfileCompletionPercent(user);
 
   return (
     <div className="feed-card overflow-hidden">
@@ -35,17 +50,21 @@ export default function UserProfileCard({ user }: UserProfileCardProps) {
             editable
           />
         </div>
-        <Link href="/profile" className="block rounded-md hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30">
+        <div className="text-center">
           <h2 className="text-lg font-bold text-foreground">{user.fullName}</h2>
           {professionalLine ? (
             <p className="mt-0.5 text-sm text-muted-foreground">{professionalLine}</p>
           ) : (
             <p className="mt-0.5 text-sm text-primary">{t("profile.completeCv")}</p>
           )}
+        </div>
+        <Link
+          href="/profile"
+          className="mt-3 flex items-center justify-between rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm font-semibold text-primary transition hover:border-primary/40 hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+        >
+          <span>{t("profile.myProfile")}</span>
+          <span dir="ltr">{completionPercent}%</span>
         </Link>
-        <p className="mt-3 flex items-center gap-1.5 text-sm font-semibold text-primary">
-          <NurseLinkWordmark textClassName="text-primary" />
-        </p>
         <form action={signOut} className="mt-4">
           <button
             type="submit"

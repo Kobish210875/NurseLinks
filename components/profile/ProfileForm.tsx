@@ -104,15 +104,17 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
           />
         </div>
 
-        <CityCombobox
-          defaultCityHe={user.city ?? ""}
-          required={false}
-          onChange={markDirty}
-        />
       </div>
 
       <div className="feed-card space-y-5 p-6">
         <h2 className="text-sm font-semibold text-foreground">{t("profile.sectionCv")}</h2>
+
+        <CityCombobox
+          defaultCityHe={user.city ?? ""}
+          required={false}
+          labelKey="profile.residenceCity"
+          onChange={markDirty}
+        />
 
         {(
           [
