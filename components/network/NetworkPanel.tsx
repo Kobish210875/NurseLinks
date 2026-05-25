@@ -4,13 +4,14 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { useT } from "@/components/i18n/LocaleProvider";
 import NavUnreadDot from "@/components/nav/NavUnreadDot";
-import type { NetworkMember } from "@/lib/network/types";
+import type { NetworkMember, NetworkRecommendation } from "@/lib/network/types";
 import MemberRow from "./MemberRow";
 
 type NetworkPanelProps = {
   connections: NetworkMember[];
   invitations: NetworkMember[];
   initialQuery?: string;
+  recommendations: NetworkRecommendation[];
   searchResults: NetworkMember[];
 };
 
@@ -20,7 +21,7 @@ function MemberList({
   emptyText,
 }: {
   members: NetworkMember[];
-  variant: "connection" | "search" | "invitation";
+  variant: "connection" | "search" | "invitation" | "recommendation";
   emptyText: string;
 }) {
   if (members.length === 0) {
@@ -42,6 +43,7 @@ export default function NetworkPanel({
   connections,
   invitations,
   initialQuery = "",
+  recommendations,
   searchResults,
 }: NetworkPanelProps) {
   const t = useT();
@@ -111,6 +113,24 @@ export default function NetworkPanel({
               members={searchResults}
               variant="search"
               emptyText={t("network.searchEmpty")}
+            />
+          </div>
+        </section>
+      ) : null}
+
+      {!showSearch && recommendations.length > 0 ? (
+        <section className="feed-card min-w-0 p-3 sm:p-4">
+          <h2 className="mb-1 text-start text-sm font-semibold text-foreground">
+            {t("network.recommendationsTitle")}
+          </h2>
+          <p className="mb-2 text-start text-xs text-muted-foreground">
+            {t("network.recommendationsHint")}
+          </p>
+          <div className="network-members-scroll max-h-[min(16rem,calc(100vh-14rem))] overflow-y-auto overscroll-contain pe-0.5">
+            <MemberList
+              members={recommendations}
+              variant="recommendation"
+              emptyText={t("network.noRecommendations")}
             />
           </div>
         </section>

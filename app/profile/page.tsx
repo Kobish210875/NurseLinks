@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import Footer from "@/components/Footer";
+import DeleteAccountSection from "@/components/profile/DeleteAccountSection";
 import Navbar from "@/components/Navbar";
 import ProfileForm from "@/components/profile/ProfileForm";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
@@ -29,15 +30,20 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
       ? t("errors.invalid-city")
       : params.error === "invalid-institution"
         ? t("profile.saveFailed")
-      : params.error === "save-failed"
-        ? t("profile.saveFailed")
-        : null;
+        : params.error === "save-failed"
+          ? t("profile.saveFailed")
+          : params.error === "delete-not-configured"
+            ? t("profile.deleteNotConfigured")
+            : params.error === "delete-failed"
+              ? t("profile.deleteFailed")
+              : null;
 
   return (
     <>
       <Navbar authenticated />
-      <main className="mx-auto max-w-[1128px] px-4 py-8">
+      <main className="mx-auto max-w-[1128px] space-y-6 px-4 py-8">
         <ProfileForm user={user} saved={params.saved === "1"} error={errorMessage} />
+        <DeleteAccountSection />
       </main>
       <Footer />
     </>

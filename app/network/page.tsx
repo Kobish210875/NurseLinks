@@ -5,6 +5,7 @@ import NetworkPanel from "@/components/network/NetworkPanel";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import {
   getAcceptedConnections,
+  getConnectionRecommendations,
   getPendingInvitations,
   searchPeople,
 } from "@/lib/data/connections";
@@ -28,10 +29,11 @@ export default async function NetworkPage({ searchParams }: NetworkPageProps) {
   const query = typeof params.q === "string" ? params.q.trim() : "";
   const supabase = await createClient();
 
-  const [connections, invitations, searchResults] = await Promise.all([
+  const [connections, invitations, searchResults, recommendations] = await Promise.all([
     getAcceptedConnections(supabase, user.id),
     getPendingInvitations(supabase, user.id),
     query.length >= 2 ? searchPeople(supabase, user.id, query) : Promise.resolve([]),
+    query.length >= 2 ? Promise.resolve([]) : getConnectionRecommendations(supabase, user.id),
   ]);
 
   return (
@@ -48,6 +50,7 @@ export default async function NetworkPage({ searchParams }: NetworkPageProps) {
             connections={connections}
             invitations={invitations}
             initialQuery={query}
+            recommendations={recommendations}
             searchResults={searchResults}
           />
         </div>

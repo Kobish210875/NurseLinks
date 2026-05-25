@@ -39,10 +39,11 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     license_number: string | null;
     avatar_url: string | null;
     cv_draft?: CvDraft | null;
+    deleted_at?: string | null;
   };
 
   const fullSelect =
-    "full_name, headline, workplace_institution_slug, city, license_number, avatar_url, cv_draft";
+    "full_name, headline, workplace_institution_slug, city, license_number, avatar_url, cv_draft, deleted_at";
 
   let profile: ProfileRow | null = null;
 
@@ -52,7 +53,8 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     .eq("id", user.id)
     .maybeSingle<ProfileRow>();
 
-  if (profileError?.message?.toLowerCase().includes("workplace_institution_slug")) {
+  const profileMsg = profileError?.message?.toLowerCase() ?? "";
+  if (profileMsg.includes("workplace_institution_slug") || profileMsg.includes("deleted_at")) {
     const { data: fallback } = await supabase
       .from("profiles")
       .select("full_name, headline, city, license_number, avatar_url, cv_draft")
@@ -61,6 +63,10 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     profile = fallback ?? null;
   } else {
     profile = profileFull ?? null;
+  }
+
+  if (profile?.deleted_at) {
+    return null;
   }
 
   const metadata = user.user_metadata as {

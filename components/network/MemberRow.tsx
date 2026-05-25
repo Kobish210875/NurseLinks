@@ -8,14 +8,14 @@ import {
   sendConnectionRequest,
 } from "@/app/actions/connections";
 import { useT } from "@/components/i18n/LocaleProvider";
-import type { NetworkMember } from "@/lib/network/types";
+import type { ConnectionStatus, NetworkMember } from "@/lib/network/types";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
 import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 type MemberRowProps = {
-  member: NetworkMember;
-  variant?: "connection" | "search" | "invitation";
+  member: NetworkMember & { mutualCount?: number };
+  variant?: "connection" | "search" | "invitation" | "recommendation";
 };
 
 const actionBtn =
@@ -28,16 +28,31 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
   const t = useT();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [optimisticStatus, setOptimisticStatus] = useState<ConnectionStatus>(member.connectionStatus);
 
-  function run(action: () => Promise<unknown>) {
+  useEffect(() => {
+    setOptimisticStatus(member.connectionStatus);
+  }, [member.connectionStatus]);
+
+  function hasActionError(result: unknown): result is { error: string } {
+    return Boolean(result && typeof result === "object" && "error" in result);
+  }
+
+  function run(action: () => Promise<unknown>, nextStatus: ConnectionStatus) {
+    const previous = optimisticStatus;
+    setOptimisticStatus(nextStatus);
     startTransition(async () => {
-      await action();
+      const result = await action();
+      if (hasActionError(result)) {
+        setOptimisticStatus(previous);
+        return;
+      }
       router.refresh();
     });
   }
 
   const messageHref =
-    member.connectionStatus === "connected" ? `/messages/${member.id}` : undefined;
+    optimisticStatus === "connected" ? `/messages/${member.id}` : undefined;
   const professionalLine = formatProfileHeadline(
     member.headline,
     member.workplaceInstitutionSlug,
@@ -74,6 +89,11 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
                 {professionalLine}
               </p>
             ) : null}
+            {member.mutualCount ? (
+              <p className="truncate text-[11px] text-primary sm:text-xs">
+                {t("network.mutualConnections").replace("{count}", String(member.mutualCount))}
+              </p>
+            ) : null}
           </div>
 
           <div className="flex max-w-[42%] shrink-0 flex-wrap items-center justify-end gap-1">
@@ -82,7 +102,7 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
                 <button
                   type="button"
                   disabled={pending}
-                  onClick={() => run(() => acceptConnectionRequest(member.id))}
+                  onClick={() => run(() => acceptConnectionRequest(member.id), "connected")}
                   className={`${actionBtn} border-primary bg-primary text-primary-foreground hover:bg-primary/90`}
                 >
                   {t("network.accept")}
@@ -90,7 +110,7 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
                 <button
                   type="button"
                   disabled={pending}
-                  onClick={() => run(() => rejectConnectionRequest(member.id))}
+                  onClick={() => run(() => rejectConnectionRequest(member.id), "none")}
                   className={`${actionBtn} border-border text-muted-foreground hover:bg-muted/60`}
                 >
                   {t("network.ignore")}
@@ -98,34 +118,34 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
               </>
             ) : null}
 
-            {variant === "search" ? (
+            {variant === "search" || variant === "recommendation" ? (
               <>
-                {member.connectionStatus === "none" ? (
+                {optimisticStatus === "none" ? (
                   <button
                     type="button"
                     disabled={pending}
-                    onClick={() => run(() => sendConnectionRequest(member.id))}
+                    onClick={() => run(() => sendConnectionRequest(member.id), "pending_out")}
                     className={`${actionBtn} border-primary text-primary hover:bg-primary/5`}
                   >
                     {t("network.connect")}
                   </button>
                 ) : null}
-                {member.connectionStatus === "pending_out" ? (
+                {optimisticStatus === "pending_out" ? (
                   <button
                     type="button"
                     disabled={pending}
-                    onClick={() => run(() => cancelConnectionRequest(member.id))}
+                    onClick={() => run(() => cancelConnectionRequest(member.id), "none")}
                     className={`${actionBtn} border-border text-muted-foreground`}
                   >
                     {t("network.pending")}
                   </button>
                 ) : null}
-                {member.connectionStatus === "pending_in" ? (
+                {optimisticStatus === "pending_in" ? (
                   <>
                     <button
                       type="button"
                       disabled={pending}
-                      onClick={() => run(() => acceptConnectionRequest(member.id))}
+                      onClick={() => run(() => acceptConnectionRequest(member.id), "connected")}
                       className={`${actionBtn} border-primary bg-primary text-primary-foreground`}
                     >
                       {t("network.accept")}
@@ -133,14 +153,14 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
                     <button
                       type="button"
                       disabled={pending}
-                      onClick={() => run(() => rejectConnectionRequest(member.id))}
+                      onClick={() => run(() => rejectConnectionRequest(member.id), "none")}
                       className={`${actionBtn} border-border text-muted-foreground`}
                     >
                       {t("network.ignore")}
                     </button>
                   </>
                 ) : null}
-                {member.connectionStatus === "connected" && messageHref ? (
+                {optimisticStatus === "connected" && messageHref ? (
                   <Link href={messageHref} className={msgBtn}>
                     {t("network.message")}
                   </Link>

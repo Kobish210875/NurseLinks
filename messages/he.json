@@ -212,7 +212,14 @@
     "cvEmptyOther": "המשתמש עדיין לא פרסם קורות חיים.",
     "photoUploadFailed": "לא ניתן להעלות את התמונה. נסו שוב.",
     "photoInvalidFile": "יש לבחור תמונה JPG, PNG או WebP. תמונות גדולות יוקטנו אוטומטית.",
-    "photoStorageMissing": "אחסון התמונות לא הוגדר ב-Supabase. הריצו את supabase/storage.sql."
+    "photoStorageMissing": "אחסון התמונות לא הוגדר ב-Supabase. הריצו את supabase/storage.sql.",
+    "deletedUser": "משתמש שנמחק",
+    "deleteAccountTitle": "מחיקת חשבון",
+    "deleteAccountDescription": "מחיקת החשבון תסיר את הפרופיל והקשרים מהרשת. פוסטים, תגובות ולייקים שפורסמו בעבר יישמרו ללא פרטים מזהים.",
+    "deleteAccountButton": "מחיקת החשבון שלי",
+    "deleteAccountConfirm": "למחוק את החשבון? הפעולה תסיר את הפרופיל והקשרים ולא ניתן לבטל אותה.",
+    "deleteFailed": "לא ניתן למחוק את החשבון כרגע. נסו שוב.",
+    "deleteNotConfigured": "מחיקת חשבון לא הוגדרה בשרת. הריצו את supabase/account-deletion-and-recommendations.sql."
   },
   "network": {
     "title": "הרשת שלי",
@@ -233,7 +240,11 @@
     "accept": "אישור",
     "ignore": "דחייה",
     "message": "הודעה",
-    "connectedOn": "מחוברים מאז"
+    "connectedOn": "מחוברים מאז",
+    "recommendationsTitle": "המלצות לחיבורים חדשים",
+    "recommendationsHint": "מבוסס על חברים משותפים ברשת שלכם.",
+    "noRecommendations": "אין כרגע המלצות חדשות.",
+    "mutualConnections": "{count} חיבורים משותפים"
   },
   "hospitals": {
     "sidebarTitle": "בתי חולים ומוסדות רפואיים",

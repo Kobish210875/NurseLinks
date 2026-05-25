@@ -212,7 +212,14 @@
     "cvEmptyOther": "This user has not published a CV yet.",
     "photoUploadFailed": "Could not upload your photo. Please try again.",
     "photoInvalidFile": "Please choose a JPG, PNG, or WebP image. Large images will be resized automatically.",
-    "photoStorageMissing": "Photo storage is not set up in Supabase. Run supabase/storage.sql."
+    "photoStorageMissing": "Photo storage is not set up in Supabase. Run supabase/storage.sql.",
+    "deletedUser": "Deleted user",
+    "deleteAccountTitle": "Delete account",
+    "deleteAccountDescription": "Deleting your account removes your profile and network connections. Existing posts, comments, and likes stay without identifying details.",
+    "deleteAccountButton": "Delete my account",
+    "deleteAccountConfirm": "Delete your account? This removes your profile and connections and cannot be undone.",
+    "deleteFailed": "Could not delete the account right now. Please try again.",
+    "deleteNotConfigured": "Account deletion is not configured on the server. Run supabase/account-deletion-and-recommendations.sql."
   },
   "network": {
     "title": "My network",
@@ -233,7 +240,11 @@
     "accept": "Accept",
     "ignore": "Ignore",
     "message": "Message",
-    "connectedOn": "Connected since"
+    "connectedOn": "Connected since",
+    "recommendationsTitle": "Recommended new connections",
+    "recommendationsHint": "Based on mutual connections in your network.",
+    "noRecommendations": "No new recommendations right now.",
+    "mutualConnections": "{count} mutual connections"
   },
   "hospitals": {
     "sidebarTitle": "Hospitals & medical centers",

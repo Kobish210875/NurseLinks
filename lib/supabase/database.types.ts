@@ -19,6 +19,7 @@ export type Database = {
           city: string | null;
           avatar_url: string | null;
           cv_draft: Json | null;
+          deleted_at: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -31,6 +32,7 @@ export type Database = {
           city?: string | null;
           avatar_url?: string | null;
           cv_draft?: Json | null;
+          deleted_at?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -42,6 +44,7 @@ export type Database = {
           city?: string | null;
           avatar_url?: string | null;
           cv_draft?: Json | null;
+          deleted_at?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -346,6 +349,13 @@ export type Database = {
       users_are_connected: {
         Args: { user_a: string; user_b: string };
         Returns: boolean;
+      };
+      connection_recommendations: {
+        Args: { limit_count?: number };
+        Returns: {
+          profile_id: string;
+          mutual_count: number;
+        }[];
       };
       get_profile_cv_draft: {
         Args: { target_id: string };

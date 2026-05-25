@@ -29,6 +29,7 @@ type ProfileRow = {
   license_number: string | null;
   avatar_url: string | null;
   cv_draft?: CvDraft | null;
+  deleted_at?: string | null;
 };
 
 function normalizeCvDraft(raw: unknown): CvDraft {
@@ -85,14 +86,14 @@ export async function getProfileView(
 ): Promise<ProfileView | null> {
   const withCv = await supabase
     .from("profiles")
-    .select("id, full_name, headline, workplace_institution_slug, city, license_number, avatar_url, cv_draft")
+    .select("id, full_name, headline, workplace_institution_slug, city, license_number, avatar_url, cv_draft, deleted_at")
     .eq("id", profileId)
     .maybeSingle();
 
   let profile: ProfileRow | null = null;
 
   const errMsg = withCv.error?.message?.toLowerCase() ?? "";
-  if (errMsg.includes("workplace_institution_slug")) {
+  if (errMsg.includes("workplace_institution_slug") || errMsg.includes("deleted_at")) {
     const { data: fallback } = await supabase
       .from("profiles")
       .select("id, full_name, headline, city, license_number, avatar_url, cv_draft")
@@ -110,7 +111,7 @@ export async function getProfileView(
     profile = (withCv.data as ProfileRow | null) ?? null;
   }
 
-  if (!profile) {
+  if (!profile || profile.deleted_at) {
     return null;
   }
 

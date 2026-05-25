@@ -12,6 +12,10 @@ export type NetworkMember = {
   requesterId: string | null;
 };
 
+export type NetworkRecommendation = NetworkMember & {
+  mutualCount: number;
+};
+
 export type MessageThread = {
   peerId: string;
   peerName: string;

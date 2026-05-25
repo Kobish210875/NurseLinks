@@ -1,6 +1,6 @@
 import { getInitials } from "@/lib/auth/initials";
 import { resolveWorkplaceSlug } from "@/lib/profile/workplace";
-import type { ConnectionStatus, NetworkMember } from "@/lib/network/types";
+import type { ConnectionStatus, NetworkMember, NetworkRecommendation } from "@/lib/network/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -19,6 +19,7 @@ type ProfileRow = {
   workplace_institution_slug?: string | null;
   avatar_url: string | null;
   cv_draft?: unknown;
+  deleted_at?: string | null;
 };
 
 function escapeIlike(value: string) {
@@ -76,10 +77,11 @@ async function loadProfilesByIds(
   }
 
   const selectWithWorkplace =
-    "id, full_name, headline, workplace_institution_slug, avatar_url, cv_draft";
+    "id, full_name, headline, workplace_institution_slug, avatar_url, cv_draft, deleted_at";
   let { data, error } = await supabase.from("profiles").select(selectWithWorkplace).in("id", ids);
 
-  if (error?.message?.toLowerCase().includes("workplace_institution_slug")) {
+  const msg = error?.message?.toLowerCase() ?? "";
+  if (msg.includes("workplace_institution_slug") || msg.includes("deleted_at")) {
     const fallback = await supabase
       .from("profiles")
       .select("id, full_name, headline, avatar_url, cv_draft")
@@ -87,7 +89,11 @@ async function loadProfilesByIds(
     data = fallback.data;
   }
 
-  return new Map(((data ?? []) as ProfileRow[]).map((p) => [p.id, p]));
+  return new Map(
+    ((data ?? []) as ProfileRow[])
+      .filter((p) => !p.deleted_at)
+      .map((p) => [p.id, p]),
+  );
 }
 
 function toMember(
@@ -194,13 +200,15 @@ export async function searchPeople(
 
   let { data: profilesRaw, error: searchError } = await supabase
     .from("profiles")
-    .select("id, full_name, headline, workplace_institution_slug, avatar_url, cv_draft")
+    .select("id, full_name, headline, workplace_institution_slug, avatar_url, cv_draft, deleted_at")
     .neq("id", userId)
+    .is("deleted_at", null)
     .ilike("full_name", pattern)
     .order("full_name", { ascending: true })
     .limit(limit);
 
-  if (searchError?.message?.toLowerCase().includes("workplace_institution_slug")) {
+  const searchMsg = searchError?.message?.toLowerCase() ?? "";
+  if (searchMsg.includes("workplace_institution_slug") || searchMsg.includes("deleted_at")) {
     const fallback = await supabase
       .from("profiles")
       .select("id, full_name, headline, avatar_url, cv_draft")
@@ -213,9 +221,34 @@ export async function searchPeople(
 
   const profiles = (profilesRaw ?? []) as ProfileRow[];
 
-  return profiles.map((p) =>
-    toMember(p, resolveConnectionStatus(userId, p.id, rows)),
-  );
+  return profiles
+    .filter((p) => !p.deleted_at)
+    .map((p) => toMember(p, resolveConnectionStatus(userId, p.id, rows)));
+}
+
+export async function getConnectionRecommendations(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  limit = 10,
+): Promise<NetworkRecommendation[]> {
+  const rows = await loadConnectionRows(supabase, userId);
+  const rpc = await supabase.rpc("connection_recommendations", { limit_count: limit } as never);
+  const data = (rpc.data ?? []) as { profile_id: string; mutual_count: number }[];
+  const ids = data.map((row) => row.profile_id);
+  const profiles = await loadProfilesByIds(supabase, ids);
+
+  return data
+    .map((row) => {
+      const profile = profiles.get(row.profile_id);
+      if (!profile) {
+        return null;
+      }
+      return {
+        ...toMember(profile, resolveConnectionStatus(userId, row.profile_id, rows)),
+        mutualCount: Number(row.mutual_count),
+      } satisfies NetworkRecommendation;
+    })
+    .filter((m): m is NetworkRecommendation => m !== null);
 }
 
 export async function getNetworkPeer(
