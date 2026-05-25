@@ -284,22 +284,22 @@ body {
 
   .message-thread-shell {
     margin-bottom: 0;
+    overflow: visible;
   }
 
   .message-thread-messages {
+    flex: none !important;
+    overflow: visible !important;
     padding-bottom: 0.5rem;
   }
 
   .message-thread-end-anchor {
-    scroll-margin-bottom: calc(var(--mobile-bottom-nav-offset) + 11rem);
+    scroll-margin-bottom: calc(var(--mobile-bottom-nav-offset) + 1rem);
   }
 
   .message-thread-compose {
-    position: sticky;
-    bottom: var(--mobile-bottom-nav-offset);
-    z-index: 20;
+    position: static;
     background: var(--card);
-    padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px));
   }
 
   body.job-detail-open .mobile-bottom-nav {

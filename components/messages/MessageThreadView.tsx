@@ -155,12 +155,6 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
               ))
             )}
           </ul>
-          <div
-            ref={messagesEndRef}
-            className="message-thread-end-anchor h-px shrink-0"
-            aria-hidden="true"
-          />
-
           <form action={submit} className="message-thread-compose shrink-0 border-t border-border p-4">
             <label className="sr-only" htmlFor="message-body">
               {t("messages.inputLabel")}
@@ -189,6 +183,11 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
               </button>
             </div>
           </form>
+          <div
+            ref={messagesEndRef}
+            className="message-thread-end-anchor h-px shrink-0"
+            aria-hidden="true"
+          />
         </>
       )}
     </div>
