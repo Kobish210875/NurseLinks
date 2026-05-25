@@ -48,18 +48,19 @@ export default function LoginForm({ errorMessage, successMessage }: LoginFormPro
         </label>
 
         <label className="grid gap-1.5">
-          <div className="flex items-center justify-between gap-3">
-            <RequiredLabel>{t("register.password")}</RequiredLabel>
-            <Link href="/forgot-password" className="text-xs font-semibold text-primary hover:underline">
-              {t("login.forgotPassword")}
-            </Link>
-          </div>
+          <RequiredLabel>{t("register.password")}</RequiredLabel>
           <PasswordInput
             id="login-password"
             name="password"
             onValueChange={() => {}}
           />
         </label>
+        <Link
+          href="/forgot-password"
+          className="-mt-2 w-fit text-sm font-semibold text-primary hover:underline"
+        >
+          {t("login.forgotPassword")}
+        </Link>
       </div>
 
       <button
