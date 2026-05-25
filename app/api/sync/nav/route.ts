@@ -20,5 +20,8 @@ export async function GET() {
     getNavJobsUnreadCount(supabase, user.id),
   ]);
 
-  return NextResponse.json({ pendingInvitations, unreadMessages, unreadJobs });
+  return NextResponse.json(
+    { pendingInvitations, unreadMessages, unreadJobs },
+    { headers: { "Cache-Control": "no-store" } },
+  );
 }
