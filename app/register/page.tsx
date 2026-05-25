@@ -1,5 +1,6 @@
 import Navbar from "@/components/Navbar";
 import NurseLinkWordmark from "@/components/NurseLinkWordmark";
+import RegistrationSuccessDialog from "@/components/register/RegistrationSuccessDialog";
 import RegisterForm from "@/components/register/RegisterForm";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
@@ -33,8 +34,7 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
       ? t(`errors.${params.error}`)
       : decodeURIComponent(params.error)
     : null;
-  const successMessage =
-    params.success === "check-email" ? t("register.success") : null;
+  const registrationSucceeded = params.success === "check-email";
 
   return (
     <>
@@ -54,8 +54,9 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
             </ul>
           </div>
 
-          <RegisterForm serverError={errorMessage} successMessage={successMessage} />
+          <RegisterForm serverError={errorMessage} />
         </section>
+        <RegistrationSuccessDialog open={registrationSucceeded} />
       </main>
     </>
   );

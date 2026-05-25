@@ -15,10 +15,9 @@ const nonHebrewNameChars = /[^\u05D0-\u05EA\s\-'׳״.]/gu;
 
 type RegisterFormProps = {
   serverError?: string | null;
-  successMessage?: string | null;
 };
 
-export default function RegisterForm({ serverError, successMessage }: RegisterFormProps) {
+export default function RegisterForm({ serverError }: RegisterFormProps) {
   const t = useT();
   const [clientError, setClientError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -90,12 +89,6 @@ export default function RegisterForm({ serverError, successMessage }: RegisterFo
       {displayError ? (
         <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {displayError}
-        </p>
-      ) : null}
-
-      {successMessage ? (
-        <p className="mb-4 rounded-lg border border-accent/20 bg-accent/10 px-4 py-3 text-sm text-accent">
-          {successMessage}
         </p>
       ) : null}
 

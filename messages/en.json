@@ -166,7 +166,8 @@
     "fieldRequired": "Required field",
     "showPassword": "Show password",
     "hidePassword": "Hide password",
-    "success": "Registration started. Please check your email to confirm your account."
+    "successTitle": "Registration completed successfully",
+    "success": "Registration completed successfully. Please check your email inbox and confirm your account."
   },
   "login": {
     "title": "Sign in",
