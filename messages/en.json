@@ -173,8 +173,21 @@
     "subtitle": "Sign in to your NurseLinks account",
     "submit": "Sign in",
     "noAccount": "Don't have an account?",
+    "forgotPassword": "Forgot password?",
+    "forgotTitle": "Reset password",
+    "forgotSubtitle": "Enter your email address and we will send a password reset link.",
+    "sendResetLink": "Send reset link",
+    "resetEmailSent": "If an account exists for this email, a password reset link has been sent.",
+    "resetTitle": "Choose a new password",
+    "resetSubtitle": "Choose a new password. After saving, you will return to sign in with your email and password.",
+    "newPassword": "New password",
+    "updatePassword": "Save new password",
+    "resetSuccess": "Your password was updated. Sign in again with your email and new password.",
+    "backToLogin": "Back to sign in",
     "backToLanding": "Back to welcome",
-    "missing-fields": "Please enter your email and password."
+    "missing-fields": "Please enter your email and password.",
+    "missing-email": "Please enter your email.",
+    "missing-password": "Please enter a new password."
   },
   "profile": {
     "signOut": "Sign out",

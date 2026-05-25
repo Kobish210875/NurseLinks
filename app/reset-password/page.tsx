@@ -1,25 +1,26 @@
 import Link from "next/link";
 import LanguageToggle from "@/components/i18n/LanguageToggle";
-import LoginForm from "@/components/login/LoginForm";
+import ResetPasswordForm from "@/components/login/ResetPasswordForm";
 import NurseLinkWordmark from "@/components/NurseLinkWordmark";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
 
-type LoginPageProps = {
-  searchParams: Promise<{ error?: string; reset?: string }>;
+type ResetPasswordPageProps = {
+  searchParams: Promise<{ error?: string }>;
 };
 
-export default async function LoginPage({ searchParams }: LoginPageProps) {
+export default async function ResetPasswordPage({ searchParams }: ResetPasswordPageProps) {
   const locale = await getLocale();
   const t = createT(getMessages(locale));
   const params = await searchParams;
 
   const errorMessage = params.error
-    ? params.error === "login-missing-fields"
-      ? t("login.missing-fields")
-      : decodeURIComponent(params.error)
+    ? params.error === "missing-password"
+      ? t("login.missing-password")
+      : params.error.startsWith("password-")
+        ? t(`errors.${params.error}`)
+        : decodeURIComponent(params.error)
     : null;
-  const successMessage = params.reset === "success" ? t("login.resetSuccess") : null;
 
   return (
     <div className="feed-page flex min-h-screen flex-col">
@@ -30,7 +31,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <LanguageToggle />
       </header>
       <main className="flex flex-1 items-center justify-center px-4 py-10">
-        <LoginForm errorMessage={errorMessage} successMessage={successMessage} />
+        <ResetPasswordForm errorMessage={errorMessage} />
       </main>
     </div>
   );

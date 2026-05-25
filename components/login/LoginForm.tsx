@@ -11,9 +11,10 @@ const inputClassName =
 
 type LoginFormProps = {
   errorMessage?: string | null;
+  successMessage?: string | null;
 };
 
-export default function LoginForm({ errorMessage }: LoginFormProps) {
+export default function LoginForm({ errorMessage, successMessage }: LoginFormProps) {
   const t = useT();
 
   return (
@@ -24,6 +25,11 @@ export default function LoginForm({ errorMessage }: LoginFormProps) {
       {errorMessage ? (
         <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {errorMessage}
+        </p>
+      ) : null}
+      {successMessage ? (
+        <p className="mb-4 rounded-lg border border-accent/20 bg-accent/10 px-4 py-3 text-sm text-foreground">
+          {successMessage}
         </p>
       ) : null}
 
@@ -42,7 +48,12 @@ export default function LoginForm({ errorMessage }: LoginFormProps) {
         </label>
 
         <label className="grid gap-1.5">
-          <RequiredLabel>{t("register.password")}</RequiredLabel>
+          <div className="flex items-center justify-between gap-3">
+            <RequiredLabel>{t("register.password")}</RequiredLabel>
+            <Link href="/forgot-password" className="text-xs font-semibold text-primary hover:underline">
+              {t("login.forgotPassword")}
+            </Link>
+          </div>
           <PasswordInput
             id="login-password"
             name="password"
