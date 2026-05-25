@@ -61,7 +61,7 @@ export async function signUp(formData: FormData) {
         email,
         password,
         options: {
-          emailRedirectTo: `${origin}/auth/callback`,
+          emailRedirectTo: `${origin}/auth/callback?next=/home`,
           data: {
             full_name: fullName,
             headline: headline || null,

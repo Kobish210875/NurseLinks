@@ -19,7 +19,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       ? t("login.missing-fields")
       : params.error === "account-not-found"
         ? t("login.accountNotFound")
-      : decodeURIComponent(params.error)
+        : params.error === "auth-callback-failed"
+          ? t("login.authCallbackFailed")
+          : decodeURIComponent(params.error)
     : null;
   const successMessage = params.reset === "success" ? t("login.resetSuccess") : null;
 
