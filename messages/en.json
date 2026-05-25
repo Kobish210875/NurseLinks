@@ -185,6 +185,7 @@
     "resetSuccess": "Your password was updated. Sign in again with your email and new password.",
     "backToLogin": "Back to sign in",
     "backToLanding": "Back to welcome",
+    "accountNotFound": "This user does not exist or was deleted. Please register to the system.",
     "missing-fields": "Please enter your email and password.",
     "missing-email": "Please enter your email.",
     "missing-password": "Please enter a new password."

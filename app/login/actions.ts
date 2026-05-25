@@ -20,10 +20,42 @@ export async function signIn(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
+    const message = error.message.toLowerCase();
+    if (message.includes("invalid login credentials")) {
+      redirect("/login?error=account-not-found");
+    }
     redirect(`/login?error=${encodeURIComponent(error.message)}`);
+  }
+
+  const userId = signInData.user?.id;
+  if (!userId) {
+    await supabase.auth.signOut({ scope: "local" });
+    redirect("/login?error=account-not-found");
+  }
+
+  const profileWithDeletedAt = await supabase
+    .from("profiles")
+    .select("id, deleted_at")
+    .eq("id", userId)
+    .maybeSingle<{ id: string; deleted_at: string | null }>();
+
+  if (profileWithDeletedAt.error?.message.toLowerCase().includes("deleted_at")) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("id", userId)
+      .maybeSingle<{ id: string }>();
+
+    if (!profile) {
+      await supabase.auth.signOut({ scope: "local" });
+      redirect("/login?error=account-not-found");
+    }
+  } else if (!profileWithDeletedAt.data || profileWithDeletedAt.data.deleted_at) {
+    await supabase.auth.signOut({ scope: "local" });
+    redirect("/login?error=account-not-found");
   }
 
   await revokeOtherAuthSessions(supabase);
