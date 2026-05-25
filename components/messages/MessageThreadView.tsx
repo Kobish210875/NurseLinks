@@ -26,6 +26,7 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
   const messagesListRef = useRef<HTMLUListElement>(null);
 
   const canMessage = peer.connectionStatus === "connected";
+  const closeAfterSend = messages.length === 0;
 
   useEffect(() => {
     if (!canMessage || messages.length === 0) {
@@ -66,6 +67,10 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
       }
       if (res?.error) {
         setError(t("messages.sendFailed"));
+        return;
+      }
+      if (closeAfterSend) {
+        router.push("/messages");
         return;
       }
       router.refresh();
