@@ -4,15 +4,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { signUp } from "@/app/register/actions";
 import { useT } from "@/components/i18n/LocaleProvider";
-import { isValidIsraeliCity } from "@/lib/data/israeli-cities";
 import { validateHebrewNamePart } from "@/lib/validation/hebrew-name";
 import { validatePassword } from "@/lib/validation/password";
-import CityCombobox from "./CityCombobox";
 import PasswordInput from "./PasswordInput";
 import RequiredLabel from "./RequiredLabel";
 
 const inputClassName =
   "w-full max-w-full rounded-lg border border-border bg-white px-3 py-2.5 text-base outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm";
+const nonHebrewNameChars = /[^\u05D0-\u05EA\s\-'׳״.]/gu;
 
 type RegisterFormProps = {
   serverError?: string | null;
@@ -26,6 +25,14 @@ export default function RegisterForm({ serverError, successMessage }: RegisterFo
 
   const displayError = clientError ?? serverError;
 
+  function sanitizeHebrewNameInput(event: React.FormEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const hebrewOnly = input.value.replace(nonHebrewNameChars, "");
+    if (input.value !== hebrewOnly) {
+      input.value = hebrewOnly;
+    }
+  }
+
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     const form = event.currentTarget;
     const formData = new FormData(form);
@@ -35,7 +42,6 @@ export default function RegisterForm({ serverError, successMessage }: RegisterFo
     const lastName = String(formData.get("lastName") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
     const password = String(formData.get("password") ?? "");
-    const city = String(formData.get("city") ?? "").trim();
 
     if (!firstName) {
       errors.firstName = t("register.fieldRequired");
@@ -57,11 +63,6 @@ export default function RegisterForm({ serverError, successMessage }: RegisterFo
       if (passwordError) {
         errors.password = t(`errors.${passwordError}`);
       }
-    }
-    if (!city) {
-      errors.city = t("errors.invalid-city");
-    } else if (!isValidIsraeliCity(city)) {
-      errors.city = t("errors.invalid-city");
     }
 
     const errorKeys = Object.keys(errors);
@@ -109,6 +110,7 @@ export default function RegisterForm({ serverError, successMessage }: RegisterFo
             maxLength={40}
             className={inputClassName}
             placeholder={t("register.firstNamePlaceholder")}
+            onInput={sanitizeHebrewNameInput}
             aria-invalid={Boolean(fieldErrors.firstName)}
             aria-describedby="firstName-hint"
           />
@@ -130,6 +132,7 @@ export default function RegisterForm({ serverError, successMessage }: RegisterFo
             maxLength={40}
             className={inputClassName}
             placeholder={t("register.lastNamePlaceholder")}
+            onInput={sanitizeHebrewNameInput}
             aria-invalid={Boolean(fieldErrors.lastName)}
             aria-describedby="lastName-hint"
           />
@@ -203,10 +206,6 @@ export default function RegisterForm({ serverError, successMessage }: RegisterFo
             placeholder={t("register.headlinePlaceholder")}
           />
         </label>
-
-        <div className="sm:col-span-2">
-          <CityCombobox error={fieldErrors.city} />
-        </div>
       </div>
 
       <button

@@ -3,7 +3,6 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { isValidIsraeliCity, resolveCityCanonical } from "@/lib/data/israeli-cities";
 import { validateHebrewNamePart } from "@/lib/validation/hebrew-name";
 import { validatePassword } from "@/lib/validation/password";
 
@@ -34,19 +33,13 @@ export async function signUp(formData: FormData) {
   const email = getRequiredString(formData, "email").toLowerCase();
   const password = getRequiredString(formData, "password");
   const headline = getRequiredString(formData, "headline");
-  const city = getRequiredString(formData, "city");
 
-  if (!firstName || !lastName || !email || !password || !city) {
+  if (!firstName || !lastName || !email || !password) {
     redirect("/register?error=missing-fields");
   }
 
   if (validateHebrewNamePart(firstName) || validateHebrewNamePart(lastName)) {
     redirect("/register?error=invalid-hebrew-name");
-  }
-
-  const cityHe = resolveCityCanonical(city);
-  if (!cityHe || !isValidIsraeliCity(cityHe)) {
-    redirect("/register?error=invalid-city");
   }
 
   const passwordError = validatePassword(password);
@@ -72,7 +65,6 @@ export async function signUp(formData: FormData) {
           data: {
             full_name: fullName,
             headline: headline || null,
-            city: cityHe,
           },
         },
       });
