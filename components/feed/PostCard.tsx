@@ -266,6 +266,7 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
               key={c.id}
               comment={c}
               currentUserId={currentUserId}
+              isAdmin={isAdmin}
               onDeleted={() => {
                 setComments((prev) => prev.filter((row) => row.id !== c.id));
                 setCommentCount((n) => Math.max(0, n - 1));

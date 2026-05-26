@@ -325,11 +325,10 @@ export async function deletePostComment(commentId: string) {
     return { error: "unauthorized" as const };
   }
 
-  const { error } = await supabase
-    .from("post_comments")
-    .delete()
-    .eq("id", commentId)
-    .eq("author_id", user.id);
+  const isAdmin = await isCurrentUserAdmin();
+  const deleteClient = isAdmin ? (createAdminClient() ?? supabase) : supabase;
+  const deleteQuery = deleteClient.from("post_comments").delete().eq("id", commentId);
+  const { error } = isAdmin ? await deleteQuery : await deleteQuery.eq("author_id", user.id);
 
   if (error) {
     return { error: "delete-failed" as const };

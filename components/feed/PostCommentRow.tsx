@@ -11,12 +11,14 @@ import { useEffect, useState, useTransition } from "react";
 type PostCommentRowProps = {
   comment: FeedComment;
   currentUserId: string;
+  isAdmin?: boolean;
   onDeleted: () => void;
 };
 
 export default function PostCommentRow({
   comment,
   currentUserId,
+  isAdmin = false,
   onDeleted,
 }: PostCommentRowProps) {
   const t = useT();
@@ -28,6 +30,7 @@ export default function PostCommentRow({
   const [liked, setLiked] = useState(comment.likedByMe);
   const [likeCount, setLikeCount] = useState(comment.likeCount);
   const isAuthor = comment.authorId === currentUserId;
+  const canDelete = isAuthor || isAdmin;
 
   useEffect(() => {
     setLiked(comment.likedByMe);
@@ -62,7 +65,7 @@ export default function PostCommentRow({
   }
 
   function handleDelete() {
-    if (pendingDelete || !isAuthor) {
+    if (pendingDelete || !canDelete) {
       return;
     }
     if (!window.confirm(t("post.commentDeleteConfirm"))) {
@@ -105,7 +108,7 @@ export default function PostCommentRow({
             </time>
           </div>
           <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{comment.body}</p>
-          {isAuthor ? (
+          {canDelete ? (
             <div className="post-comment-delete-row mt-1.5 text-left">
               <button
                 type="button"
@@ -114,7 +117,11 @@ export default function PostCommentRow({
                 aria-label={t("post.commentDelete")}
                 className="post-comment-delete rounded-md px-0.5 py-0.5 text-[11px] font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-60"
               >
-                {pendingDelete ? "…" : t("post.commentDelete")}
+                {pendingDelete
+                  ? "…"
+                  : isAdmin && !isAuthor
+                    ? t("post.commentAdminDelete")
+                    : t("post.commentDelete")}
               </button>
             </div>
           ) : null}

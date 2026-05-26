@@ -61,7 +61,7 @@ export default async function MessageThreadPage({ params }: ThreadPageProps) {
             <>
               <MessagesAutoRefresh initialVersion={messagesVersion} peerId={peerId} />
               <MarkThreadReadOnOpen peerId={peerId} />
-              <MessageThreadView peer={peer} messages={messages} isAdmin={user.isAdmin} />
+              <MessageThreadView peer={peer} messages={messages} />
             </>
           )}
         </div>

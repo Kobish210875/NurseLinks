@@ -135,6 +135,7 @@
     "sendComment": "פרסום תגובה",
     "commentLikeAria": "לייק לתגובה",
     "commentDelete": "מחיקת תגובה",
+    "commentAdminDelete": "מחיקה כאדמין",
     "commentDeleteConfirm": "למחוק את התגובה? לא ניתן לבטל.",
     "commentLikesNotConfigured": "לייקים לתגובות לא הוגדרו. הריצו את supabase/post-comment-likes.sql ב-Supabase.",
     "delete": "מחיקה",
@@ -363,9 +364,6 @@
     "notConnected": "ניתן לשלוח הודעות רק למשתמשים שמחוברים אליכם.",
     "threadEmpty": "עדיין אין הודעות בשיחה הזו. כתבו את ההודעה הראשונה.",
     "unreadMessage": "הודעה חדשה",
-    "adminDelete": "מחיקה כאדמין",
-    "deleteConfirm": "למחוק את ההודעה? לא ניתן לבטל.",
-    "deleteFailed": "לא ניתן למחוק את ההודעה כרגע. נסו שוב.",
     "notConfigured": "מערכת ההודעות לא הוגדרה ב-Supabase. הריצו את supabase/connections-messaging.sql (או connections-messaging-fix.sql)."
   },
   "admin": {

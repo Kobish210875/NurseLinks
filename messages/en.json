@@ -135,6 +135,7 @@
     "sendComment": "Post comment",
     "commentLikeAria": "Like comment",
     "commentDelete": "Delete comment",
+    "commentAdminDelete": "Delete as admin",
     "commentDeleteConfirm": "Delete this comment? This cannot be undone.",
     "commentLikesNotConfigured": "Comment likes are not set up. Run supabase/post-comment-likes.sql in Supabase.",
     "delete": "Delete",
@@ -363,9 +364,6 @@
     "notConnected": "You can only message people you are connected with.",
     "threadEmpty": "No messages in this conversation yet. Send the first one.",
     "unreadMessage": "New message",
-    "adminDelete": "Delete as admin",
-    "deleteConfirm": "Delete this message? This cannot be undone.",
-    "deleteFailed": "Could not delete the message right now. Please try again.",
     "notConfigured": "Messaging is not set up in Supabase. Run supabase/connections-messaging.sql (or connections-messaging-fix.sql)."
   },
   "admin": {
