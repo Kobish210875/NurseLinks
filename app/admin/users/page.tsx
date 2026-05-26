@@ -46,10 +46,11 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
             : null;
 
   return (
-    <>
+    <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
       <Navbar authenticated />
-      <main className="mx-auto max-w-[1128px] space-y-5 px-4 py-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <main className="home-main-shell feed-page min-h-0 flex-1 overflow-hidden py-4 max-md:block max-md:flex-none max-md:overflow-x-clip max-md:py-8">
+        <div className="mx-auto flex h-full w-full max-w-[1128px] flex-col gap-3 overflow-hidden px-4 max-md:h-auto max-md:overflow-visible">
+        <div className="shrink-0 flex flex-wrap items-center justify-between gap-3">
           <div>
             <Link href="/admin" className="text-sm font-semibold text-primary hover:underline">
               {t("admin.backToAdmin")}
@@ -69,7 +70,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
           </p>
         ) : null}
 
-        <form className="feed-card flex flex-col gap-3 p-4 sm:flex-row">
+        <form className="feed-card shrink-0 flex flex-col gap-3 p-4 sm:flex-row">
           <input
             name="q"
             defaultValue={query}
@@ -84,14 +85,14 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
           </button>
         </form>
 
-        <section className="feed-card overflow-hidden">
+        <section className="feed-card flex min-h-0 flex-1 flex-col overflow-hidden">
           <div className="border-b border-border bg-muted/20 px-4 py-3">
             <h2 className="text-sm font-bold text-foreground">{t("admin.usersWindowTitle")}</h2>
             <p className="mt-1 text-xs text-muted-foreground">
               {query ? t("admin.usersWindowFilteredHint") : t("admin.usersWindowHint")}
             </p>
           </div>
-          <div className="max-h-[min(64dvh,42rem)] overflow-auto">
+          <div className="min-h-0 flex-1 overflow-auto">
             <table className="w-full min-w-[760px] text-start text-sm">
               <thead className="sticky top-0 z-10 bg-muted text-xs font-semibold text-muted-foreground shadow-sm">
                 <tr>
@@ -150,7 +151,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
           </div>
         </section>
 
-        <section className="feed-card flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm">
+        <section className="feed-card shrink-0 flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm">
           <div className="font-semibold text-foreground">
             {t("admin.usersCountLine")
               .replace("{shown}", String(summary.shown))
@@ -168,8 +169,11 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
             </span>
           </div>
         </section>
+        </div>
       </main>
-      <Footer />
-    </>
+      <div className="lg:hidden">
+        <Footer />
+      </div>
+    </div>
   );
 }
