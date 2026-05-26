@@ -1,4 +1,8 @@
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { User } from "@supabase/supabase-js";
+
+const USERS_PAGE_SIZE = 1000;
+const MAX_USER_PAGES = 20;
 
 export type AdminUserListItem = {
   id: string;
@@ -11,6 +15,14 @@ export type AdminUserListItem = {
   deletedAt: string | null;
 };
 
+export type AdminUsersSummary = {
+  total: number;
+  shown: number;
+  active: number;
+  pendingEmail: number;
+  deleted: number;
+};
+
 type ProfileRow = {
   id: string;
   full_name: string;
@@ -21,19 +33,34 @@ type ProfileRow = {
 export async function getAdminUsers(query = "") {
   const admin = createAdminClient();
   if (!admin) {
-    return { users: [] as AdminUserListItem[], error: "missing-service-role" };
+    return {
+      users: [] as AdminUserListItem[],
+      summary: { total: 0, shown: 0, active: 0, pendingEmail: 0, deleted: 0 },
+      error: "missing-service-role",
+    };
   }
 
-  const { data: authData, error: authError } = await admin.auth.admin.listUsers({
-    page: 1,
-    perPage: 200,
-  });
+  const authUsers: User[] = [];
+  for (let page = 1; page <= MAX_USER_PAGES; page += 1) {
+    const { data: authData, error: authError } = await admin.auth.admin.listUsers({
+      page,
+      perPage: USERS_PAGE_SIZE,
+    });
 
-  if (authError) {
-    return { users: [] as AdminUserListItem[], error: "load-failed" };
+    if (authError) {
+      return {
+        users: [] as AdminUserListItem[],
+        summary: { total: 0, shown: 0, active: 0, pendingEmail: 0, deleted: 0 },
+        error: "load-failed",
+      };
+    }
+
+    authUsers.push(...authData.users);
+    if (authData.users.length < USERS_PAGE_SIZE) {
+      break;
+    }
   }
 
-  const authUsers = authData.users;
   const ids = authUsers.map((user) => user.id);
   const { data: profiles } = ids.length
     ? await admin
@@ -46,7 +73,7 @@ export async function getAdminUsers(query = "") {
   const profilesById = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
   const normalizedQuery = query.trim().toLowerCase();
 
-  const users = authUsers
+  const allUsers = authUsers
     .map<AdminUserListItem>((user) => {
       const profile = profilesById.get(user.id);
       const email = user.email ?? "";
@@ -68,6 +95,9 @@ export async function getAdminUsers(query = "") {
         deletedAt: profile?.deleted_at ?? null,
       };
     })
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
+  const users = allUsers
     .filter((user) => {
       if (!normalizedQuery) {
         return true;
@@ -77,8 +107,15 @@ export async function getAdminUsers(query = "") {
         user.fullName.toLowerCase().includes(normalizedQuery) ||
         user.email.toLowerCase().includes(normalizedQuery)
       );
-    })
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    });
 
-  return { users, error: null };
+  const summary: AdminUsersSummary = {
+    total: allUsers.length,
+    shown: users.length,
+    active: allUsers.filter((user) => !user.deletedAt && user.emailConfirmedAt).length,
+    pendingEmail: allUsers.filter((user) => !user.deletedAt && !user.emailConfirmedAt).length,
+    deleted: allUsers.filter((user) => user.deletedAt).length,
+  };
+
+  return { users, summary, error: null };
 }

@@ -32,7 +32,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
   const t = createT(getMessages(locale));
   const params = await searchParams;
   const query = typeof params.q === "string" ? params.q.trim() : "";
-  const { users, error } = await getAdminUsers(query);
+  const { users, summary, error } = await getAdminUsers(query);
 
   const errorMessage =
     params.error === "missing-service-role" || error === "missing-service-role"
@@ -85,9 +85,15 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
         </form>
 
         <section className="feed-card overflow-hidden">
-          <div className="overflow-x-auto">
+          <div className="border-b border-border bg-muted/20 px-4 py-3">
+            <h2 className="text-sm font-bold text-foreground">{t("admin.usersWindowTitle")}</h2>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {query ? t("admin.usersWindowFilteredHint") : t("admin.usersWindowHint")}
+            </p>
+          </div>
+          <div className="max-h-[min(64dvh,42rem)] overflow-auto">
             <table className="w-full min-w-[760px] text-start text-sm">
-              <thead className="bg-muted/50 text-xs font-semibold text-muted-foreground">
+              <thead className="sticky top-0 z-10 bg-muted text-xs font-semibold text-muted-foreground shadow-sm">
                 <tr>
                   <th className="px-4 py-3">{t("admin.user")}</th>
                   <th className="px-4 py-3">{t("admin.status")}</th>
@@ -141,6 +147,25 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                 ) : null}
               </tbody>
             </table>
+          </div>
+        </section>
+
+        <section className="feed-card flex flex-wrap items-center justify-between gap-3 px-4 py-3 text-sm">
+          <div className="font-semibold text-foreground">
+            {t("admin.usersCountLine")
+              .replace("{shown}", String(summary.shown))
+              .replace("{total}", String(summary.total))}
+          </div>
+          <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+            <span className="rounded-full bg-primary/10 px-2.5 py-1 text-primary">
+              {t("admin.usersActiveCount").replace("{count}", String(summary.active))}
+            </span>
+            <span className="rounded-full bg-amber-50 px-2.5 py-1 text-amber-700">
+              {t("admin.usersPendingCount").replace("{count}", String(summary.pendingEmail))}
+            </span>
+            <span className="rounded-full bg-muted px-2.5 py-1">
+              {t("admin.usersDeletedCount").replace("{count}", String(summary.deleted))}
+            </span>
           </div>
         </section>
       </main>
