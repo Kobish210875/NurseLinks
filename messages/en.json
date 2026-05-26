@@ -28,7 +28,8 @@
     "pendingInvitations": "{count} pending connection invitations",
     "unreadMessages": "{count} new messages",
     "unreadJobs": "{count} new jobs",
-    "unreadJobsDot": "New updates in jobs"
+    "unreadJobsDot": "New updates in jobs",
+    "admin": "Admin"
   },
   "hero": {
     "badge": "Israel's professional network for nurses",
@@ -137,6 +138,7 @@
     "commentDeleteConfirm": "Delete this comment? This cannot be undone.",
     "commentLikesNotConfigured": "Comment likes are not set up. Run supabase/post-comment-likes.sql in Supabase.",
     "delete": "Delete",
+    "adminDelete": "Delete as admin",
     "deleteConfirm": "Delete this post and all its comments and likes? This cannot be undone."
   },
   "register": {
@@ -157,8 +159,10 @@
     "password": "Password",
     "passwordHint": "At least 8 characters in English, with numbers and one special character",
     "passwordPlaceholder": "English letters, numbers & symbols",
-    "headline": "Professional headline",
+    "headline": "Profession / role",
     "headlinePlaceholder": "RN, Intensive care",
+    "profession": "Profession / role",
+    "professionPlaceholder": "RN, Intensive care",
     "city": "City",
     "cityPlaceholder": "Start typing a city name",
     "submit": "Create account",
@@ -167,7 +171,8 @@
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "successTitle": "Registration completed successfully",
-    "success": "Registration completed successfully. Please check your email inbox and confirm your account."
+    "success": "Registration completed successfully. Please check your email inbox and confirm your account. After clicking the email link, you will be signed in automatically.",
+    "successCta": "OK"
   },
   "login": {
     "title": "Sign in",
@@ -188,6 +193,7 @@
     "backToLanding": "Back to welcome",
     "accountNotFound": "This user does not exist or was deleted. Please register to the system.",
     "authCallbackFailed": "Could not confirm the account from this link. Try opening the email link again or sign in.",
+    "authProfileFailed": "The account was verified, but the profile could not be completed. Please try signing in again in a moment.",
     "missing-fields": "Please enter your email and password.",
     "missing-email": "Please enter your email.",
     "missing-password": "Please enter a new password."
@@ -210,8 +216,8 @@
     "medicalInstitution": "Medical institution",
     "institutionPlaceholder": "Select institution",
     "institutionOther": "Other",
-    "headline": "Professional headline",
-    "headlinePlaceholder": "e.g. Senior nurse, internal medicine",
+    "headline": "Profession / role",
+    "headlinePlaceholder": "e.g. Senior nurse, intensive care",
     "licenseNumber": "License number",
     "residenceCity": "City of residence",
     "bio": "About me",
@@ -236,7 +242,7 @@
     "deleteAccountButton": "Delete my account",
     "deleteAccountConfirm": "Delete your account? This removes your profile and connections and cannot be undone.",
     "deleteFailed": "Could not delete the account right now. Please try again.",
-    "deleteNotConfigured": "Account deletion is not configured on the server. Run supabase/account-deletion-and-recommendations.sql."
+    "deleteNotConfigured": "Account deletion is not configured on the server. Run supabase/account-deletion-and-recommendations.sql and make sure SUPABASE_SERVICE_ROLE_KEY is set."
   },
   "network": {
     "title": "My network",
@@ -359,6 +365,37 @@
     "unreadMessage": "New message",
     "notConfigured": "Messaging is not set up in Supabase. Run supabase/connections-messaging.sql (or connections-messaging-fix.sql)."
   },
+  "admin": {
+    "eyebrow": "Maintenance console",
+    "badge": "Admin",
+    "title": "NurseLinks Admin",
+    "subtitle": "Internal tools for monitoring, maintenance, and user handling. Only admin users can access these screens.",
+    "usersTitle": "Users",
+    "usersDescription": "View all users, email verification status, and safely delete problematic or test users.",
+    "moderationTitle": "Reports and inappropriate content",
+    "healthTitle": "Performance and system health",
+    "comingSoon": "Coming in the next step.",
+    "backToAdmin": "Back to admin",
+    "searchUsers": "Search by name or email",
+    "user": "User",
+    "status": "Status",
+    "joinedAt": "Joined",
+    "lastLogin": "Last login",
+    "actions": "Actions",
+    "statusActive": "Active",
+    "statusPendingEmail": "Pending email verification",
+    "statusDeleted": "Deleted",
+    "deleteUser": "Safe delete",
+    "deletingUser": "Deleting...",
+    "deleteUserConfirm": "Delete {name}? The email will be released, the profile will be anonymized, and connections/private messages will be deleted.",
+    "alreadyDeleted": "Already deleted",
+    "noUsers": "No users found",
+    "userDeleted": "The user was safely deleted and the email was released for future registration.",
+    "missingServiceRole": "Admin actions are not configured on the server. Make sure SUPABASE_SERVICE_ROLE_KEY is set.",
+    "cannotDeleteSelf": "An admin cannot delete themselves.",
+    "cannotDeleteAdmin": "Admin users cannot be deleted from this screen.",
+    "deleteFailed": "Could not delete the user right now. Please try again."
+  },
   "errors": {
     "missing-fields": "Please fill in all required fields.",
     "invalid-city": "Please select a city from the list.",
@@ -366,6 +403,7 @@
     "password-non-english": "Password must use English characters only (letters, numbers, and symbols).",
     "password-weak": "Password must be at least 8 characters with English letters, numbers, and one special character.",
     "email-already-registered": "This email is already registered. Try signing in or resetting your password.",
+    "email-rate-limit": "Too many emails were sent in a short time. Please wait a few minutes and try again.",
     "missing-supabase-env": "Supabase environment variables are missing in .env.local.",
     "invalid-supabase-env": "Supabase environment variables still contain example values. Update .env.local with your project credentials.",
     "supabase-connection-failed": "Could not connect to Supabase. Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",

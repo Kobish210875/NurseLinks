@@ -192,11 +192,11 @@ export default function RegisterForm({ serverError }: RegisterFormProps) {
         </label>
 
         <label className="grid gap-1.5 sm:col-span-2">
-          <span className="text-sm font-medium text-foreground">{t("register.headline")}</span>
+          <span className="text-sm font-medium text-foreground">{t("register.profession")}</span>
           <input
-            name="headline"
+            name="profession"
             className={inputClassName}
-            placeholder={t("register.headlinePlaceholder")}
+            placeholder={t("register.professionPlaceholder")}
           />
         </label>
       </div>

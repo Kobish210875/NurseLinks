@@ -32,7 +32,7 @@ export default function RegistrationSuccessDialog({ open }: RegistrationSuccessD
           href="/login"
           className="btn-primary mt-6 inline-flex w-full items-center justify-center rounded-lg px-4 py-3 text-sm font-semibold text-primary-foreground"
         >
-          {t("login.backToLogin")}
+          {t("register.successCta")}
         </Link>
       </div>
     </div>

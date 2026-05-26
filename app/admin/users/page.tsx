@@ -1,0 +1,150 @@
+import Link from "next/link";
+import Footer from "@/components/Footer";
+import Navbar from "@/components/Navbar";
+import AdminDeleteUserButton from "@/components/admin/AdminDeleteUserButton";
+import { requireAdmin } from "@/lib/auth/admin";
+import { getAdminUsers } from "@/lib/admin/users";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { createT, getMessages } from "@/lib/i18n/messages";
+
+type AdminUsersPageProps = {
+  searchParams: Promise<{
+    q?: string;
+    error?: string;
+    deleted?: string;
+  }>;
+};
+
+function formatDate(value: string | null, locale: string) {
+  if (!value) {
+    return "-";
+  }
+
+  return new Intl.DateTimeFormat(locale, {
+    dateStyle: "short",
+    timeStyle: "short",
+  }).format(new Date(value));
+}
+
+export default async function AdminUsersPage({ searchParams }: AdminUsersPageProps) {
+  await requireAdmin();
+  const locale = await getLocale();
+  const t = createT(getMessages(locale));
+  const params = await searchParams;
+  const query = typeof params.q === "string" ? params.q.trim() : "";
+  const { users, error } = await getAdminUsers(query);
+
+  const errorMessage =
+    params.error === "missing-service-role" || error === "missing-service-role"
+      ? t("admin.missingServiceRole")
+      : params.error === "cannot-delete-self"
+        ? t("admin.cannotDeleteSelf")
+        : params.error === "cannot-delete-admin"
+          ? t("admin.cannotDeleteAdmin")
+          : params.error || error
+            ? t("admin.deleteFailed")
+            : null;
+
+  return (
+    <>
+      <Navbar authenticated />
+      <main className="mx-auto max-w-[1128px] space-y-5 px-4 py-8">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <Link href="/admin" className="text-sm font-semibold text-primary hover:underline">
+              {t("admin.backToAdmin")}
+            </Link>
+            <h1 className="mt-2 text-2xl font-bold text-foreground">{t("admin.usersTitle")}</h1>
+          </div>
+        </div>
+
+        {params.deleted === "1" ? (
+          <p className="rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
+            {t("admin.userDeleted")}
+          </p>
+        ) : null}
+        {errorMessage ? (
+          <p className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {errorMessage}
+          </p>
+        ) : null}
+
+        <form className="feed-card flex flex-col gap-3 p-4 sm:flex-row">
+          <input
+            name="q"
+            defaultValue={query}
+            className="min-w-0 flex-1 rounded-lg border border-border px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm"
+            placeholder={t("admin.searchUsers")}
+          />
+          <button
+            type="submit"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+          >
+            {t("nav.search")}
+          </button>
+        </form>
+
+        <section className="feed-card overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] text-start text-sm">
+              <thead className="bg-muted/50 text-xs font-semibold text-muted-foreground">
+                <tr>
+                  <th className="px-4 py-3">{t("admin.user")}</th>
+                  <th className="px-4 py-3">{t("admin.status")}</th>
+                  <th className="px-4 py-3">{t("admin.joinedAt")}</th>
+                  <th className="px-4 py-3">{t("admin.lastLogin")}</th>
+                  <th className="px-4 py-3">{t("admin.actions")}</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {users.map((user) => {
+                  const status = user.deletedAt
+                    ? t("admin.statusDeleted")
+                    : user.emailConfirmedAt
+                      ? t("admin.statusActive")
+                      : t("admin.statusPendingEmail");
+
+                  return (
+                    <tr key={user.id} className="align-top">
+                      <td className="px-4 py-3">
+                        <div className="font-semibold text-foreground">{user.fullName}</div>
+                        <div className="text-xs text-muted-foreground">{user.email}</div>
+                        {user.headline ? (
+                          <div className="mt-1 text-xs text-muted-foreground">{user.headline}</div>
+                        ) : null}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">{status}</td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {formatDate(user.createdAt, locale)}
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">
+                        {formatDate(user.lastSignInAt, locale)}
+                      </td>
+                      <td className="px-4 py-3">
+                        {user.deletedAt ? (
+                          <span className="text-xs text-muted-foreground">
+                            {t("admin.alreadyDeleted")}
+                          </span>
+                        ) : (
+                          <AdminDeleteUserButton userId={user.id} userName={user.fullName} />
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+                {users.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center text-muted-foreground">
+                      {t("admin.noUsers")}
+                    </td>
+                  </tr>
+                ) : null}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </>
+  );
+}

@@ -19,9 +19,10 @@ import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 type PostCardProps = {
   post: FeedPost;
   currentUserId: string;
+  isAdmin?: boolean;
 };
 
-export default function PostCard({ post, currentUserId }: PostCardProps) {
+export default function PostCard({ post, currentUserId, isAdmin = false }: PostCardProps) {
   const t = useT();
   const router = useRouter();
   const [pendingLike, startLike] = useTransition();
@@ -29,6 +30,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
   const [pendingDelete, startDelete] = useTransition();
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const isAuthor = post.authorId === currentUserId;
+  const canDeletePost = isAuthor || isAdmin;
   const [commentError, setCommentError] = useState<string | null>(null);
   const [likeError, setLikeError] = useState<string | null>(null);
   const [liked, setLiked] = useState(post.likedByMe);
@@ -100,7 +102,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
   }
 
   function handleDelete() {
-    if (pendingDelete || !isAuthor) {
+    if (pendingDelete || !canDeletePost) {
       return;
     }
     if (!window.confirm(t("post.deleteConfirm"))) {
@@ -150,7 +152,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
             <time dateTime={post.createdAt}>{post.timeLabel}</time>
           </p>
         </div>
-        {isAuthor ? (
+        {canDeletePost ? (
           <button
             type="button"
             onClick={handleDelete}
@@ -158,7 +160,7 @@ export default function PostCard({ post, currentUserId }: PostCardProps) {
             className="shrink-0 rounded-lg px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-60"
             aria-label={t("post.delete")}
           >
-            {pendingDelete ? "..." : t("post.delete")}
+            {pendingDelete ? "..." : isAdmin && !isAuthor ? t("post.adminDelete") : t("post.delete")}
           </button>
         ) : null}
       </header>

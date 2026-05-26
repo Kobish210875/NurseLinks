@@ -1,4 +1,5 @@
 import type { CvDraft } from "@/app/profile/actions";
+import { isCurrentUserAdmin } from "@/lib/auth/admin";
 import { resolveWorkplaceSlug } from "@/lib/profile/workplace";
 import { createClient } from "@/lib/supabase/server";
 import { getInitials } from "./initials";
@@ -13,6 +14,7 @@ export type CurrentUser = {
   licenseNumber: string | null;
   avatarUrl: string | null;
   initials: string;
+  isAdmin: boolean;
   cvDraft: {
     bio?: string;
     experience?: string;
@@ -116,6 +118,7 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     licenseNumber: profile?.license_number ?? null,
     avatarUrl: profile?.avatar_url ?? null,
     initials: getInitials(fullName),
+    isAdmin: await isCurrentUserAdmin(),
     cvDraft,
   };
 }

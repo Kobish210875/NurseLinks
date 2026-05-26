@@ -17,7 +17,9 @@ export default async function ForgotPasswordPage({ searchParams }: ForgotPasswor
   const errorMessage = params.error
     ? params.error === "missing-email"
       ? t("login.missing-email")
-      : decodeURIComponent(params.error)
+      : params.error === "email-rate-limit"
+        ? t("errors.email-rate-limit")
+        : decodeURIComponent(params.error)
     : null;
 
   return (

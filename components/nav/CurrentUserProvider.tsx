@@ -7,6 +7,7 @@ export type MobileNavUser = {
   avatarUrl: string | null;
   initials: string;
   fullName: string;
+  isAdmin: boolean;
 };
 
 const CurrentUserContext = createContext<MobileNavUser | null>(null);

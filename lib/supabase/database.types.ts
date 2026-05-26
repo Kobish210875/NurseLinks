@@ -334,6 +334,21 @@ export type Database = {
           owner_read_at?: string | null;
         };
       };
+      admin_users: {
+        Row: {
+          user_id: string;
+          created_at: string;
+          created_by: string | null;
+        };
+        Insert: {
+          user_id: string;
+          created_at?: string;
+          created_by?: string | null;
+        };
+        Update: {
+          created_by?: string | null;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -361,6 +376,10 @@ export type Database = {
       get_profile_cv_draft: {
         Args: { target_id: string };
         Returns: Json;
+      };
+      is_admin: {
+        Args: { target_user_id: string };
+        Returns: boolean;
       };
     };
     Enums: Record<string, never>;

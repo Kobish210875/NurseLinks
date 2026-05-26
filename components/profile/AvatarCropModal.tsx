@@ -11,7 +11,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 export const AVATAR_CROP_VIEWPORT = 300;
 
-const MIN_ZOOM = 1;
+const MIN_ZOOM = 0.8;
 const MAX_ZOOM = 2.75;
 
 type AvatarCropModalProps = {
@@ -180,19 +180,29 @@ export default function AvatarCropModal({
           aria-hidden="true"
         >
           {imageSize ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={previewUrl}
-              alt=""
-              draggable={false}
-              className="pointer-events-none absolute z-0 max-w-none"
-              style={{
-                left: offset.x,
-                top: offset.y,
-                width: imageSize.w * scale,
-                height: imageSize.h * scale,
-              }}
-            />
+            <>
+              {/* Soft fill avoids empty edges when the user zooms slightly out. */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={previewUrl}
+                alt=""
+                draggable={false}
+                className="pointer-events-none absolute inset-0 z-0 size-full scale-110 object-cover opacity-70 blur-lg"
+              />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={previewUrl}
+                alt=""
+                draggable={false}
+                className="pointer-events-none absolute z-0 max-w-none"
+                style={{
+                  left: offset.x,
+                  top: offset.y,
+                  width: imageSize.w * scale,
+                  height: imageSize.h * scale,
+                }}
+              />
+            </>
           ) : null}
 
           {/* Dim everything outside the circle */}

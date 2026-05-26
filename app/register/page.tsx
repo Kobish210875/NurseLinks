@@ -15,6 +15,7 @@ const knownErrors = new Set([
   "missing-supabase-env",
   "invalid-supabase-env",
   "supabase-connection-failed",
+  "email-rate-limit",
 ]);
 
 type RegisterPageProps = {

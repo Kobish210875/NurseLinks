@@ -39,14 +39,19 @@ export default async function FeedColumn({ user }: FeedColumnProps) {
       </div>
       <FeedPostsScroll>
         {firstPost ? (
-          <PostCard post={firstPost} currentUserId={user.id} />
+          <PostCard post={firstPost} currentUserId={user.id} isAdmin={user.isAdmin} />
         ) : (
           <div className="feed-card flex flex-1 items-center justify-center p-6 text-center text-sm text-muted-foreground">
             {t("feed.emptyFeed")}
           </div>
         )}
         {restPosts.map((post) => (
-          <PostCard key={post.id} post={post} currentUserId={user.id} />
+          <PostCard
+            key={post.id}
+            post={post}
+            currentUserId={user.id}
+            isAdmin={user.isAdmin}
+          />
         ))}
       </FeedPostsScroll>
     </section>

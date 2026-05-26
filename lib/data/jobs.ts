@@ -71,13 +71,23 @@ export async function getJobsListSeenAt(
   supabase: SupabaseClient<Database>,
   userId: string,
 ): Promise<string> {
-  const { data } = await supabase
+  const { data: view } = await supabase
     .from("job_list_views")
     .select("seen_at")
     .eq("user_id", userId)
     .maybeSingle<{ seen_at: string }>();
 
-  return data?.seen_at ?? "1970-01-01T00:00:00.000Z";
+  if (view?.seen_at) {
+    return view.seen_at;
+  }
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("created_at")
+    .eq("id", userId)
+    .maybeSingle<{ created_at: string }>();
+
+  return profile?.created_at ?? new Date().toISOString();
 }
 
 export async function markJobsListSeen(

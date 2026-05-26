@@ -15,6 +15,7 @@ export type AvatarCropParams = {
 export async function cropAvatarFile(file: File, crop: AvatarCropParams): Promise<File> {
   const bitmap = await createImageBitmap(file);
   const { viewportSize, offsetX, offsetY, scale } = crop;
+  const outputScale = OUTPUT_SIZE / viewportSize;
 
   const canvas = document.createElement("canvas");
   canvas.width = OUTPUT_SIZE;
@@ -25,12 +26,26 @@ export async function cropAvatarFile(file: File, crop: AvatarCropParams): Promis
     throw new Error("canvas-unavailable");
   }
 
-  const sx = Math.max(0, -offsetX / scale);
-  const sy = Math.max(0, -offsetY / scale);
-  const sw = Math.min(bitmap.width - sx, viewportSize / scale);
-  const sh = Math.min(bitmap.height - sy, viewportSize / scale);
+  const backgroundScale = Math.max(OUTPUT_SIZE / bitmap.width, OUTPUT_SIZE / bitmap.height);
+  const backgroundWidth = bitmap.width * backgroundScale;
+  const backgroundHeight = bitmap.height * backgroundScale;
+  ctx.filter = "blur(18px)";
+  ctx.drawImage(
+    bitmap,
+    (OUTPUT_SIZE - backgroundWidth) / 2,
+    (OUTPUT_SIZE - backgroundHeight) / 2,
+    backgroundWidth,
+    backgroundHeight,
+  );
+  ctx.filter = "none";
 
-  ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, OUTPUT_SIZE, OUTPUT_SIZE);
+  ctx.drawImage(
+    bitmap,
+    offsetX * outputScale,
+    offsetY * outputScale,
+    bitmap.width * scale * outputScale,
+    bitmap.height * scale * outputScale,
+  );
   bitmap.close();
 
   const blob = await new Promise<Blob | null>((resolve) => {

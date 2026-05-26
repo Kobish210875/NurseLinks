@@ -7,6 +7,83 @@ alter table public.profiles
 create index if not exists profiles_deleted_at_idx
   on public.profiles (deleted_at);
 
+-- One-time cleanup for already deleted profiles. Public feed history stays attached to
+-- the anonymized profile; private/profile registration rows are removed.
+delete from public.user_specialties us
+using public.profiles p
+where p.id = us.user_id
+  and p.deleted_at is not null;
+
+delete from public.user_workplaces uw
+using public.profiles p
+where p.id = uw.user_id
+  and p.deleted_at is not null;
+
+delete from public.job_list_views jlv
+using public.profiles p
+where p.id = jlv.user_id
+  and p.deleted_at is not null;
+
+delete from public.connections c
+using public.profiles p
+where p.deleted_at is not null
+  and p.id in (c.requester_id, c.addressee_id);
+
+delete from public.follows f
+using public.profiles p
+where p.deleted_at is not null
+  and p.id in (f.follower_id, f.following_id);
+
+delete from public.post_shares ps
+using public.profiles p
+where p.deleted_at is not null
+  and p.id in (ps.sharer_id, ps.recipient_id);
+
+delete from public.direct_messages dm
+using public.profiles p
+where p.deleted_at is not null
+  and p.id in (dm.sender_id, dm.recipient_id);
+
+delete from public.job_applications ja
+using public.profiles p
+where p.id = ja.applicant_id
+  and p.deleted_at is not null;
+
+-- One-time repair: free email addresses for profiles that were already marked deleted
+-- before the app started anonymizing Supabase Auth emails.
+with deleted_auth as (
+  select
+    u.id,
+    u.email as old_email,
+    'deleted+' || replace(u.id::text, '-', '') || '@nurselinks.invalid' as new_email
+  from auth.users u
+  join public.profiles p on p.id = u.id
+  where p.deleted_at is not null
+    and u.email !~ '^deleted\+.*@nurselinks\.invalid$'
+),
+updated_users as (
+  update auth.users u
+  set
+    email = da.new_email,
+    raw_user_meta_data = coalesce(u.raw_user_meta_data, '{}'::jsonb)
+      || jsonb_build_object('full_name', 'משתמש שנמחק', 'deleted_at', now()::text),
+    updated_at = now()
+  from deleted_auth da
+  where u.id = da.id
+  returning u.id, da.old_email, da.new_email
+)
+update auth.identities i
+set
+  provider_id = case
+    when i.provider = 'email' and i.provider_id = u.old_email then u.new_email
+    else i.provider_id
+  end,
+  identity_data = coalesce(i.identity_data, '{}'::jsonb)
+    || jsonb_build_object('email', u.new_email),
+  updated_at = now()
+from updated_users u
+where i.user_id = u.id;
+
 -- Deleting an account removes social graph rows while preserving historical content.
 drop policy if exists "Users can delete connections they are part of" on public.connections;
 create policy "Users can delete connections they are part of"

@@ -52,7 +52,14 @@ export default function UserProfileCard({ user }: UserProfileCardProps) {
           />
         </div>
         <div className="text-center">
-          <h2 className="text-lg font-bold text-foreground">{user.fullName}</h2>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <h2 className="text-lg font-bold text-foreground">{user.fullName}</h2>
+            {user.isAdmin ? (
+              <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-bold text-primary">
+                {t("admin.badge")}
+              </span>
+            ) : null}
+          </div>
           {professionalLine ? (
             <p className="mt-0.5 text-sm text-muted-foreground">{professionalLine}</p>
           ) : (

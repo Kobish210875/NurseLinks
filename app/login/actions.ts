@@ -2,7 +2,9 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { ensureAuthUserProfile } from "@/lib/auth/ensure-auth-user-profile";
 import { revokeOtherAuthSessions } from "@/lib/auth/single-session";
+import { normalizeSupabaseAuthError } from "@/lib/auth/supabase-auth-errors";
 import { validatePassword } from "@/lib/validation/password";
 import { createClient } from "@/lib/supabase/server";
 
@@ -27,35 +29,23 @@ export async function signIn(formData: FormData) {
     if (message.includes("invalid login credentials")) {
       redirect("/login?error=account-not-found");
     }
-    redirect(`/login?error=${encodeURIComponent(error.message)}`);
+    redirect(`/login?error=${normalizeSupabaseAuthError(error.message)}`);
   }
 
-  const userId = signInData.user?.id;
-  if (!userId) {
+  const user = signInData.user;
+  if (!user?.id) {
     await supabase.auth.signOut({ scope: "local" });
     redirect("/login?error=account-not-found");
   }
 
-  const profileWithDeletedAt = await supabase
-    .from("profiles")
-    .select("id, deleted_at")
-    .eq("id", userId)
-    .maybeSingle<{ id: string; deleted_at: string | null }>();
-
-  if (profileWithDeletedAt.error?.message.toLowerCase().includes("deleted_at")) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("id", userId)
-      .maybeSingle<{ id: string }>();
-
-    if (!profile) {
-      await supabase.auth.signOut({ scope: "local" });
-      redirect("/login?error=account-not-found");
-    }
-  } else if (!profileWithDeletedAt.data || profileWithDeletedAt.data.deleted_at) {
+  const profileStatus = await ensureAuthUserProfile(supabase, user);
+  if (profileStatus === "deleted") {
     await supabase.auth.signOut({ scope: "local" });
     redirect("/login?error=account-not-found");
+  }
+  if (profileStatus === "failed") {
+    await supabase.auth.signOut({ scope: "local" });
+    redirect("/login?error=auth-profile-failed");
   }
 
   await revokeOtherAuthSessions(supabase);
@@ -77,7 +67,7 @@ export async function requestPasswordReset(formData: FormData) {
   });
 
   if (error) {
-    redirect(`/forgot-password?error=${encodeURIComponent(error.message)}`);
+    redirect(`/forgot-password?error=${normalizeSupabaseAuthError(error.message)}`);
   }
 
   redirect("/forgot-password?sent=1");
@@ -99,7 +89,7 @@ export async function updatePassword(formData: FormData) {
   const { error } = await supabase.auth.updateUser({ password });
 
   if (error) {
-    redirect(`/reset-password?error=${encodeURIComponent(error.message)}`);
+    redirect(`/reset-password?error=${normalizeSupabaseAuthError(error.message)}`);
   }
 
   await supabase.auth.signOut({ scope: "local" });

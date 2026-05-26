@@ -21,7 +21,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         ? t("login.accountNotFound")
         : params.error === "auth-callback-failed"
           ? t("login.authCallbackFailed")
-          : decodeURIComponent(params.error)
+          : params.error === "auth-profile-failed"
+            ? t("login.authProfileFailed")
+            : params.error === "email-rate-limit"
+              ? t("errors.email-rate-limit")
+              : decodeURIComponent(params.error)
     : null;
   const successMessage = params.reset === "success" ? t("login.resetSuccess") : null;
 

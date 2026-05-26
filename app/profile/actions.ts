@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { isValidIsraeliCity, resolveCityCanonical } from "@/lib/data/israeli-cities";
 import { isAllowedAvatarFile, resolveAvatarContentType } from "@/lib/images/avatar-file";
 import { isValidProfileInstitutionSlug } from "@/lib/data/medical-institutions";
@@ -157,6 +158,7 @@ export async function saveProfile(formData: FormData) {
 
 export async function deleteAccount() {
   const supabase = await createClient();
+  const admin = createAdminClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -164,8 +166,12 @@ export async function deleteAccount() {
   if (!user) {
     redirect("/");
   }
+  if (!admin) {
+    redirect("/profile?error=delete-not-configured");
+  }
 
   const now = new Date().toISOString();
+  const anonymizedEmail = `deleted+${user.id.replaceAll("-", "")}-${crypto.randomUUID()}@nurselinks.invalid`;
   const deletedProfile: ProfileUpdate = {
     full_name: "משתמש שנמחק",
     headline: null,
@@ -178,19 +184,19 @@ export async function deleteAccount() {
     updated_at: now,
   };
 
-  const [connectionsRes, followsRes] = await Promise.all([
-    supabase
-      .from("connections")
-      .delete()
-      .or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`),
-    supabase
-      .from("follows")
-      .delete()
-      .or(`follower_id.eq.${user.id},following_id.eq.${user.id}`),
+  const cleanupResults = await Promise.all([
+    admin.from("connections").delete().or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`),
+    admin.from("follows").delete().or(`follower_id.eq.${user.id},following_id.eq.${user.id}`),
+    admin.from("user_specialties").delete().eq("user_id", user.id),
+    admin.from("user_workplaces").delete().eq("user_id", user.id),
+    admin.from("job_list_views").delete().eq("user_id", user.id),
+    admin.from("post_shares").delete().or(`sharer_id.eq.${user.id},recipient_id.eq.${user.id}`),
+    admin.from("direct_messages").delete().or(`sender_id.eq.${user.id},recipient_id.eq.${user.id}`),
+    admin.from("job_applications").delete().eq("applicant_id", user.id),
   ]);
 
-  if (connectionsRes.error || followsRes.error) {
-    redirect("/profile?error=delete-not-configured");
+  if (cleanupResults.some((result) => result.error)) {
+    redirect("/profile?error=delete-failed");
   }
 
   const { error: profileError } = await updateProfile(user.id, deletedProfile);
@@ -202,12 +208,20 @@ export async function deleteAccount() {
     redirect("/profile?error=delete-failed");
   }
 
-  await Promise.all([
-    supabase.from("user_specialties").delete().eq("user_id", user.id),
-    supabase.from("user_workplaces").delete().eq("user_id", user.id),
-    supabase.from("job_list_views").delete().eq("user_id", user.id),
-    supabase.storage.from("avatars").remove([`${user.id}/avatar.jpg`]),
-  ]);
+  const { error: authError } = await admin.auth.admin.updateUserById(user.id, {
+    email: anonymizedEmail,
+    password: crypto.randomUUID(),
+    user_metadata: {
+      full_name: "משתמש שנמחק",
+      deleted_at: now,
+    },
+  });
+
+  if (authError) {
+    redirect("/profile?error=delete-failed");
+  }
+
+  await supabase.storage.from("avatars").remove([`${user.id}/avatar.jpg`]);
 
   await supabase.auth.signOut({ scope: "local" });
 

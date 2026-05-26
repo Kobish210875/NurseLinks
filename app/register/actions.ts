@@ -2,6 +2,8 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { normalizeSupabaseAuthError } from "@/lib/auth/supabase-auth-errors";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { validateHebrewNamePart } from "@/lib/validation/hebrew-name";
 import { validatePassword } from "@/lib/validation/password";
@@ -32,7 +34,8 @@ export async function signUp(formData: FormData) {
   const fullName = `${firstName} ${lastName}`.trim();
   const email = getRequiredString(formData, "email").toLowerCase();
   const password = getRequiredString(formData, "password");
-  const headline = getRequiredString(formData, "headline");
+  const profession =
+    getRequiredString(formData, "profession") || getRequiredString(formData, "headline");
 
   if (!firstName || !lastName || !email || !password) {
     redirect("/register?error=missing-fields");
@@ -64,7 +67,7 @@ export async function signUp(formData: FormData) {
           emailRedirectTo: `${origin}/auth/callback?next=/home`,
           data: {
             full_name: fullName,
-            headline: headline || null,
+            headline: profession || null,
           },
         },
       });
@@ -82,13 +85,28 @@ export async function signUp(formData: FormData) {
     const errorMessage =
       signUpResult.error.message === "supabase-connection-failed"
         ? "supabase-connection-failed"
-        : encodeURIComponent(signUpResult.error.message);
+        : normalizeSupabaseAuthError(signUpResult.error.message);
     redirect(`/register?error=${errorMessage}`);
   }
 
   const identities = signUpResult.data?.user?.identities;
   if (identities && identities.length === 0) {
     redirect("/register?error=email-already-registered");
+  }
+
+  const userId = signUpResult.data?.user?.id;
+  const admin = createAdminClient();
+  if (userId && admin) {
+    await admin.from("profiles").upsert(
+      [
+        {
+          id: userId,
+          full_name: fullName,
+          headline: profession || null,
+        },
+      ] as never,
+      { onConflict: "id" },
+    );
   }
 
   redirect("/register?success=check-email");

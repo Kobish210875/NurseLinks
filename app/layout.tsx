@@ -78,6 +78,7 @@ export default async function RootLayout({
                       avatarUrl: user.avatarUrl,
                       initials: user.initials,
                       fullName: user.fullName,
+                      isAdmin: user.isAdmin,
                     }
                   : null
               }

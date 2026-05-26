@@ -21,6 +21,7 @@ import { createT, getMessages } from "@/lib/i18n/messages";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import { postShareUrl } from "@/lib/links/post-share-url";
+import { isCurrentUserAdmin } from "@/lib/auth/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type PostInsert = Database["public"]["Tables"]["posts"]["Insert"];
@@ -348,13 +349,14 @@ export async function deletePost(postId: string) {
     redirect("/");
   }
 
+  const isAdmin = await isCurrentUserAdmin();
   const { data: post } = await supabase
     .from("posts")
     .select("author_id, image_url")
     .eq("id", postId)
     .maybeSingle<{ author_id: string; image_url: string | null }>();
 
-  if (!post || post.author_id !== user.id) {
+  if (!post || (post.author_id !== user.id && !isAdmin)) {
     return { error: "forbidden" as const };
   }
 
@@ -363,11 +365,9 @@ export async function deletePost(postId: string) {
     await supabase.storage.from(POST_IMAGES_BUCKET).remove([imagePath]);
   }
 
-  const { error } = await supabase
-    .from("posts")
-    .delete()
-    .eq("id", postId)
-    .eq("author_id", user.id);
+  const deleteClient = isAdmin ? (createAdminClient() ?? supabase) : supabase;
+  const deleteQuery = deleteClient.from("posts").delete().eq("id", postId);
+  const { error } = isAdmin ? await deleteQuery : await deleteQuery.eq("author_id", user.id);
 
   if (error) {
     return { error: "delete-failed" as const };

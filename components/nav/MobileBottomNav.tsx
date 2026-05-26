@@ -99,14 +99,12 @@ export default function MobileBottomNav() {
                     : "text-muted-foreground hover:text-primary"
                 } ${item.isPost ? "text-primary" : ""}`}
               >
-                <span className="inline-flex max-w-full items-center gap-1">
+                <span className="inline-flex max-w-full items-center justify-center gap-1.5">
                   <span className="truncate">{item.label}</span>
-                </span>
-                {count > 0 && item.badge ? (
-                  <span className="absolute end-4 top-2">
+                  {count > 0 && item.badge ? (
                     <NavUnreadDot ariaLabel={badgeLabel(item.badge, count)} />
-                  </span>
-                ) : null}
+                  ) : null}
+                </span>
               </Link>
             </li>
           );

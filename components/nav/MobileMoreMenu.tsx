@@ -3,6 +3,8 @@
 import { signOut } from "@/app/actions/auth";
 import AboutStoryDialog from "@/components/feed/AboutStoryDialog";
 import { useT } from "@/components/i18n/LocaleProvider";
+import { useCurrentUser } from "@/components/nav/CurrentUserProvider";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
@@ -13,6 +15,7 @@ type MobileMoreMenuProps = {
 
 export default function MobileMoreMenu({ open, onClose }: MobileMoreMenuProps) {
   const t = useT();
+  const user = useCurrentUser();
   const [aboutOpen, setAboutOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -81,6 +84,32 @@ export default function MobileMoreMenu({ open, onClose }: MobileMoreMenuProps) {
                         </svg>
                       </button>
                     </li>
+                    {user?.isAdmin ? (
+                      <li>
+                        <Link
+                          href="/admin"
+                          className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold text-foreground transition hover:bg-primary/10"
+                          onClick={onClose}
+                        >
+                          <span>{t("nav.admin")}</span>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="text-primary"
+                            aria-hidden="true"
+                          >
+                            <path d="m15 18-6-6 6-6" />
+                          </svg>
+                        </Link>
+                      </li>
+                    ) : null}
                     <li className="border-t border-border pt-2">
                       <form action={signOut}>
                         <button

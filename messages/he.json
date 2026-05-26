@@ -28,7 +28,8 @@
     "pendingInvitations": "{count} הזמנות חברות ממתינות",
     "unreadMessages": "{count} הודעות חדשות",
     "unreadJobs": "{count} משרות חדשות",
-    "unreadJobsDot": "עדכונים חדשים במשרות"
+    "unreadJobsDot": "עדכונים חדשים במשרות",
+    "admin": "ניהול"
   },
   "hero": {
     "badge": "הרשת המקצועית של אחים ואחיות בישראל",
@@ -137,6 +138,7 @@
     "commentDeleteConfirm": "למחוק את התגובה? לא ניתן לבטל.",
     "commentLikesNotConfigured": "לייקים לתגובות לא הוגדרו. הריצו את supabase/post-comment-likes.sql ב-Supabase.",
     "delete": "מחיקה",
+    "adminDelete": "מחיקה כאדמין",
     "deleteConfirm": "למחוק את הפוסט ואת כל התגובות והלייקים שלו? לא ניתן לבטל."
   },
   "register": {
@@ -157,8 +159,10 @@
     "password": "סיסמה",
     "passwordHint": "לפחות 8 תווים באנגלית, מספרים ותו מיוחד אחד",
     "passwordPlaceholder": "English letters, numbers & symbols",
-    "headline": "כותרת מקצועית",
+    "headline": "מקצוע / תפקיד",
     "headlinePlaceholder": "אח מוסמך, טיפול נמרץ",
+    "profession": "מקצוע / תפקיד",
+    "professionPlaceholder": "אח מוסמך, טיפול נמרץ",
     "city": "עיר",
     "cityPlaceholder": "התחילו להקליד שם עיר",
     "submit": "יצירת חשבון",
@@ -167,7 +171,8 @@
     "showPassword": "הצג סיסמה",
     "hidePassword": "הסתר סיסמה",
     "successTitle": "ההרשמה בוצעה בהצלחה",
-    "success": "ההרשמה בוצעה בהצלחה. יש לבדוק את תיבת המייל ולאשר את החשבון"
+    "success": "ההרשמה בוצעה בהצלחה. יש לבדוק את תיבת המייל ולאשר את החשבון. לאחר הלחיצה על הקישור במייל, המערכת תכניס אתכם אוטומטית.",
+    "successCta": "אישור"
   },
   "login": {
     "title": "התחברות",
@@ -188,6 +193,7 @@
     "backToLanding": "חזרה לדף הכניסה",
     "accountNotFound": "המשתמש לא קיים או נמחק. נא להירשם למערכת.",
     "authCallbackFailed": "לא ניתן לאשר את החשבון מהקישור הזה. נסו לפתוח שוב את הקישור מהמייל או להתחבר.",
+    "authProfileFailed": "החשבון אומת, אבל לא ניתן להשלים את יצירת הפרופיל. נסו להתחבר שוב בעוד רגע.",
     "missing-fields": "נא למלא אימייל וסיסמה.",
     "missing-email": "נא למלא אימייל.",
     "missing-password": "נא למלא סיסמה חדשה."
@@ -210,8 +216,8 @@
     "medicalInstitution": "מוסד רפואי",
     "institutionPlaceholder": "בחר מוסד",
     "institutionOther": "אחר",
-    "headline": "כותרת מקצועית",
-    "headlinePlaceholder": "לדוגמה: אחות בכירה, מחלקת פנימית",
+    "headline": "מקצוע / תפקיד",
+    "headlinePlaceholder": "לדוגמה: אחות בכירה, טיפול נמרץ",
     "licenseNumber": "מספר רישיון",
     "residenceCity": "עיר מגורים",
     "bio": "אודותי",
@@ -236,7 +242,7 @@
     "deleteAccountButton": "מחיקת החשבון שלי",
     "deleteAccountConfirm": "למחוק את החשבון? הפעולה תסיר את הפרופיל והקשרים ולא ניתן לבטל אותה.",
     "deleteFailed": "לא ניתן למחוק את החשבון כרגע. נסו שוב.",
-    "deleteNotConfigured": "מחיקת חשבון לא הוגדרה בשרת. הריצו את supabase/account-deletion-and-recommendations.sql."
+    "deleteNotConfigured": "מחיקת חשבון לא הוגדרה בשרת. הריצו את supabase/account-deletion-and-recommendations.sql וודאו ש-SUPABASE_SERVICE_ROLE_KEY מוגדר."
   },
   "network": {
     "title": "הרשת שלי",
@@ -359,6 +365,37 @@
     "unreadMessage": "הודעה חדשה",
     "notConfigured": "מערכת ההודעות לא הוגדרה ב-Supabase. הריצו את supabase/connections-messaging.sql (או connections-messaging-fix.sql)."
   },
+  "admin": {
+    "eyebrow": "מסך תחזוקה",
+    "badge": "אדמין",
+    "title": "ניהול NurseLinks",
+    "subtitle": "כלי ניהול פנימיים למעקב, תחזוקה וטיפול במשתמשים. רק משתמשי אדמין יכולים לגשת למסכים האלה.",
+    "usersTitle": "יוזרים",
+    "usersDescription": "צפייה בכל המשתמשים, סטטוס אימות מייל ומחיקה בטוחה של משתמשים בעייתיים או משתמשי בדיקות.",
+    "moderationTitle": "דיווחים ותוכן לא הולם",
+    "healthTitle": "ביצועים ובריאות מערכת",
+    "comingSoon": "יגיע בשלב הבא.",
+    "backToAdmin": "חזרה לניהול",
+    "searchUsers": "חיפוש לפי שם או אימייל",
+    "user": "משתמש",
+    "status": "סטטוס",
+    "joinedAt": "נרשם",
+    "lastLogin": "כניסה אחרונה",
+    "actions": "פעולות",
+    "statusActive": "פעיל",
+    "statusPendingEmail": "ממתין לאימות מייל",
+    "statusDeleted": "נמחק",
+    "deleteUser": "מחיקה בטוחה",
+    "deletingUser": "מוחק…",
+    "deleteUserConfirm": "למחוק את {name}? האימייל ישוחרר, הפרופיל יאונם וקשרים/הודעות פרטיות יימחקו.",
+    "alreadyDeleted": "כבר נמחק",
+    "noUsers": "לא נמצאו משתמשים",
+    "userDeleted": "המשתמש נמחק בצורה בטוחה והאימייל שוחרר להרשמה עתידית.",
+    "missingServiceRole": "פעולות אדמין לא מוגדרות בשרת. ודאו ש-SUPABASE_SERVICE_ROLE_KEY מוגדר.",
+    "cannotDeleteSelf": "אדמין לא יכול למחוק את עצמו.",
+    "cannotDeleteAdmin": "לא ניתן למחוק משתמש אדמין ממסך זה.",
+    "deleteFailed": "לא ניתן למחוק את המשתמש כרגע. נסו שוב."
+  },
   "errors": {
     "missing-fields": "נא למלא את כל השדות החובה.",
     "invalid-city": "נא לבחור עיר מהרשימה.",
@@ -366,6 +403,7 @@
     "password-non-english": "הסיסמה חייבת להיות באנגלית בלבד (אותיות, מספרים ותווים מיוחדים).",
     "password-weak": "הסיסמה חייבת לכלול לפחות 8 תווים באנגלית, מספרים ותו מיוחד אחד.",
     "email-already-registered": "כתובת האימייל כבר רשומה. נסו להתחבר או לאפס סיסמה.",
+    "email-rate-limit": "נשלחו יותר מדי מיילים בזמן קצר. המתינו כמה דקות ונסו שוב.",
     "missing-supabase-env": "חסרים משתני הסביבה של Supabase בקובץ .env.local.",
     "invalid-supabase-env": "משתני Supabase עדיין מכילים ערכי דוגמה. יש לעדכן את .env.local בפרטי הפרויקט האמיתיים.",
     "supabase-connection-failed": "לא ניתן להתחבר ל-Supabase. בדקו את NEXT_PUBLIC_SUPABASE_URL ואת NEXT_PUBLIC_SUPABASE_ANON_KEY.",
