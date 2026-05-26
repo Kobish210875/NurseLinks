@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { isCurrentUserAdmin } from "@/lib/auth/admin";
 import { markThreadRead, usersAreConnected } from "@/lib/data/messages";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -88,5 +90,45 @@ export async function sendDirectMessage(peerId: string, formData: FormData) {
   }
 
   revalidateMessaging(peerId);
+  return { success: true as const };
+}
+
+export async function deleteDirectMessage(messageId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/");
+  }
+
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isAdmin) {
+    return { error: "unauthorized" as const };
+  }
+
+  const admin = createAdminClient();
+  if (!admin) {
+    return { error: "admin-not-configured" as const };
+  }
+
+  const { data: message, error: loadError } = await admin
+    .from("direct_messages")
+    .select("id, sender_id, recipient_id")
+    .eq("id", messageId)
+    .maybeSingle<{ id: string; sender_id: string; recipient_id: string }>();
+
+  if (loadError || !message) {
+    return { error: "not-found" as const };
+  }
+
+  const { error } = await admin.from("direct_messages").delete().eq("id", message.id);
+  if (error) {
+    return { error: "delete-failed" as const };
+  }
+
+  revalidateMessaging(message.sender_id);
+  revalidateMessaging(message.recipient_id);
   return { success: true as const };
 }

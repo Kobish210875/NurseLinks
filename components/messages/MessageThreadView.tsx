@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { sendDirectMessage } from "@/app/actions/messages";
+import { deleteDirectMessage, sendDirectMessage } from "@/app/actions/messages";
 import { useLocale, useT } from "@/components/i18n/LocaleProvider";
 import MessageBody from "@/components/messages/MessageBody";
 import NavUnreadDot from "@/components/nav/NavUnreadDot";
@@ -14,13 +14,20 @@ import { useEffect, useRef, useState, useTransition } from "react";
 type MessageThreadViewProps = {
   peer: NetworkMember;
   messages: DirectMessage[];
+  isAdmin?: boolean;
 };
 
-export default function MessageThreadView({ peer, messages }: MessageThreadViewProps) {
+export default function MessageThreadView({
+  peer,
+  messages,
+  isAdmin = false,
+}: MessageThreadViewProps) {
   const t = useT();
   const { locale } = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [pendingDelete, startDelete] = useTransition();
+  const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesListRef = useRef<HTMLUListElement>(null);
@@ -71,6 +78,27 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
       }
       if (closeAfterSend) {
         router.push("/messages");
+        return;
+      }
+      router.refresh();
+    });
+  }
+
+  function handleDeleteMessage(messageId: string) {
+    if (!isAdmin || pendingDelete) {
+      return;
+    }
+    if (!window.confirm(t("messages.deleteConfirm"))) {
+      return;
+    }
+
+    setError(null);
+    setDeletingMessageId(messageId);
+    startDelete(async () => {
+      const res = await deleteDirectMessage(messageId);
+      setDeletingMessageId(null);
+      if (res?.error) {
+        setError(t("messages.deleteFailed"));
         return;
       }
       router.refresh();
@@ -154,6 +182,18 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
                     >
                       {formatFeedTimestamp(m.createdAt, locale)}
                     </time>
+                    {isAdmin ? (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteMessage(m.id)}
+                        disabled={pendingDelete}
+                        className={`mt-1 text-[10px] font-semibold underline-offset-2 hover:underline disabled:opacity-60 ${
+                          m.isMine ? "text-primary-foreground/85" : "text-red-600"
+                        }`}
+                      >
+                        {deletingMessageId === m.id ? "..." : t("messages.adminDelete")}
+                      </button>
+                    ) : null}
                   </div>
                 </li>
               ))
