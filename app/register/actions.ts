@@ -2,7 +2,11 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { normalizeSupabaseAuthError } from "@/lib/auth/supabase-auth-errors";
+import { findAuthUserByEmail } from "@/lib/auth/find-auth-user-by-email";
+import {
+  EMAIL_RATE_LIMIT_ERROR,
+  normalizeSupabaseAuthError,
+} from "@/lib/auth/supabase-auth-errors";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { validateHebrewNamePart } from "@/lib/validation/hebrew-name";
@@ -26,6 +30,44 @@ function getSupabaseConfigError() {
   }
 
   return null;
+}
+
+function isEmailRateLimitError(message: string) {
+  return normalizeSupabaseAuthError(message) === EMAIL_RATE_LIMIT_ERROR;
+}
+
+async function upsertProfileForUser(
+  userId: string,
+  fullName: string,
+  profession: string,
+) {
+  const admin = createAdminClient();
+  if (!admin) {
+    return;
+  }
+
+  await admin.from("profiles").upsert(
+    [
+      {
+        id: userId,
+        full_name: fullName,
+        headline: profession || null,
+      },
+    ] as never,
+    { onConflict: "id" },
+  );
+}
+
+function redirectAfterRegistration(
+  hint?: "existing-unverified" | "rate-limit",
+) {
+  if (hint === "rate-limit") {
+    redirect("/register?success=check-email&hint=rate-limit");
+  }
+  if (hint === "existing-unverified") {
+    redirect("/register?success=check-email&hint=existing");
+  }
+  redirect("/register?success=check-email");
 }
 
 export async function signUp(formData: FormData) {
@@ -56,6 +98,17 @@ export async function signUp(formData: FormData) {
   }
 
   const origin = (await headers()).get("origin") ?? "http://localhost:3000";
+  const existingUser = await findAuthUserByEmail(email);
+
+  if (existingUser?.email_confirmed_at) {
+    redirect("/register?error=email-already-registered");
+  }
+
+  if (existingUser && !existingUser.email_confirmed_at) {
+    await upsertProfileForUser(existingUser.id, fullName, profession);
+    redirectAfterRegistration("existing-unverified");
+  }
+
   const supabase = await createClient();
 
   const signUpResult = await (async () => {
@@ -79,7 +132,16 @@ export async function signUp(formData: FormData) {
   if (signUpResult.error) {
     const message = signUpResult.error.message.toLowerCase();
     if (message.includes("already registered") || message.includes("already been registered")) {
-      redirect("/register?success=check-email");
+      redirectAfterRegistration("existing-unverified");
+    }
+
+    if (isEmailRateLimitError(signUpResult.error.message)) {
+      const userAfterLimit = (await findAuthUserByEmail(email)) ?? existingUser;
+      if (userAfterLimit) {
+        await upsertProfileForUser(userAfterLimit.id, fullName, profession);
+        redirectAfterRegistration("rate-limit");
+      }
+      redirect("/register?error=email-rate-limit");
     }
 
     const errorMessage =
@@ -91,23 +153,13 @@ export async function signUp(formData: FormData) {
 
   const identities = signUpResult.data?.user?.identities;
   if (identities && identities.length === 0) {
-    redirect("/register?success=check-email");
+    redirectAfterRegistration("existing-unverified");
   }
 
   const userId = signUpResult.data?.user?.id;
-  const admin = createAdminClient();
-  if (userId && admin) {
-    await admin.from("profiles").upsert(
-      [
-        {
-          id: userId,
-          full_name: fullName,
-          headline: profession || null,
-        },
-      ] as never,
-      { onConflict: "id" },
-    );
+  if (userId) {
+    await upsertProfileForUser(userId, fullName, profession);
   }
 
-  redirect("/register?success=check-email");
+  redirectAfterRegistration();
 }

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { signUp } from "@/app/register/actions";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { validateHebrewNamePart } from "@/lib/validation/hebrew-name";
@@ -24,6 +24,8 @@ export default function RegisterForm({ serverError }: RegisterFormProps) {
   const t = useT();
   const searchParams = useSearchParams();
   const registrationSubmitted = searchParams.get("success") === "check-email";
+  const successHint = searchParams.get("hint");
+  const submitLockRef = useRef(false);
   const [dialogDismissed, setDialogDismissed] = useState(false);
   const [clientError, setClientError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -87,6 +89,12 @@ export default function RegisterForm({ serverError }: RegisterFormProps) {
       return;
     }
 
+    if (submitLockRef.current) {
+      event.preventDefault();
+      return;
+    }
+
+    submitLockRef.current = true;
     setClientError(null);
     setFieldErrors({});
   }
@@ -106,7 +114,11 @@ export default function RegisterForm({ serverError }: RegisterFormProps) {
 
         {formLocked ? (
           <p className="mb-4 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
-            {t("register.pendingEmailBanner")}
+            {successHint === "rate-limit"
+              ? t("register.pendingEmailRateLimit")
+              : successHint === "existing"
+                ? t("register.pendingEmailExisting")
+                : t("register.pendingEmailBanner")}
           </p>
         ) : null}
 

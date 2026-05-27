@@ -177,7 +177,9 @@
     "success": "Registration completed successfully. We sent a verification email — click the link once only.",
     "successAfterVerify": "After verification you will return to the sign-in page. Sign in with the email and password you chose.",
     "successCta": "Got it",
-    "pendingEmailBanner": "A verification email was sent. Check your inbox (and spam). After clicking the link, sign in from the home page."
+    "pendingEmailBanner": "A verification email was sent. Check your inbox (and spam). After clicking the link, sign in from the home page.",
+    "pendingEmailExisting": "This email is already registered. Check your inbox for verification (and spam), then sign in.",
+    "pendingEmailRateLimit": "A verification email was already sent recently. Check your inbox (and spam). If it did not arrive, wait a few minutes and do not click «Create account» again."
   },
   "login": {
     "title": "Sign in",
