@@ -4,16 +4,13 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth/admin";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Database } from "@/lib/supabase/database.types";
-
-type ProfileUpdate = Database["public"]["Tables"]["profiles"]["Update"];
 
 function getRequiredString(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
 }
 
-export async function adminSoftDeleteUser(formData: FormData) {
+export async function adminDeleteUser(formData: FormData) {
   const adminUser = await requireAdmin();
   const targetUserId = getRequiredString(formData, "userId");
 
@@ -37,21 +34,6 @@ export async function adminSoftDeleteUser(formData: FormData) {
   if (targetAdmin?.user_id) {
     redirect("/admin/users?error=cannot-delete-admin");
   }
-
-  const now = new Date().toISOString();
-  const anonymizedEmail = `deleted+${targetUserId.replaceAll("-", "")}-${crypto.randomUUID()}@nurselinks.invalid`;
-  const deletedProfile: ProfileUpdate & { id: string; full_name: string } = {
-    id: targetUserId,
-    full_name: "משתמש שנמחק",
-    headline: null,
-    workplace_institution_slug: null,
-    license_number: null,
-    city: null,
-    avatar_url: null,
-    cv_draft: {},
-    deleted_at: now,
-    updated_at: now,
-  };
 
   const cleanupResults = await Promise.all([
     admin
@@ -80,24 +62,7 @@ export async function adminSoftDeleteUser(formData: FormData) {
     redirect("/admin/users?error=delete-failed");
   }
 
-  const { error: profileError } = await admin.from("profiles").upsert(
-    [deletedProfile] as never,
-    { onConflict: "id" },
-  );
-
-  if (profileError) {
-    redirect("/admin/users?error=delete-failed");
-  }
-
-  const { error: authError } = await admin.auth.admin.updateUserById(targetUserId, {
-    email: anonymizedEmail,
-    password: crypto.randomUUID(),
-    user_metadata: {
-      full_name: "משתמש שנמחק",
-      deleted_at: now,
-      deleted_by_admin: adminUser.id,
-    },
-  });
+  const { error: authError } = await admin.auth.admin.deleteUser(targetUserId);
 
   if (authError) {
     redirect("/admin/users?error=delete-failed");

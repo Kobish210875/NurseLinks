@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { adminSoftDeleteUser } from "@/app/admin/users/actions";
+import { adminDeleteUser } from "@/app/admin/users/actions";
 import { useT } from "@/components/i18n/LocaleProvider";
 
 type AdminDeleteUserButtonProps = {
@@ -24,7 +24,7 @@ export default function AdminDeleteUserButton({
         }
 
         startTransition(() => {
-          void adminSoftDeleteUser(formData);
+          void adminDeleteUser(formData);
         });
       }}
     >

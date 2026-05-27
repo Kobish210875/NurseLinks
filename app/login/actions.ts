@@ -25,11 +25,16 @@ export async function signIn(formData: FormData) {
   const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
+    const normalizedError = normalizeSupabaseAuthError(error.message);
+    if (normalizedError === "email-not-confirmed") {
+      redirect("/login?error=email-not-confirmed");
+    }
+
     const message = error.message.toLowerCase();
     if (message.includes("invalid login credentials")) {
       redirect("/login?error=account-not-found");
     }
-    redirect(`/login?error=${normalizeSupabaseAuthError(error.message)}`);
+    redirect(`/login?error=${normalizedError}`);
   }
 
   const user = signInData.user;

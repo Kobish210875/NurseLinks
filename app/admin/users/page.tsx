@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import AdminDeleteUserButton from "@/components/admin/AdminDeleteUserButton";
@@ -52,10 +51,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
         <div className="mx-auto flex h-full w-full max-w-[1128px] flex-col gap-3 overflow-hidden px-4 max-md:h-auto max-md:overflow-visible">
         <div className="shrink-0 flex flex-wrap items-center justify-between gap-3">
           <div>
-            <Link href="/admin" className="text-sm font-semibold text-primary hover:underline">
-              {t("admin.backToAdmin")}
-            </Link>
-            <h1 className="mt-2 text-2xl font-bold text-foreground">{t("admin.usersTitle")}</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t("admin.usersTitle")}</h1>
           </div>
         </div>
 
@@ -128,13 +124,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                         {formatDate(user.lastSignInAt, locale)}
                       </td>
                       <td className="px-4 py-3">
-                        {user.deletedAt ? (
-                          <span className="text-xs text-muted-foreground">
-                            {t("admin.alreadyDeleted")}
-                          </span>
-                        ) : (
-                          <AdminDeleteUserButton userId={user.id} userName={user.fullName} />
-                        )}
+                        <AdminDeleteUserButton userId={user.id} userName={user.fullName} />
                       </td>
                     </tr>
                   );

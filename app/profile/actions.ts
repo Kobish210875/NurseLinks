@@ -170,20 +170,6 @@ export async function deleteAccount() {
     redirect("/profile?error=delete-not-configured");
   }
 
-  const now = new Date().toISOString();
-  const anonymizedEmail = `deleted+${user.id.replaceAll("-", "")}-${crypto.randomUUID()}@nurselinks.invalid`;
-  const deletedProfile: ProfileUpdate = {
-    full_name: "משתמש שנמחק",
-    headline: null,
-    workplace_institution_slug: null,
-    license_number: null,
-    city: null,
-    avatar_url: null,
-    cv_draft: {},
-    deleted_at: now,
-    updated_at: now,
-  };
-
   const cleanupResults = await Promise.all([
     admin.from("connections").delete().or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`),
     admin.from("follows").delete().or(`follower_id.eq.${user.id},following_id.eq.${user.id}`),
@@ -199,23 +185,7 @@ export async function deleteAccount() {
     redirect("/profile?error=delete-failed");
   }
 
-  const { error: profileError } = await updateProfile(user.id, deletedProfile);
-  if (profileError) {
-    const message = profileError.message.toLowerCase();
-    if (message.includes("deleted_at")) {
-      redirect("/profile?error=delete-not-configured");
-    }
-    redirect("/profile?error=delete-failed");
-  }
-
-  const { error: authError } = await admin.auth.admin.updateUserById(user.id, {
-    email: anonymizedEmail,
-    password: crypto.randomUUID(),
-    user_metadata: {
-      full_name: "משתמש שנמחק",
-      deleted_at: now,
-    },
-  });
+  const { error: authError } = await admin.auth.admin.deleteUser(user.id);
 
   if (authError) {
     redirect("/profile?error=delete-failed");
