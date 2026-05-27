@@ -29,7 +29,8 @@
     "unreadMessages": "{count} new messages",
     "unreadJobs": "{count} new jobs",
     "unreadJobsDot": "New updates in jobs",
-    "admin": "Admin"
+    "admin": "Admin",
+    "adminUsers": "Users"
   },
   "hero": {
     "badge": "Israel's professional network for nurses",
@@ -399,7 +400,7 @@
     "alreadyDeleted": "Already deleted",
     "noUsers": "No users found",
     "userDeleted": "The user was safely deleted and the email was released for future registration.",
-    "missingServiceRole": "Admin actions are not configured on the server. Make sure SUPABASE_SERVICE_ROLE_KEY is set.",
+    "missingServiceRole": "Admin actions are not configured on the server. Make sure SUPABASE_SERVICE_ROLE_KEY is set in Vercel (Production) and redeploy.",
     "cannotDeleteSelf": "An admin cannot delete themselves.",
     "cannotDeleteAdmin": "Admin users cannot be deleted from this screen.",
     "deleteFailed": "Could not delete the user right now. Please try again."

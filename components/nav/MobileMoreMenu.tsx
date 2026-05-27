@@ -87,11 +87,11 @@ export default function MobileMoreMenu({ open, onClose }: MobileMoreMenuProps) {
                     {user?.isAdmin ? (
                       <li>
                         <Link
-                          href="/admin"
+                          href="/admin/users"
                           className="flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold text-foreground transition hover:bg-primary/10"
                           onClick={onClose}
                         >
-                          <span>{t("nav.admin")}</span>
+                          <span>{t("nav.adminUsers")}</span>
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="16"

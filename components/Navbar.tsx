@@ -34,7 +34,7 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
     { href: "/network", label: t("nav.network"), badge: "network" },
     { href: "/jobs", label: t("nav.jobs"), badge: "jobs" },
     { href: "/messages", label: t("nav.messages"), badge: "messages" },
-    ...(mobileUser?.isAdmin ? [{ href: "/admin", label: t("nav.admin") }] : []),
+    ...(mobileUser?.isAdmin ? [{ href: "/admin/users", label: t("nav.admin") }] : []),
   ];
 
   function isActive(href: string) {

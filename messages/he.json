@@ -29,7 +29,8 @@
     "unreadMessages": "{count} הודעות חדשות",
     "unreadJobs": "{count} משרות חדשות",
     "unreadJobsDot": "עדכונים חדשים במשרות",
-    "admin": "ניהול"
+    "admin": "ניהול",
+    "adminUsers": "יוזרים"
   },
   "hero": {
     "badge": "הרשת המקצועית של אחים ואחיות בישראל",
@@ -399,7 +400,7 @@
     "alreadyDeleted": "כבר נמחק",
     "noUsers": "לא נמצאו משתמשים",
     "userDeleted": "המשתמש נמחק בצורה בטוחה והאימייל שוחרר להרשמה עתידית.",
-    "missingServiceRole": "פעולות אדמין לא מוגדרות בשרת. ודאו ש-SUPABASE_SERVICE_ROLE_KEY מוגדר.",
+    "missingServiceRole": "פעולות אדמין לא מוגדרות בשרת. ודאו ש-SUPABASE_SERVICE_ROLE_KEY מוגדר ב-Vercel (Production) ושביצעתם Redeploy.",
     "cannotDeleteSelf": "אדמין לא יכול למחוק את עצמו.",
     "cannotDeleteAdmin": "לא ניתן למחוק משתמש אדמין ממסך זה.",
     "deleteFailed": "לא ניתן למחוק את המשתמש כרגע. נסו שוב."
