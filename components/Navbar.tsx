@@ -82,6 +82,35 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
       <div className="hidden shrink-0 items-center gap-0.5 md:flex">
         {authenticated
           ? navItems.map((item) => {
+              if (item.href === "/admin/users" && mobileUser?.isAdmin) {
+                const adminActive = isActive("/admin");
+                return (
+                  <div key="admin-menu" className="group relative">
+                    <button
+                      type="button"
+                      className={`relative flex items-center justify-center whitespace-nowrap px-2.5 py-2 text-xs font-medium transition-colors ${
+                        adminActive ? "nav-link-active" : "text-muted-foreground hover:text-primary"
+                      }`}
+                      aria-haspopup="menu"
+                    >
+                      <span className="inline-flex items-center">{t("nav.admin")}</span>
+                    </button>
+                    <div className="invisible absolute right-0 top-full z-50 mt-1 min-w-32 rounded-xl border border-border bg-white p-1.5 opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                      <Link
+                        href="/admin/users"
+                        className={`block rounded-lg px-3 py-2 text-xs font-semibold transition ${
+                          isActive("/admin/users")
+                            ? "bg-primary/10 text-primary"
+                            : "text-foreground hover:bg-primary/10"
+                        }`}
+                      >
+                        {t("nav.adminUsers")}
+                      </Link>
+                    </div>
+                  </div>
+                );
+              }
+
               const count = badgeCount(item.badge);
               return (
                 <Link
