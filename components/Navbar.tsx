@@ -93,18 +93,50 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
                       }`}
                       aria-haspopup="menu"
                     >
-                      <span className="inline-flex items-center">{t("nav.admin")}</span>
+                      <span className="inline-flex items-center gap-1">
+                        {t("nav.admin")}
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="12"
+                          height="12"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                        >
+                          <path d="m6 9 6 6 6-6" />
+                        </svg>
+                      </span>
                     </button>
-                    <div className="invisible absolute right-0 top-full z-50 mt-1 min-w-32 rounded-xl border border-border bg-white p-1.5 opacity-0 shadow-lg transition-all group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                    <div className="invisible absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-border bg-white p-2 opacity-0 shadow-xl ring-1 ring-slate-900/5 transition-all group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                      <div className="absolute -top-2 right-4 size-4 rotate-45 border-s border-t border-border bg-white" />
                       <Link
                         href="/admin/users"
-                        className={`block rounded-lg px-3 py-2 text-xs font-semibold transition ${
+                        className={`relative flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
                           isActive("/admin/users")
                             ? "bg-primary/10 text-primary"
                             : "text-foreground hover:bg-primary/10"
                         }`}
                       >
-                        {t("nav.adminUsers")}
+                        <span>{t("nav.adminUsers")}</span>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="16"
+                          height="16"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          className="text-primary"
+                          aria-hidden="true"
+                        >
+                          <path d="m15 18-6-6 6-6" />
+                        </svg>
                       </Link>
                     </div>
                   </div>
