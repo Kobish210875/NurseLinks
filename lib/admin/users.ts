@@ -97,24 +97,25 @@ export async function getAdminUsers(query = "") {
     })
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
-  const users = allUsers
-    .filter((user) => {
-      if (!normalizedQuery) {
-        return true;
-      }
+  const activeUsers = allUsers.filter((user) => !user.deletedAt);
 
-      return (
-        user.fullName.toLowerCase().includes(normalizedQuery) ||
-        user.email.toLowerCase().includes(normalizedQuery)
-      );
-    });
+  const users = activeUsers.filter((user) => {
+    if (!normalizedQuery) {
+      return true;
+    }
+
+    return (
+      user.fullName.toLowerCase().includes(normalizedQuery) ||
+      user.email.toLowerCase().includes(normalizedQuery)
+    );
+  });
 
   const summary: AdminUsersSummary = {
-    total: allUsers.length,
+    total: activeUsers.length,
     shown: users.length,
-    active: allUsers.filter((user) => !user.deletedAt && user.emailConfirmedAt).length,
-    pendingEmail: allUsers.filter((user) => !user.deletedAt && !user.emailConfirmedAt).length,
-    deleted: allUsers.filter((user) => user.deletedAt).length,
+    active: activeUsers.filter((user) => user.emailConfirmedAt).length,
+    pendingEmail: activeUsers.filter((user) => !user.emailConfirmedAt).length,
+    deleted: 0,
   };
 
   return { users, summary, error: null };

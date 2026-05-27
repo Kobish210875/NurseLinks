@@ -154,9 +154,6 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
             <span className="rounded-full bg-amber-50 px-2.5 py-1 text-amber-700">
               {t("admin.usersPendingCount").replace("{count}", String(summary.pendingEmail))}
             </span>
-            <span className="rounded-full bg-muted px-2.5 py-1">
-              {t("admin.usersDeletedCount").replace("{count}", String(summary.deleted))}
-            </span>
           </div>
         </section>
         </div>

@@ -6,7 +6,7 @@ import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
 
 type LoginPageProps = {
-  searchParams: Promise<{ error?: string; reset?: string }>;
+  searchParams: Promise<{ error?: string; reset?: string; verified?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -29,7 +29,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               ? t("errors.email-rate-limit")
               : decodeURIComponent(params.error)
     : null;
-  const successMessage = params.reset === "success" ? t("login.resetSuccess") : null;
+  const successMessage =
+    params.reset === "success"
+      ? t("login.resetSuccess")
+      : params.verified === "1"
+        ? t("login.emailVerifiedSuccess")
+        : null;
 
   return (
     <div className="feed-page flex min-h-screen flex-col">
