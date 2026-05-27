@@ -28,6 +28,7 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
   const mobileUser = useCurrentUser();
   const { pendingInvitations, unreadMessages, unreadJobs } = useNavCounts();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const isAdminRoute = pathname.startsWith("/admin");
 
   const navItems: NavItem[] = [
     { href: "/home", label: t("nav.home") },
@@ -95,13 +96,13 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
                     >
                       {t("nav.admin")}
                     </button>
-                    <div className="invisible absolute top-full right-3 z-50 min-w-full border border-border border-b-0 border-t-0 bg-nav-bg opacity-0 transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                    <div className="invisible absolute top-full right-2 z-50 min-w-[6.5rem] rounded-b-lg border border-border border-t-0 bg-nav-bg py-1 opacity-0 shadow-sm transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                       <Link
                         href="/admin/users"
-                        className={`block whitespace-nowrap px-2.5 py-2 text-xs font-medium transition-colors ${
+                        className={`block whitespace-nowrap rounded-md px-3.5 py-2.5 text-xs font-medium transition-colors ${
                           isActive("/admin/users")
-                            ? "text-primary"
-                            : "text-muted-foreground hover:text-primary"
+                            ? "bg-primary/10 text-primary"
+                            : "text-muted-foreground hover:bg-muted/60 hover:text-primary"
                         }`}
                       >
                         {t("nav.adminUsers")}
@@ -161,9 +162,13 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
             />
           </Link>
 
-          <div className="min-w-0 overflow-visible ps-1">
-            <NavPeopleSearch compact />
-          </div>
+          {!isAdminRoute ? (
+            <div className="min-w-0 overflow-visible ps-1">
+              <NavPeopleSearch compact />
+            </div>
+          ) : (
+            <div className="min-w-0" aria-hidden="true" />
+          )}
 
           <Link
             href="/profile"
@@ -217,9 +222,11 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
 
             <div className="col-start-1 flex min-w-0 items-center justify-end gap-2 sm:gap-3 lg:col-start-2 lg:justify-start">
               {renderDesktopNavLinks()}
-              <div className="w-full min-w-0 max-w-[14rem] sm:max-w-xs md:max-w-sm lg:max-w-md">
-                <NavPeopleSearch />
-              </div>
+              {!isAdminRoute ? (
+                <div className="w-full min-w-0 max-w-[14rem] sm:max-w-xs md:max-w-sm lg:max-w-md">
+                  <NavPeopleSearch />
+                </div>
+              ) : null}
             </div>
 
             <Link
