@@ -1,6 +1,7 @@
 import Navbar from "@/components/Navbar";
 import NurseLinkWordmark from "@/components/NurseLinkWordmark";
 import RegisterForm from "@/components/register/RegisterForm";
+import { isEmailVerificationRequired } from "@/lib/auth/email-verification-config";
 import { Suspense } from "react";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
@@ -35,6 +36,8 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
       ? t(`errors.${params.error}`)
       : decodeURIComponent(params.error)
     : null;
+  const requireEmailVerification = isEmailVerificationRequired();
+
   return (
     <>
       <Navbar />
@@ -54,7 +57,10 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
           </div>
 
           <Suspense fallback={<div className="feed-card p-6 text-sm text-muted-foreground">…</div>}>
-            <RegisterForm serverError={errorMessage} />
+            <RegisterForm
+              serverError={errorMessage}
+              requireEmailVerification={requireEmailVerification}
+            />
           </Suspense>
         </section>
       </main>

@@ -18,12 +18,17 @@ const nonHebrewNameChars = /[^\u05D0-\u05EA\s\-'׳״.]/gu;
 
 type RegisterFormProps = {
   serverError?: string | null;
+  requireEmailVerification?: boolean;
 };
 
-export default function RegisterForm({ serverError }: RegisterFormProps) {
+export default function RegisterForm({
+  serverError,
+  requireEmailVerification = true,
+}: RegisterFormProps) {
   const t = useT();
   const searchParams = useSearchParams();
-  const registrationSubmitted = searchParams.get("success") === "check-email";
+  const registrationSubmitted =
+    requireEmailVerification && searchParams.get("success") === "check-email";
   const successHint = searchParams.get("hint");
   const submitLockRef = useRef(false);
   const [dialogDismissed, setDialogDismissed] = useState(false);
@@ -111,6 +116,12 @@ export default function RegisterForm({ serverError }: RegisterFormProps) {
         <p className="mb-4 text-xs text-muted-foreground">
           <span className="text-red-600">*</span> {t("register.requiredHint")}
         </p>
+
+        {!requireEmailVerification ? (
+          <p className="mb-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+            {t("register.testModeBanner")}
+          </p>
+        ) : null}
 
         {formLocked ? (
           <p className="mb-4 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3 text-sm text-primary">
@@ -247,10 +258,12 @@ export default function RegisterForm({ serverError }: RegisterFormProps) {
         </p>
       </form>
 
-      <RegistrationSuccessDialog
-        open={registrationSubmitted && !dialogDismissed}
-        onClose={() => setDialogDismissed(true)}
-      />
+      {requireEmailVerification ? (
+        <RegistrationSuccessDialog
+          open={registrationSubmitted && !dialogDismissed}
+          onClose={() => setDialogDismissed(true)}
+        />
+      ) : null}
     </>
   );
 }

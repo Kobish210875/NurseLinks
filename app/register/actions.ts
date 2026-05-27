@@ -2,7 +2,11 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { confirmUserEmail } from "@/lib/auth/confirm-user-email";
+import { isEmailVerificationRequired } from "@/lib/auth/email-verification-config";
+import { ensureAuthUserProfile } from "@/lib/auth/ensure-auth-user-profile";
 import { findAuthUserByEmail } from "@/lib/auth/find-auth-user-by-email";
+import { revokeOtherAuthSessions } from "@/lib/auth/single-session";
 import {
   EMAIL_RATE_LIMIT_ERROR,
   normalizeSupabaseAuthError,
@@ -58,6 +62,53 @@ async function upsertProfileForUser(
   );
 }
 
+async function finishRegistrationAndEnter(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  email: string,
+  password: string,
+  fullName: string,
+  profession: string,
+) {
+  await upsertProfileForUser(userId, fullName, profession);
+  await confirmUserEmail(userId);
+
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (signInError || !signInData.user) {
+      redirect("/login?error=auth-profile-failed");
+    }
+  }
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/login?error=auth-profile-failed");
+  }
+
+  const profileStatus = await ensureAuthUserProfile(supabase, user);
+  if (profileStatus === "deleted") {
+    await supabase.auth.signOut({ scope: "local" });
+    redirect("/login?error=account-not-found");
+  }
+  if (profileStatus === "failed") {
+    await supabase.auth.signOut({ scope: "local" });
+    redirect("/login?error=auth-profile-failed");
+  }
+
+  await revokeOtherAuthSessions(supabase);
+  redirect("/home");
+}
+
 function redirectAfterRegistration(
   hint?: "existing-unverified" | "rate-limit",
 ) {
@@ -78,6 +129,7 @@ export async function signUp(formData: FormData) {
   const password = getRequiredString(formData, "password");
   const profession =
     getRequiredString(formData, "profession") || getRequiredString(formData, "headline");
+  const requireEmailVerification = isEmailVerificationRequired();
 
   if (!firstName || !lastName || !email || !password) {
     redirect("/register?error=missing-fields");
@@ -99,6 +151,7 @@ export async function signUp(formData: FormData) {
 
   const origin = (await headers()).get("origin") ?? "http://localhost:3000";
   const existingUser = await findAuthUserByEmail(email);
+  const supabase = await createClient();
 
   if (existingUser?.email_confirmed_at) {
     redirect("/register?error=email-already-registered");
@@ -106,10 +159,18 @@ export async function signUp(formData: FormData) {
 
   if (existingUser && !existingUser.email_confirmed_at) {
     await upsertProfileForUser(existingUser.id, fullName, profession);
+    if (!requireEmailVerification) {
+      await finishRegistrationAndEnter(
+        supabase,
+        existingUser.id,
+        email,
+        password,
+        fullName,
+        profession,
+      );
+    }
     redirectAfterRegistration("existing-unverified");
   }
-
-  const supabase = await createClient();
 
   const signUpResult = await (async () => {
     try {
@@ -117,7 +178,9 @@ export async function signUp(formData: FormData) {
         email,
         password,
         options: {
-          emailRedirectTo: `${origin}/auth/callback?flow=signup`,
+          ...(requireEmailVerification
+            ? { emailRedirectTo: `${origin}/auth/callback?flow=signup` }
+            : {}),
           data: {
             full_name: fullName,
             headline: profession || null,
@@ -132,6 +195,19 @@ export async function signUp(formData: FormData) {
   if (signUpResult.error) {
     const message = signUpResult.error.message.toLowerCase();
     if (message.includes("already registered") || message.includes("already been registered")) {
+      if (!requireEmailVerification) {
+        const user = await findAuthUserByEmail(email);
+        if (user) {
+          await finishRegistrationAndEnter(
+            supabase,
+            user.id,
+            email,
+            password,
+            fullName,
+            profession,
+          );
+        }
+      }
       redirectAfterRegistration("existing-unverified");
     }
 
@@ -139,6 +215,16 @@ export async function signUp(formData: FormData) {
       const userAfterLimit = (await findAuthUserByEmail(email)) ?? existingUser;
       if (userAfterLimit) {
         await upsertProfileForUser(userAfterLimit.id, fullName, profession);
+        if (!requireEmailVerification) {
+          await finishRegistrationAndEnter(
+            supabase,
+            userAfterLimit.id,
+            email,
+            password,
+            fullName,
+            profession,
+          );
+        }
         redirectAfterRegistration("rate-limit");
       }
       redirect("/register?error=email-rate-limit");
@@ -153,13 +239,31 @@ export async function signUp(formData: FormData) {
 
   const identities = signUpResult.data?.user?.identities;
   if (identities && identities.length === 0) {
+    if (!requireEmailVerification) {
+      const user = await findAuthUserByEmail(email);
+      if (user) {
+        await finishRegistrationAndEnter(
+          supabase,
+          user.id,
+          email,
+          password,
+          fullName,
+          profession,
+        );
+      }
+    }
     redirectAfterRegistration("existing-unverified");
   }
 
   const userId = signUpResult.data?.user?.id;
-  if (userId) {
-    await upsertProfileForUser(userId, fullName, profession);
+  if (!userId) {
+    redirect("/register?error=missing-fields");
   }
 
+  if (!requireEmailVerification) {
+    await finishRegistrationAndEnter(supabase, userId, email, password, fullName, profession);
+  }
+
+  await upsertProfileForUser(userId, fullName, profession);
   redirectAfterRegistration();
 }

@@ -179,7 +179,8 @@
     "successCta": "Got it",
     "pendingEmailBanner": "A verification email was sent. Check your inbox (and spam). After clicking the link, sign in from the home page.",
     "pendingEmailExisting": "This email is already registered. Check your inbox for verification (and spam), then sign in.",
-    "pendingEmailRateLimit": "A verification email was already sent recently. Check your inbox (and spam). If it did not arrive, wait a few minutes and do not click «Create account» again."
+    "pendingEmailRateLimit": "A verification email was already sent recently. Check your inbox (and spam). If it did not arrive, wait a few minutes and do not click «Create account» again.",
+    "testModeBanner": "Test mode: no email verification — you will enter the site right after registration."
   },
   "login": {
     "title": "Sign in",

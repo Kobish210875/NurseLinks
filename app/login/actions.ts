@@ -2,6 +2,9 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { confirmUserEmail } from "@/lib/auth/confirm-user-email";
+import { isEmailVerificationRequired } from "@/lib/auth/email-verification-config";
+import { findAuthUserByEmail } from "@/lib/auth/find-auth-user-by-email";
 import { ensureAuthUserProfile } from "@/lib/auth/ensure-auth-user-profile";
 import { revokeOtherAuthSessions } from "@/lib/auth/single-session";
 import { normalizeSupabaseAuthError } from "@/lib/auth/supabase-auth-errors";
@@ -27,6 +30,20 @@ export async function signIn(formData: FormData) {
   if (error) {
     const normalizedError = normalizeSupabaseAuthError(error.message);
     if (normalizedError === "email-not-confirmed") {
+      if (!isEmailVerificationRequired()) {
+        const existingUser = await findAuthUserByEmail(email);
+        if (existingUser && !existingUser.email_confirmed_at) {
+          await confirmUserEmail(existingUser.id);
+          const retry = await supabase.auth.signInWithPassword({ email, password });
+          if (!retry.error && retry.data.user) {
+            const profileStatus = await ensureAuthUserProfile(supabase, retry.data.user);
+            if (profileStatus === "ok") {
+              await revokeOtherAuthSessions(supabase);
+              redirect("/home");
+            }
+          }
+        }
+      }
       redirect("/login?error=email-not-confirmed");
     }
 
