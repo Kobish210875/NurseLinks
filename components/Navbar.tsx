@@ -85,59 +85,26 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
               if (item.href === "/admin/users" && mobileUser?.isAdmin) {
                 const adminActive = isActive("/admin");
                 return (
-                  <div key="admin-menu" className="group relative flex items-stretch">
+                  <div key="admin-menu" className="group relative shrink-0">
                     <button
                       type="button"
-                      className={`relative z-10 flex items-center justify-center whitespace-nowrap rounded-t-xl px-2.5 py-2 text-xs font-medium transition-colors ${
-                        adminActive
-                          ? "bg-white text-primary"
-                          : "text-muted-foreground hover:bg-white hover:text-primary"
+                      className={`relative flex items-center justify-center whitespace-nowrap px-2.5 py-2 text-xs font-medium transition-colors ${
+                        adminActive ? "nav-link-active" : "text-muted-foreground hover:text-primary"
                       }`}
                       aria-haspopup="menu"
                     >
-                      <span className="inline-flex items-center gap-1">
-                        {t("nav.admin")}
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="12"
-                          height="12"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="m6 9 6 6 6-6" />
-                        </svg>
-                      </span>
+                      {t("nav.admin")}
                     </button>
-                    <div className="invisible absolute right-0 top-full z-50 -mt-px w-52 overflow-hidden rounded-b-2xl border border-border border-t-0 bg-white p-2 opacity-0 shadow-sm transition-all group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                    <div className="invisible absolute right-0 top-full z-50 min-w-full border border-border border-t-0 bg-nav-bg opacity-0 transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                       <Link
                         href="/admin/users"
-                        className={`relative flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold transition ${
+                        className={`block whitespace-nowrap px-2.5 py-2 text-xs font-medium transition-colors ${
                           isActive("/admin/users")
-                            ? "bg-primary/10 text-primary"
-                            : "text-foreground hover:bg-muted/70"
+                            ? "nav-link-active"
+                            : "text-muted-foreground hover:text-primary"
                         }`}
                       >
-                        <span>{t("nav.adminUsers")}</span>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="text-primary"
-                          aria-hidden="true"
-                        >
-                          <path d="m15 18-6-6 6-6" />
-                        </svg>
+                        {t("nav.adminUsers")}
                       </Link>
                     </div>
                   </div>
