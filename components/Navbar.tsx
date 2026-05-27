@@ -85,11 +85,13 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
               if (item.href === "/admin/users" && mobileUser?.isAdmin) {
                 const adminActive = isActive("/admin");
                 return (
-                  <div key="admin-menu" className="group relative">
+                  <div key="admin-menu" className="group relative flex items-stretch">
                     <button
                       type="button"
-                      className={`relative flex items-center justify-center whitespace-nowrap px-2.5 py-2 text-xs font-medium transition-colors ${
-                        adminActive ? "nav-link-active" : "text-muted-foreground hover:text-primary"
+                      className={`relative z-10 flex items-center justify-center whitespace-nowrap rounded-t-xl px-2.5 py-2 text-xs font-medium transition-colors ${
+                        adminActive
+                          ? "bg-white text-primary"
+                          : "text-muted-foreground hover:bg-white hover:text-primary"
                       }`}
                       aria-haspopup="menu"
                     >
@@ -111,14 +113,13 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
                         </svg>
                       </span>
                     </button>
-                    <div className="invisible absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-border bg-white p-2 opacity-0 shadow-xl ring-1 ring-slate-900/5 transition-all group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-                      <div className="absolute -top-2 right-4 size-4 rotate-45 border-s border-t border-border bg-white" />
+                    <div className="invisible absolute right-0 top-full z-50 -mt-px w-52 overflow-hidden rounded-b-2xl border border-border border-t-0 bg-white p-2 opacity-0 shadow-sm transition-all group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                       <Link
                         href="/admin/users"
-                        className={`relative flex w-full items-center justify-between rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+                        className={`relative flex w-full items-center justify-between rounded-xl px-3 py-2 text-sm font-semibold transition ${
                           isActive("/admin/users")
                             ? "bg-primary/10 text-primary"
-                            : "text-foreground hover:bg-primary/10"
+                            : "text-foreground hover:bg-muted/70"
                         }`}
                       >
                         <span>{t("nav.adminUsers")}</span>
