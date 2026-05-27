@@ -96,13 +96,13 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
                     >
                       {t("nav.admin")}
                     </button>
-                    <div className="invisible absolute top-full right-2 z-50 min-w-[6.5rem] rounded-b-lg border border-border border-t-0 bg-nav-bg py-1 opacity-0 shadow-sm transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                    <div className="invisible absolute top-full right-2 z-50 min-w-max rounded-b-md border border-border border-t-0 bg-nav-bg py-0.5 opacity-0 transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                       <Link
                         href="/admin/users"
-                        className={`block whitespace-nowrap rounded-md px-3.5 py-2.5 text-xs font-medium transition-colors ${
+                        className={`block whitespace-nowrap rounded-sm px-2 py-1.5 text-xs font-medium transition-colors ${
                           isActive("/admin/users")
-                            ? "bg-primary/10 text-primary"
-                            : "text-muted-foreground hover:bg-muted/60 hover:text-primary"
+                            ? "text-primary"
+                            : "text-muted-foreground hover:text-primary"
                         }`}
                       >
                         {t("nav.adminUsers")}
