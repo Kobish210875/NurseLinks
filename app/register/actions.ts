@@ -64,7 +64,7 @@ export async function signUp(formData: FormData) {
         email,
         password,
         options: {
-          emailRedirectTo: `${origin}/auth/callback?next=/home`,
+          emailRedirectTo: `${origin}/auth/callback?flow=signup`,
           data: {
             full_name: fullName,
             headline: profession || null,
@@ -79,7 +79,7 @@ export async function signUp(formData: FormData) {
   if (signUpResult.error) {
     const message = signUpResult.error.message.toLowerCase();
     if (message.includes("already registered") || message.includes("already been registered")) {
-      redirect("/register?error=email-already-registered");
+      redirect("/register?success=check-email");
     }
 
     const errorMessage =
@@ -91,7 +91,7 @@ export async function signUp(formData: FormData) {
 
   const identities = signUpResult.data?.user?.identities;
   if (identities && identities.length === 0) {
-    redirect("/register?error=email-already-registered");
+    redirect("/register?success=check-email");
   }
 
   const userId = signUpResult.data?.user?.id;

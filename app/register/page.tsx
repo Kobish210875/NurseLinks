@@ -1,7 +1,7 @@
 import Navbar from "@/components/Navbar";
 import NurseLinkWordmark from "@/components/NurseLinkWordmark";
-import RegistrationSuccessDialog from "@/components/register/RegistrationSuccessDialog";
 import RegisterForm from "@/components/register/RegisterForm";
+import { Suspense } from "react";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
 
@@ -35,8 +35,6 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
       ? t(`errors.${params.error}`)
       : decodeURIComponent(params.error)
     : null;
-  const registrationSucceeded = params.success === "check-email";
-
   return (
     <>
       <Navbar />
@@ -55,9 +53,10 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
             </ul>
           </div>
 
-          <RegisterForm serverError={errorMessage} />
+          <Suspense fallback={<div className="feed-card p-6 text-sm text-muted-foreground">…</div>}>
+            <RegisterForm serverError={errorMessage} />
+          </Suspense>
         </section>
-        <RegistrationSuccessDialog open={registrationSucceeded} />
       </main>
     </>
   );

@@ -26,6 +26,18 @@ function isRecoverableCallbackError(message: string) {
   );
 }
 
+function isSignupFlow(search: URLSearchParams) {
+  const flow = search.get("flow");
+  const next = search.get("next") ?? "";
+  return flow === "signup" || next === "/login" || next.startsWith("/login?");
+}
+
+function isRecoveryFlow(search: URLSearchParams) {
+  const flow = search.get("flow");
+  const next = search.get("next") ?? "";
+  return flow === "recovery" || next.startsWith("/reset-password");
+}
+
 export default function AuthCallbackClient() {
   const t = useT();
   const router = useRouter();
@@ -35,11 +47,13 @@ export default function AuthCallbackClient() {
     void (async () => {
       const supabase = createClient();
       const search = new URLSearchParams(window.location.search);
-      const nextParam = search.get("next") ?? "/home";
+      const signupFlow = isSignupFlow(search);
+      const recoveryFlow = isRecoveryFlow(search);
+      const nextParam = search.get("next") ?? (recoveryFlow ? "/reset-password" : "/home");
       const next = nextParam.startsWith("/") ? nextParam : "/home";
 
       if (search.get("error")) {
-        router.replace("/login?error=auth-callback-failed");
+        router.replace(signupFlow ? "/login?verified=1" : "/login?error=auth-callback-failed");
         return;
       }
 
@@ -76,32 +90,39 @@ export default function AuthCallbackClient() {
 
       if (session?.user) {
         const result = await completeAuthCallback();
-        if (result.ok) {
-          window.location.replace(next);
+        if (!result.ok) {
+          await supabase.auth.signOut({ scope: "local" });
+          router.replace(`/login?error=${result.error}`);
           return;
         }
-        await supabase.auth.signOut({ scope: "local" });
-        router.replace(`/login?error=${result.error}`);
+
+        if (signupFlow) {
+          await supabase.auth.signOut({ scope: "local" });
+          router.replace("/login?verified=1");
+          return;
+        }
+
+        window.location.replace(next);
         return;
       }
 
-      if (exchangeError && isRecoverableCallbackError(exchangeError.message)) {
+      if (signupFlow && exchangeError && isRecoverableCallbackError(exchangeError.message)) {
         router.replace("/login?verified=1");
         return;
       }
 
       if (!code && !tokenHash && window.location.hash.length <= 1) {
-        router.replace("/login?error=auth-callback-failed");
+        router.replace(signupFlow ? "/login?verified=1" : "/login?error=auth-callback-failed");
         return;
       }
 
       if (exchangeError) {
-        router.replace("/login?verified=1");
+        router.replace(signupFlow ? "/login?verified=1" : "/login?error=auth-callback-failed");
         return;
       }
 
       setStatus("error");
-      router.replace("/login?error=auth-callback-failed");
+      router.replace(signupFlow ? "/login?verified=1" : "/login?error=auth-callback-failed");
     })();
   }, [router]);
 

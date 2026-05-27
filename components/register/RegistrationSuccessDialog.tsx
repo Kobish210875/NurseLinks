@@ -1,13 +1,13 @@
 "use client";
 
-import Link from "next/link";
 import { useT } from "@/components/i18n/LocaleProvider";
 
 type RegistrationSuccessDialogProps = {
   open: boolean;
+  onClose: () => void;
 };
 
-export default function RegistrationSuccessDialog({ open }: RegistrationSuccessDialogProps) {
+export default function RegistrationSuccessDialog({ open, onClose }: RegistrationSuccessDialogProps) {
   const t = useT();
 
   if (!open) {
@@ -28,12 +28,16 @@ export default function RegistrationSuccessDialog({ open }: RegistrationSuccessD
         <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
           {t("register.success")}
         </p>
-        <Link
-          href="/login"
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+          {t("register.successAfterVerify")}
+        </p>
+        <button
+          type="button"
+          onClick={onClose}
           className="btn-primary mt-6 inline-flex w-full items-center justify-center rounded-lg px-4 py-3 text-sm font-semibold text-primary-foreground"
         >
           {t("register.successCta")}
-        </Link>
+        </button>
       </div>
     </div>
   );
