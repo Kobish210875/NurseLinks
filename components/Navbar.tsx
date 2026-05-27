@@ -95,7 +95,7 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
                     >
                       {t("nav.admin")}
                     </button>
-                    <div className="invisible absolute right-0 top-full z-50 min-w-full border border-border border-t-0 bg-nav-bg opacity-0 transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                    <div className="invisible absolute top-full right-1.5 z-50 min-w-full border border-border border-t-0 bg-nav-bg opacity-0 transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                       <Link
                         href="/admin/users"
                         className={`block whitespace-nowrap px-2.5 py-2 text-xs font-medium transition-colors ${
