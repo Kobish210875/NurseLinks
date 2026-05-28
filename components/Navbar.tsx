@@ -96,7 +96,7 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
                     >
                       {t("nav.admin")}
                     </button>
-                    <div className="invisible absolute top-full right-2 z-50 min-w-max rounded-b-md border border-border border-t-0 bg-nav-bg py-0.5 opacity-0 transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
+                    <div className="invisible absolute top-full right-4 z-50 min-w-[5.5rem] rounded-b-md border border-border border-t-0 bg-nav-bg py-0.5 opacity-0 transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
                       <Link
                         href="/admin/users"
                         className={`block whitespace-nowrap rounded-sm px-2 py-1.5 text-xs font-medium transition-colors ${
@@ -222,11 +222,13 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
 
             <div className="col-start-1 flex min-w-0 items-center justify-end gap-2 sm:gap-3 lg:col-start-2 lg:justify-start">
               {renderDesktopNavLinks()}
-              {!isAdminRoute ? (
-                <div className="w-full min-w-0 max-w-[14rem] sm:max-w-xs md:max-w-sm lg:max-w-md">
-                  <NavPeopleSearch />
-                </div>
-              ) : null}
+              <div
+                className={`w-full min-w-0 max-w-[14rem] sm:max-w-xs md:max-w-sm lg:max-w-md ${
+                  isAdminRoute ? "lg:me-10" : ""
+                }`}
+              >
+                <NavPeopleSearch />
+              </div>
             </div>
 
             <Link
