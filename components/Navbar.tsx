@@ -35,7 +35,7 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
     { href: "/network", label: t("nav.network"), badge: "network" },
     { href: "/jobs", label: t("nav.jobs"), badge: "jobs" },
     { href: "/messages", label: t("nav.messages"), badge: "messages" },
-    ...(mobileUser?.isAdmin ? [{ href: "/admin/users", label: t("nav.admin") }] : []),
+    ...(mobileUser?.isAdmin ? [{ href: "/admin/users", label: t("nav.adminUsers") }] : []),
   ];
 
   function isActive(href: string) {
@@ -83,35 +83,6 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
       <div className="hidden shrink-0 items-center gap-0.5 md:flex">
         {authenticated
           ? navItems.map((item) => {
-              if (item.href === "/admin/users" && mobileUser?.isAdmin) {
-                const adminActive = isActive("/admin");
-                return (
-                  <div key="admin-menu" className="group relative shrink-0">
-                    <button
-                      type="button"
-                      className={`relative flex items-center justify-center whitespace-nowrap px-2.5 py-2 text-xs font-medium transition-colors ${
-                        adminActive ? "nav-link-active" : "text-muted-foreground hover:text-primary"
-                      }`}
-                      aria-haspopup="menu"
-                    >
-                      {t("nav.admin")}
-                    </button>
-                    <div className="invisible absolute top-full right-4 z-50 min-w-[5.5rem] rounded-b-md border border-border border-t-0 bg-nav-bg py-0.5 opacity-0 transition-opacity group-hover:visible group-hover:opacity-100 group-focus-within:visible group-focus-within:opacity-100">
-                      <Link
-                        href="/admin/users"
-                        className={`block whitespace-nowrap rounded-sm px-2 py-1.5 text-xs font-medium transition-colors ${
-                          isActive("/admin/users")
-                            ? "text-primary"
-                            : "text-muted-foreground hover:text-primary"
-                        }`}
-                      >
-                        {t("nav.adminUsers")}
-                      </Link>
-                    </div>
-                  </div>
-                );
-              }
-
               const count = badgeCount(item.badge);
               return (
                 <Link
