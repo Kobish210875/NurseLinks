@@ -4,6 +4,7 @@ import InstitutionPage from "@/components/hospitals/InstitutionPage";
 import Navbar from "@/components/Navbar";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getColleaguesAtInstitution } from "@/lib/data/institution-colleagues";
+import { getInstitutionOpenJobs } from "@/lib/data/institution-jobs";
 import {
   INSTITUTION_REGIONS,
   getInstitutionBySlug,
@@ -37,6 +38,7 @@ export default async function HospitalDetailPage({ params }: HospitalPageProps) 
     institution,
     t("profile.institutionOther"),
   );
+  const openJobs = await getInstitutionOpenJobs(supabase, institution.slug, locale);
 
   const regionMeta = INSTITUTION_REGIONS.find((r) => r.id === institution.region);
   const regionLabel = regionMeta ? t(regionMeta.labelKey) : "";
@@ -49,6 +51,7 @@ export default async function HospitalDetailPage({ params }: HospitalPageProps) 
           <InstitutionPage
             institution={institution}
             colleagues={colleagues}
+            openJobs={openJobs}
             regionLabel={regionLabel}
             labels={{
               back: t("hospitals.back"),
@@ -56,6 +59,11 @@ export default async function HospitalDetailPage({ params }: HospitalPageProps) 
               colleaguesEmpty: t("hospitals.colleaguesEmpty"),
               colleaguesHint: t("hospitals.colleaguesHint"),
               message: t("network.message"),
+              jobsTitle: t("hospitals.jobsTitle"),
+              jobsHint: t("hospitals.jobsHint"),
+              jobsEmpty: t("hospitals.jobsEmpty"),
+              jobsOpenAll: t("hospitals.jobsOpenAll"),
+              jobsLocation: t("jobs.jobLocation"),
             }}
           />
         </div>

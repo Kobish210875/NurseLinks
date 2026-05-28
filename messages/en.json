@@ -294,7 +294,11 @@
     "back": "Back to feed",
     "colleaguesTitle": "Your connections at this institution",
     "colleaguesHint": "Shows accepted connections who selected this institution on their profile.",
-    "colleaguesEmpty": "No connected colleagues at this institution yet. Set the medical institution field on your profile."
+    "colleaguesEmpty": "No connected colleagues at this institution yet. Set the medical institution field on your profile.",
+    "jobsTitle": "Open jobs at this institution",
+    "jobsHint": "Shows active jobs published for this institution.",
+    "jobsEmpty": "There are no open jobs at this institution right now.",
+    "jobsOpenAll": "View all institution jobs"
   },
   "jobs": {
     "title": "Nursing jobs",

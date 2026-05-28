@@ -1,10 +1,12 @@
 import Link from "next/link";
 import type { InstitutionColleague } from "@/lib/data/institution-colleagues";
+import type { InstitutionOpenJob } from "@/lib/data/institution-jobs";
 import type { MedicalInstitution } from "@/lib/data/medical-institutions";
 
 type InstitutionPageProps = {
   institution: MedicalInstitution;
   colleagues: InstitutionColleague[];
+  openJobs: InstitutionOpenJob[];
   regionLabel: string;
   labels: {
     back: string;
@@ -12,12 +14,18 @@ type InstitutionPageProps = {
     colleaguesEmpty: string;
     colleaguesHint: string;
     message: string;
+    jobsTitle: string;
+    jobsHint: string;
+    jobsEmpty: string;
+    jobsOpenAll: string;
+    jobsLocation: string;
   };
 };
 
 export default function InstitutionPage({
   institution,
   colleagues,
+  openJobs,
   regionLabel,
   labels,
 }: InstitutionPageProps) {
@@ -73,6 +81,38 @@ export default function InstitutionPage({
                 >
                   {labels.message}
                 </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div className="feed-card p-6 text-start">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-sm font-semibold text-foreground">{labels.jobsTitle}</h2>
+          <Link
+            href={`/jobs?institution=${institution.slug}`}
+            className="text-xs font-medium text-primary hover:underline"
+          >
+            {labels.jobsOpenAll}
+          </Link>
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">{labels.jobsHint}</p>
+
+        {openJobs.length === 0 ? (
+          <p className="mt-4 text-sm text-muted-foreground">{labels.jobsEmpty}</p>
+        ) : (
+          <ul className="mt-4 space-y-3">
+            {openJobs.map((job) => (
+              <li key={job.id} className="rounded-lg border border-border bg-muted/20 px-3 py-2.5">
+                <p className="text-sm font-semibold text-foreground">{job.title}</p>
+                {job.bodyPreview ? (
+                  <p className="mt-1 text-xs text-muted-foreground">{job.bodyPreview}</p>
+                ) : null}
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {job.city ? `${labels.jobsLocation}: ${job.city} · ` : ""}
+                  <time dateTime={job.createdAt}>{job.timeLabel}</time>
+                </p>
               </li>
             ))}
           </ul>
