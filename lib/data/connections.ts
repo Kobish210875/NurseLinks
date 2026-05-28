@@ -22,6 +22,14 @@ type ProfileRow = {
   deleted_at?: string | null;
 };
 
+type RecommendationSnapshotRow = {
+  user_id: string;
+  candidate_id: string;
+  mutual_count: number;
+  mutual_ids: string[];
+  rank: number;
+};
+
 function escapeIlike(value: string) {
   return value.replace(/[%_\\]/g, "\\$&");
 }
@@ -232,12 +240,34 @@ export async function getConnectionRecommendations(
   limit = 10,
 ): Promise<NetworkRecommendation[]> {
   const rows = await loadConnectionRows(supabase, userId);
-  const rpc = await supabase.rpc("connection_recommendations", { limit_count: limit } as never);
-  const data = (rpc.data ?? []) as {
+  let data: {
     profile_id: string;
     mutual_count: number;
     mutual_ids?: string[] | null;
-  }[];
+  }[] = [];
+
+  const snapshotResult = await supabase
+    .from("connection_recommendation_snapshots")
+    .select("user_id, candidate_id, mutual_count, mutual_ids, rank")
+    .eq("user_id", userId)
+    .order("rank", { ascending: true })
+    .limit(limit);
+
+  if (!snapshotResult.error && (snapshotResult.data?.length ?? 0) > 0) {
+    data = ((snapshotResult.data ?? []) as RecommendationSnapshotRow[]).map((row) => ({
+      profile_id: row.candidate_id,
+      mutual_count: Number(row.mutual_count),
+      mutual_ids: row.mutual_ids ?? [],
+    }));
+  } else {
+    const rpc = await supabase.rpc("connection_recommendations", { limit_count: limit } as never);
+    data = (rpc.data ?? []) as {
+      profile_id: string;
+      mutual_count: number;
+      mutual_ids?: string[] | null;
+    }[];
+  }
+
   const ids = [...new Set(data.flatMap((row) => [row.profile_id, ...(row.mutual_ids ?? [])]))];
   const profiles = await loadProfilesByIds(supabase, ids);
 

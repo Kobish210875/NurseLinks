@@ -21,9 +21,22 @@
    - `supabase/medical-institutions.sql` (optional workplaces table columns)
    - `supabase/connections-messaging.sql` (connection requests + direct messages)
    - `supabase/profile-cv.sql` (CV visible on other users' profile pages)
+   - `supabase/recommendation-snapshots.sql` (optional: scheduled friendship recommendation snapshots)
    - If CV shows empty for others but exists on edit page: `supabase/profile-cv-fix.sql`
    - If message send fails after connecting: `supabase/connections-messaging-fix.sql`
 5. Restart the Next.js dev server after changing `.env.local`.
+
+### Scheduled connection recommendations (optional)
+
+To refresh friend recommendations automatically (morning + evening):
+
+1. In Vercel project env vars add `CRON_SECRET` (random long string).
+2. Keep `SUPABASE_SERVICE_ROLE_KEY` set (already required for admin operations).
+3. Deploy with `vercel.json` cron config (included in repo).
+4. In Supabase run `supabase/recommendation-snapshots.sql`.
+
+The cron endpoint is `GET /api/sync/recommendations` and accepts
+`Authorization: Bearer $CRON_SECRET`.
 
 ### Post photos on the feed (required for image posts)
 

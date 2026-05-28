@@ -349,6 +349,30 @@ export type Database = {
           created_by?: string | null;
         };
       };
+      connection_recommendation_snapshots: {
+        Row: {
+          user_id: string;
+          candidate_id: string;
+          mutual_count: number;
+          mutual_ids: string[];
+          rank: number;
+          generated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          candidate_id: string;
+          mutual_count?: number;
+          mutual_ids?: string[];
+          rank: number;
+          generated_at?: string;
+        };
+        Update: {
+          mutual_count?: number;
+          mutual_ids?: string[];
+          rank?: number;
+          generated_at?: string;
+        };
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -372,6 +396,18 @@ export type Database = {
           mutual_count: number;
           mutual_ids: string[];
         }[];
+      };
+      connection_recommendations_for_user: {
+        Args: { target_user_id: string; limit_count?: number };
+        Returns: {
+          profile_id: string;
+          mutual_count: number;
+          mutual_ids: string[];
+        }[];
+      };
+      refresh_connection_recommendation_snapshots: {
+        Args: { limit_count?: number };
+        Returns: number;
       };
       get_profile_cv_draft: {
         Args: { target_id: string };
