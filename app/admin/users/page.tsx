@@ -88,15 +88,15 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
               {query ? t("admin.usersWindowFilteredHint") : t("admin.usersWindowHint")}
             </p>
           </div>
-          <div className="min-h-0 flex-1 overflow-auto">
-            <table className="w-full min-w-[760px] text-start text-sm">
+          <div className="min-h-0 flex-1 overflow-auto" dir="ltr">
+            <table className="w-full min-w-[760px] text-right text-sm" dir="rtl">
               <thead className="sticky top-0 z-10 bg-muted text-xs font-semibold text-muted-foreground shadow-sm">
                 <tr>
-                  <th className="px-4 py-3">{t("admin.user")}</th>
-                  <th className="px-4 py-3">{t("admin.status")}</th>
-                  <th className="px-4 py-3">{t("admin.joinedAt")}</th>
-                  <th className="px-4 py-3">{t("admin.lastLogin")}</th>
-                  <th className="px-4 py-3">{t("admin.actions")}</th>
+                  <th className="px-4 py-3 text-right">{t("admin.user")}</th>
+                  <th className="px-4 py-3 text-right">{t("admin.status")}</th>
+                  <th className="px-4 py-3 text-right">{t("admin.joinedAt")}</th>
+                  <th className="px-4 py-3 text-right">{t("admin.lastLogin")}</th>
+                  <th className="px-4 py-3 text-right">{t("admin.actions")}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
@@ -109,21 +109,18 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
 
                   return (
                     <tr key={user.id} className="align-top">
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2.5">
                         <div className="font-semibold text-foreground">{user.fullName}</div>
                         <div className="text-xs text-muted-foreground">{user.email}</div>
-                        {user.headline ? (
-                          <div className="mt-1 text-xs text-muted-foreground">{user.headline}</div>
-                        ) : null}
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">{status}</td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-4 py-2.5 text-muted-foreground">{status}</td>
+                      <td className="px-4 py-2.5 text-muted-foreground">
                         {formatDate(user.createdAt, locale)}
                       </td>
-                      <td className="px-4 py-3 text-muted-foreground">
+                      <td className="px-4 py-2.5 text-muted-foreground">
                         {formatDate(user.lastSignInAt, locale)}
                       </td>
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2.5">
                         <AdminDeleteUserButton userId={user.id} userName={user.fullName} />
                       </td>
                     </tr>
