@@ -71,7 +71,7 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap justify-center gap-2 sm:justify-start">
+        <div className="mt-4 flex flex-wrap justify-center gap-2 sm:justify-end">
           {isOwnProfile ? (
             <Link
               href="/profile"

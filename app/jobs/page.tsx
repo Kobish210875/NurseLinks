@@ -75,7 +75,6 @@ export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
         {view === "search" ? (
           <aside className="jobs-browse-search order-1 min-w-0 lg:sticky lg:top-20 lg:order-2 lg:self-start">
             <JobSearchPanel
-              initialQ={filters.q}
               initialInstitution={filters.institutionSlug}
               initialCity={filters.city}
               initialRegion={filters.region}

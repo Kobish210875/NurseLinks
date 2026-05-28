@@ -42,8 +42,11 @@ export default async function JobFeedList({
             </h2>
             <MarkAllApplicationsRead visible={hasUnreadApplications} />
           </div>
-          <div className="jobs-panel-scroll max-h-[min(16rem,calc(100vh-14rem))] overflow-y-auto overscroll-contain pe-0.5 lg:max-h-[min(14rem,calc(100vh-18rem))]">
-            <div className="space-y-2">
+          <div
+            className="jobs-panel-scroll max-h-[min(16rem,calc(100vh-14rem))] overflow-y-auto overscroll-contain pe-0.5 lg:max-h-[min(14rem,calc(100vh-18rem))]"
+            dir="ltr"
+          >
+            <div className="space-y-2" dir="rtl">
               {feed.mine.map((job) => (
                 <JobCard key={job.id} job={job} defaultApplicantName={defaultApplicantName} />
               ))}
@@ -57,8 +60,11 @@ export default async function JobFeedList({
           <h2 className="mb-2 shrink-0 text-start text-sm font-semibold text-foreground">
             {hasSearchFilters ? t("jobs.sectionSearchResults") : t("jobs.sectionCommunity")}
           </h2>
-          <div className="jobs-panel-scroll max-h-[min(20rem,calc(100vh-14rem))] overflow-y-auto overscroll-contain pe-0.5 lg:max-h-[min(18rem,calc(100vh-18rem))]">
-            <div className="space-y-2">
+          <div
+            className="jobs-panel-scroll max-h-[min(20rem,calc(100vh-14rem))] overflow-y-auto overscroll-contain pe-0.5 lg:max-h-[min(18rem,calc(100vh-18rem))]"
+            dir="ltr"
+          >
+            <div className="space-y-2" dir="rtl">
               {feed.community.map((job) => (
                 <JobCard key={job.id} job={job} defaultApplicantName={defaultApplicantName} />
               ))}
