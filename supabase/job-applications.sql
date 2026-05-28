@@ -46,3 +46,37 @@ create policy "Users can apply to active jobs they do not own"
   );
 
 grant select, insert on public.job_applications to authenticated;
+
+-- Optional CV uploads for job applications
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'job-applications',
+  'job-applications',
+  true,
+  5242880,
+  array[
+    'application/pdf',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  ]
+)
+on conflict (id) do update
+set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "Applicants can upload CV files" on storage.objects;
+create policy "Applicants can upload CV files"
+  on storage.objects for insert
+  to authenticated
+  with check (
+    bucket_id = 'job-applications'
+    and split_part(name, '/', 2) = auth.uid()::text
+  );
+
+drop policy if exists "Applicants can read CV files" on storage.objects;
+create policy "Applicants can read CV files"
+  on storage.objects for select
+  to authenticated
+  using (bucket_id = 'job-applications');

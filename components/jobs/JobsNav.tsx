@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useT } from "@/components/i18n/LocaleProvider";
 
 export default function JobsNav() {
   const t = useT();
   const pathname = usePathname();
-  const onBrowse = pathname === "/jobs";
+  const searchParams = useSearchParams();
+  const view = searchParams.get("view") ?? "search";
+  const onSearch = pathname === "/jobs" && view !== "all";
+  const onAll = pathname === "/jobs" && view === "all";
   const onPublish = pathname.startsWith("/jobs/new");
 
   const tabClass = (active: boolean) =>
@@ -19,11 +22,14 @@ export default function JobsNav() {
 
   return (
     <nav
-      className="feed-card grid min-w-0 grid-cols-2 gap-1 p-1"
+      className="feed-card grid min-w-0 grid-cols-3 gap-1 p-1"
       aria-label={t("jobs.navAria")}
     >
-      <Link href="/jobs" className={tabClass(onBrowse)}>
+      <Link href="/jobs" className={tabClass(onSearch)}>
         {t("jobs.tabBrowse")}
+      </Link>
+      <Link href="/jobs?view=all" className={tabClass(onAll)}>
+        {t("jobs.tabAll")}
       </Link>
       <Link href="/jobs/new" className={tabClass(onPublish)}>
         {t("jobs.tabPublish")}

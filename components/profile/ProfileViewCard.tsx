@@ -1,12 +1,15 @@
 "use client";
 
 import Link from "next/link";
+import { sendConnectionRequest } from "@/app/actions/connections";
 import { useLocale, useT } from "@/components/i18n/LocaleProvider";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { getCityDisplayName } from "@/lib/data/israeli-cities";
 import type { ProfileView } from "@/lib/data/profile-view";
 import { formatFeedTimestamp } from "@/lib/i18n/format-feed-time";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
 
 type ProfileViewCardProps = {
   profile: ProfileView;
@@ -16,6 +19,8 @@ type ProfileViewCardProps = {
 export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCardProps) {
   const t = useT();
   const { locale } = useLocale();
+  const router = useRouter();
+  const [pendingConnect, startConnect] = useTransition();
   const cityLabel = profile.city ? getCityDisplayName(profile.city, locale) : null;
   const professionalLine = formatProfileHeadline(
     profile.headline,
@@ -84,11 +89,28 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
             </Link>
           ) : null}
           {!isOwnProfile && profile.connectionStatus === "none" ? (
-            <Link
-              href={`/network?q=${encodeURIComponent(profile.fullName)}`}
+            <button
+              type="button"
+              disabled={pendingConnect}
+              onClick={() =>
+                startConnect(async () => {
+                  const result = await sendConnectionRequest(profile.id);
+                  if (!result || typeof result !== "object" || !("error" in result)) {
+                    router.refresh();
+                  }
+                })
+              }
               className="rounded-full border border-primary px-4 py-1.5 text-sm font-medium text-primary transition hover:bg-primary/5"
             >
-              {t("network.connect")}
+              {pendingConnect ? "..." : t("network.connect")}
+            </button>
+          ) : null}
+          {!isOwnProfile && profile.connectionStatus === "pending_out" ? (
+            <Link
+              href={`/network?q=${encodeURIComponent(profile.fullName)}`}
+              className="rounded-full border border-border px-4 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted/60"
+            >
+              {t("network.pending")}
             </Link>
           ) : null}
         </div>

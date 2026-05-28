@@ -1,6 +1,8 @@
 export type JobListFilters = {
   q: string;
   institutionSlug: string;
+  city: string;
+  region: string;
   page: number;
 };
 
@@ -15,11 +17,13 @@ export function parseJobListFilters(
 
   const institutionSlug =
     typeof params.institution === "string" ? params.institution.trim() : "";
+  const city = typeof params.city === "string" ? params.city.trim() : "";
+  const region = typeof params.region === "string" ? params.region.trim() : "";
 
   const pageRaw = typeof params.page === "string" ? Number.parseInt(params.page, 10) : 1;
   const page = Number.isFinite(pageRaw) && pageRaw > 0 ? pageRaw : 1;
 
-  return { q, institutionSlug, page };
+  return { q, institutionSlug, city, region, page };
 }
 
 export function jobFiltersToSearchParams(filters: JobListFilters): URLSearchParams {
@@ -29,6 +33,12 @@ export function jobFiltersToSearchParams(filters: JobListFilters): URLSearchPara
   }
   if (filters.institutionSlug) {
     sp.set("institution", filters.institutionSlug);
+  }
+  if (filters.city) {
+    sp.set("city", filters.city);
+  }
+  if (filters.region) {
+    sp.set("region", filters.region);
   }
   if (filters.page > 1) {
     sp.set("page", String(filters.page));

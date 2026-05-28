@@ -72,6 +72,18 @@ export default function JobApplyDialog({
         setError(t("jobs.applyNotConfigured"));
         return;
       }
+      if (res?.error === "invalid-cv-file") {
+        setError(t("jobs.applyInvalidCvFile"));
+        return;
+      }
+      if (res?.error === "cv-storage-missing") {
+        setError(t("jobs.applyCvStorageMissing"));
+        return;
+      }
+      if (res?.error === "cv-upload-failed") {
+        setError(t("jobs.applyCvUploadFailed"));
+        return;
+      }
       if (res?.error) {
         setError(t("jobs.applyFailed"));
         return;
@@ -138,6 +150,19 @@ export default function JobApplyDialog({
                 autoComplete="tel"
                 className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60"
                 dir="ltr"
+              />
+            </div>
+            <div className="grid gap-1.5">
+              <label htmlFor="apply-cv" className="text-sm font-medium text-foreground">
+                {t("jobs.applyCv")}
+              </label>
+              <input
+                id="apply-cv"
+                name="cvFile"
+                type="file"
+                disabled={pending}
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none file:me-2 file:rounded-full file:border file:border-border file:bg-muted/40 file:px-3 file:py-1 file:text-xs file:font-medium file:text-foreground focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60"
               />
             </div>
             <div className="grid gap-1.5">

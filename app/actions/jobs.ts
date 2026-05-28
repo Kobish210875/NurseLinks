@@ -181,6 +181,12 @@ export async function markJobFilled(jobId: string) {
 
 const MAX_APPLICANT_NAME = 120;
 const MAX_APPLICANT_NOTE = 500;
+const MAX_CV_BYTES = 5 * 1024 * 1024;
+const ALLOWED_CV_TYPES = new Set([
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+]);
 
 export async function submitJobApplication(jobId: string, formData: FormData) {
   const supabase = await createClient();
@@ -194,13 +200,14 @@ export async function submitJobApplication(jobId: string, formData: FormData) {
 
   const fullName = getString(formData, "fullName");
   const phoneRaw = getString(formData, "phone");
-  const note = getString(formData, "note") || null;
+  const noteText = getString(formData, "note");
+  const cvFile = formData.get("cvFile");
 
   if (
     !fullName ||
     fullName.length > MAX_APPLICANT_NAME ||
     !phoneRaw ||
-    (note && note.length > MAX_APPLICANT_NOTE)
+    (noteText && noteText.length > MAX_APPLICANT_NOTE)
   ) {
     return { error: "invalid-fields" as const };
   }
@@ -214,6 +221,37 @@ export async function submitJobApplication(jobId: string, formData: FormData) {
   }
 
   const phone = normalizeIsraeliMobile(phoneRaw);
+  let uploadedCvUrl: string | null = null;
+
+  if (cvFile instanceof File && cvFile.size > 0) {
+    if (cvFile.size > MAX_CV_BYTES || !ALLOWED_CV_TYPES.has(cvFile.type)) {
+      return { error: "invalid-cv-file" as const };
+    }
+
+    const safeName = cvFile.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const cvPath = `${jobId}/${user.id}/${Date.now()}-${safeName}`;
+    const fileBuffer = await cvFile.arrayBuffer();
+    const { error: uploadError } = await supabase.storage
+      .from("job-applications")
+      .upload(cvPath, fileBuffer, { contentType: cvFile.type, upsert: false });
+
+    if (uploadError) {
+      if (uploadError.message.toLowerCase().includes("bucket")) {
+        return { error: "cv-storage-missing" as const };
+      }
+      return { error: "cv-upload-failed" as const };
+    }
+
+    const {
+      data: { publicUrl },
+    } = supabase.storage.from("job-applications").getPublicUrl(cvPath);
+    uploadedCvUrl = publicUrl;
+  }
+
+  const note = [noteText, uploadedCvUrl ? `CV: ${uploadedCvUrl}` : null]
+    .filter(Boolean)
+    .join("\n")
+    .trim();
 
   const { data: job } = await supabase
     .from("jobs")
@@ -234,7 +272,7 @@ export async function submitJobApplication(jobId: string, formData: FormData) {
     applicant_id: user.id,
     full_name: fullName,
     phone,
-    note,
+    note: note || null,
   } as never);
 
   if (error) {

@@ -4,6 +4,7 @@ import {
   JOB_COMMUNITY_PAGE_SIZE,
   type JobListFilters,
 } from "@/lib/jobs/search-params";
+import { MEDICAL_INSTITUTIONS } from "@/lib/data/medical-institutions";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -59,6 +60,20 @@ function applyListFilters<T extends { eq: (col: string, val: string) => T; or: (
   let q = query;
   if (withInstitutionSlug && filters.institutionSlug) {
     q = q.eq("institution_slug", filters.institutionSlug);
+  }
+  if (filters.city) {
+    q = q.eq("city", filters.city);
+  }
+  if (withInstitutionSlug && filters.region) {
+    const regionSlugs = MEDICAL_INSTITUTIONS.filter((inst) => inst.region === filters.region).map(
+      (inst) => inst.slug,
+    );
+    if (regionSlugs.length > 0) {
+      q = (q as unknown as { in: (col: string, values: string[]) => T }).in(
+        "institution_slug",
+        regionSlugs,
+      );
+    }
   }
   if (filters.q) {
     const pattern = `%${escapeIlikePattern(filters.q)}%`;
@@ -399,6 +414,17 @@ async function countCommunityJobs(
   if (filters.institutionSlug) {
     query = query.eq("institution_slug", filters.institutionSlug);
   }
+  if (filters.city) {
+    query = query.eq("city", filters.city);
+  }
+  if (filters.region) {
+    const regionSlugs = MEDICAL_INSTITUTIONS.filter((inst) => inst.region === filters.region).map(
+      (inst) => inst.slug,
+    );
+    if (regionSlugs.length > 0) {
+      query = query.in("institution_slug", regionSlugs);
+    }
+  }
   if (filters.q) {
     const pattern = `%${escapeIlikePattern(filters.q)}%`;
     query = query.or(`title.ilike.${pattern},body.ilike.${pattern}`);
@@ -412,6 +438,9 @@ async function countCommunityJobs(
       .select("*", { count: "exact", head: true })
       .eq("status", "active")
       .neq("author_id", userId);
+    if (filters.city) {
+      fallback = fallback.eq("city", filters.city);
+    }
     if (filters.q) {
       const pattern = `%${escapeIlikePattern(filters.q)}%`;
       fallback = fallback.or(`title.ilike.${pattern},body.ilike.${pattern}`);
@@ -430,7 +459,7 @@ export async function getJobFeed(
   supabase: SupabaseClient<Database>,
   userId: string,
   locale: Locale,
-  filters: JobListFilters = { q: "", institutionSlug: "", page: 1 },
+  filters: JobListFilters = { q: "", institutionSlug: "", city: "", region: "", page: 1 },
   seenAt?: string,
 ): Promise<JobFeedResult> {
   const lastSeen = seenAt ?? (await getJobsListSeenAt(supabase, userId));
@@ -471,7 +500,7 @@ export async function getJobListings(
   supabase: SupabaseClient<Database>,
   userId: string,
   locale: Locale,
-  filters: JobListFilters = { q: "", institutionSlug: "", page: 1 },
+  filters: JobListFilters = { q: "", institutionSlug: "", city: "", region: "", page: 1 },
   seenAt?: string,
 ): Promise<JobListing[]> {
   const feed = await getJobFeed(supabase, userId, locale, filters, seenAt);

@@ -22,18 +22,35 @@ export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
   const locale = await getLocale();
   const t = createT(getMessages(locale));
   const sp = await searchParams;
+  const view = sp.view === "all" ? "all" : "search";
   const filters = parseJobListFilters(sp);
   const published = sp.published === "1";
 
   const supabase = await createClient();
-  const feed = await getJobFeed(supabase, user.id, locale, filters);
+  const effectiveFilters =
+    view === "all" ? { q: "", institutionSlug: "", city: "", region: "", page: 1 } : filters;
+  const feed = await getJobFeed(supabase, user.id, locale, effectiveFilters);
 
   const institutions = MEDICAL_INSTITUTIONS.map((inst) => ({
     slug: inst.slug,
     label: institutionCityLabel(inst),
   })).sort((a, b) => a.label.localeCompare(b.label, "he"));
+  const cities = Array.from(
+    new Set(MEDICAL_INSTITUTIONS.map((inst) => inst.locationShort).filter(Boolean)),
+  ).sort((a, b) => a.localeCompare(b, "he"));
+  const regions = [
+    { value: "center", label: t("hospitals.regionCenter") },
+    { value: "jerusalem", label: t("hospitals.regionJerusalem") },
+    { value: "north", label: t("hospitals.regionNorth") },
+    { value: "south", label: t("hospitals.regionSouth") },
+  ];
 
-  const hasSearchFilters = Boolean(filters.q || filters.institutionSlug);
+  const hasSearchFilters = Boolean(
+    effectiveFilters.q ||
+      effectiveFilters.institutionSlug ||
+      effectiveFilters.city ||
+      effectiveFilters.region,
+  );
 
   return (
     <>
@@ -42,22 +59,32 @@ export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
           {t("jobs.publishedBanner")}
         </p>
       ) : null}
-      <div className="jobs-browse-grid grid grid-cols-1 items-start gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,13.5rem)] lg:gap-4">
+      <div
+        className={`jobs-browse-grid grid grid-cols-1 items-start gap-4 ${
+          view === "all" ? "" : "lg:grid-cols-[minmax(0,1fr)_minmax(0,13.5rem)] lg:gap-4"
+        }`}
+      >
         <div className="jobs-browse-feed order-2 min-w-0 lg:order-1">
           <JobFeedList
             feed={feed}
-            filters={filters}
+            filters={effectiveFilters}
             defaultApplicantName={user.fullName}
             hasSearchFilters={hasSearchFilters}
           />
         </div>
-        <aside className="jobs-browse-search order-1 min-w-0 lg:sticky lg:top-20 lg:order-2 lg:self-start">
-          <JobSearchPanel
-            initialQ={filters.q}
-            initialInstitution={filters.institutionSlug}
-            institutions={institutions}
-          />
-        </aside>
+        {view === "search" ? (
+          <aside className="jobs-browse-search order-1 min-w-0 lg:sticky lg:top-20 lg:order-2 lg:self-start">
+            <JobSearchPanel
+              initialQ={filters.q}
+              initialInstitution={filters.institutionSlug}
+              initialCity={filters.city}
+              initialRegion={filters.region}
+              institutions={institutions}
+              cities={cities}
+              regions={regions}
+            />
+          </aside>
+        ) : null}
       </div>
     </>
   );

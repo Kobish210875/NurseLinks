@@ -14,23 +14,35 @@ export type JobInstitutionFilterOption = {
 type JobSearchPanelProps = {
   initialQ: string;
   initialInstitution: string;
+  initialCity: string;
+  initialRegion: string;
   institutions: JobInstitutionFilterOption[];
+  cities: string[];
+  regions: Array<{ value: string; label: string }>;
 };
 
 export default function JobSearchPanel({
   initialQ,
   initialInstitution,
+  initialCity,
+  initialRegion,
   institutions,
+  cities,
+  regions,
 }: JobSearchPanelProps) {
   const t = useT();
   const router = useRouter();
   const [q, setQ] = useState(initialQ);
   const [institution, setInstitution] = useState(initialInstitution);
+  const [city, setCity] = useState(initialCity);
+  const [region, setRegion] = useState(initialRegion);
 
-  function applyFilters(next?: Partial<{ q: string; institution: string }>) {
+  function applyFilters(next?: Partial<{ q: string; institution: string; city: string; region: string }>) {
     const filters: JobListFilters = {
       q: next?.q ?? q,
       institutionSlug: next?.institution ?? institution,
+      city: next?.city ?? city,
+      region: next?.region ?? region,
       page: 1,
     };
     const sp = jobFiltersToSearchParams(filters);
@@ -40,6 +52,8 @@ export default function JobSearchPanel({
   function reset() {
     setQ("");
     setInstitution("");
+    setCity("");
+    setRegion("");
     router.push("/jobs");
   }
 
@@ -77,6 +91,62 @@ export default function JobSearchPanel({
 
         <div className="grid gap-1.5 lg:gap-1">
           <label
+            htmlFor="job-search-region"
+            className="text-sm font-medium text-foreground lg:text-xs"
+          >
+            {t("jobs.searchRegion")}
+          </label>
+          <select
+            id="job-search-region"
+            value={region}
+            onChange={(event) => {
+              const value = event.target.value;
+              setRegion(value);
+              if (value) {
+                setInstitution("");
+              }
+            }}
+            className="w-full max-w-full rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm lg:px-2.5 lg:py-1.5 lg:text-xs"
+          >
+            <option value="">{t("jobs.searchRegionAll")}</option>
+            {regions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="grid gap-1.5 lg:gap-1">
+          <label
+            htmlFor="job-search-city"
+            className="text-sm font-medium text-foreground lg:text-xs"
+          >
+            {t("jobs.searchCity")}
+          </label>
+          <select
+            id="job-search-city"
+            value={city}
+            onChange={(event) => {
+              const value = event.target.value;
+              setCity(value);
+              if (value) {
+                setInstitution("");
+              }
+            }}
+            className="w-full max-w-full rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm lg:px-2.5 lg:py-1.5 lg:text-xs"
+          >
+            <option value="">{t("jobs.searchCityAll")}</option>
+            {cities.map((cityOption) => (
+              <option key={cityOption} value={cityOption}>
+                {cityOption}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="grid gap-1.5 lg:gap-1">
+          <label
             htmlFor="job-search-institution"
             className="text-sm font-medium text-foreground lg:text-xs"
           >
@@ -85,7 +155,13 @@ export default function JobSearchPanel({
           <select
             id="job-search-institution"
             value={institution}
-            onChange={(event) => setInstitution(event.target.value)}
+            onChange={(event) => {
+              setInstitution(event.target.value);
+              if (event.target.value) {
+                setRegion("");
+                setCity("");
+              }
+            }}
             className="w-full max-w-full rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm lg:px-2.5 lg:py-1.5 lg:text-xs"
           >
             <option value="">{t("jobs.searchInstitutionAll")}</option>
