@@ -19,9 +19,13 @@ export type NetworkProfileSummary = {
   initials: string;
 };
 
+export type RecommendationSource = "mutual" | "workplace" | "both";
+
 export type NetworkRecommendation = NetworkMember & {
   mutualCount: number;
   mutualConnections: NetworkProfileSummary[];
+  recommendationSource: RecommendationSource;
+  institutionSlug: string | null;
 };
 
 export type MessageThread = {

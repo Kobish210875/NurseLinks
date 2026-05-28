@@ -8,8 +8,16 @@ import {
   sendConnectionRequest,
 } from "@/app/actions/connections";
 import { useT } from "@/components/i18n/LocaleProvider";
-import type { ConnectionStatus, NetworkMember, NetworkProfileSummary } from "@/lib/network/types";
-import { formatProfileHeadline } from "@/lib/profile/display-professional";
+import type {
+  ConnectionStatus,
+  NetworkMember,
+  NetworkProfileSummary,
+  RecommendationSource,
+} from "@/lib/network/types";
+import {
+  formatProfileHeadline,
+  getInstitutionLabel,
+} from "@/lib/profile/display-professional";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
@@ -17,6 +25,8 @@ type MemberRowProps = {
   member: NetworkMember & {
     mutualCount?: number;
     mutualConnections?: NetworkProfileSummary[];
+    recommendationSource?: RecommendationSource;
+    institutionSlug?: string | null;
   };
   variant?: "connection" | "search" | "invitation" | "recommendation";
 };
@@ -62,6 +72,11 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
     member.workplaceInstitutionSlug,
     t("profile.institutionOther"),
   );
+  const workplaceInstitutionLabel =
+    member.institutionSlug &&
+    (member.recommendationSource === "workplace" || member.recommendationSource === "both")
+      ? getInstitutionLabel(member.institutionSlug, t("profile.institutionOther"))
+      : null;
 
   return (
     <li>
@@ -91,6 +106,11 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
             {professionalLine ? (
               <p className="truncate text-[11px] text-muted-foreground sm:text-xs">
                 {professionalLine}
+              </p>
+            ) : null}
+            {workplaceInstitutionLabel ? (
+              <p className="truncate text-[11px] font-medium text-primary sm:text-xs">
+                {t("network.sameWorkplace").replace("{institution}", workplaceInstitutionLabel)}
               </p>
             ) : null}
             {member.mutualCount && member.mutualConnections?.length ? (

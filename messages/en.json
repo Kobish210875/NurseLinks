@@ -277,8 +277,9 @@
     "message": "Message",
     "connectedOn": "Connected since",
     "recommendationsTitle": "Recommended new connections",
-    "recommendationsHint": "Based on mutual connections in your network.",
+    "recommendationsHint": "Colleagues at your medical institution and people with mutual connections.",
     "noRecommendations": "No new recommendations right now.",
+    "sameWorkplace": "Works at {institution}",
     "mutualConnections": "{count} mutual connections",
     "mutualConnectionsTitle": "Mutual connections",
     "back": "Close"

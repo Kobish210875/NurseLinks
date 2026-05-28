@@ -7,10 +7,15 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 
 type ConnectionInsert = Database["public"]["Tables"]["connections"]["Insert"];
-function revalidateNetwork() {
+function revalidateNetworkPages() {
   revalidatePath("/network");
   revalidatePath("/messages");
   revalidatePath("/home");
+}
+
+/** Nav badge counts (pending invitations) live in the root layout. */
+function revalidateNetworkNav() {
+  revalidateNetworkPages();
   revalidatePath("/", "layout");
 }
 
@@ -51,7 +56,7 @@ export async function sendConnectionRequest(addresseeId: string) {
       return { error: "accept-failed" as const };
     }
 
-    revalidateNetwork();
+    revalidateNetworkNav();
     return { success: true as const, accepted: true as const };
   }
 
@@ -71,7 +76,7 @@ export async function sendConnectionRequest(addresseeId: string) {
     return { error: "request-failed" as const };
   }
 
-  revalidateNetwork();
+  revalidateNetworkPages();
   return { success: true as const };
 }
 
@@ -96,7 +101,7 @@ export async function acceptConnectionRequest(requesterId: string) {
     return { error: "accept-failed" as const };
   }
 
-  revalidateNetwork();
+  revalidateNetworkNav();
   return { success: true as const };
 }
 
@@ -121,7 +126,7 @@ export async function rejectConnectionRequest(requesterId: string) {
     return { error: "reject-failed" as const };
   }
 
-  revalidateNetwork();
+  revalidateNetworkNav();
   return { success: true as const };
 }
 
@@ -146,6 +151,6 @@ export async function cancelConnectionRequest(addresseeId: string) {
     return { error: "cancel-failed" as const };
   }
 
-  revalidateNetwork();
+  revalidateNetworkPages();
   return { success: true as const };
 }

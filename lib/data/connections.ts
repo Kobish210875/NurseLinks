@@ -1,6 +1,11 @@
 import { getInitials } from "@/lib/auth/initials";
 import { resolveWorkplaceSlug } from "@/lib/profile/workplace";
-import type { ConnectionStatus, NetworkMember, NetworkRecommendation } from "@/lib/network/types";
+import type {
+  ConnectionStatus,
+  NetworkMember,
+  NetworkRecommendation,
+  RecommendationSource,
+} from "@/lib/network/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -27,8 +32,25 @@ type RecommendationSnapshotRow = {
   candidate_id: string;
   mutual_count: number;
   mutual_ids: string[];
+  source?: RecommendationSource;
+  institution_slug?: string | null;
   rank: number;
 };
+
+type RecommendationRpcRow = {
+  profile_id: string;
+  mutual_count: number;
+  mutual_ids?: string[] | null;
+  source?: RecommendationSource;
+  institution_slug?: string | null;
+};
+
+function parseRecommendationSource(value: unknown): RecommendationSource {
+  if (value === "workplace" || value === "both" || value === "mutual") {
+    return value;
+  }
+  return "mutual";
+}
 
 function escapeIlike(value: string) {
   return value.replace(/[%_\\]/g, "\\$&");
@@ -128,8 +150,9 @@ function toMember(
 export async function getAcceptedConnections(
   supabase: SupabaseClient<Database>,
   userId: string,
+  connectionRows?: ConnectionRow[],
 ): Promise<NetworkMember[]> {
-  const rows = await loadConnectionRows(supabase, userId);
+  const rows = connectionRows ?? (await loadConnectionRows(supabase, userId));
   const accepted = rows.filter((r) => r.status === "accepted");
   const peerIds = accepted.map((r) =>
     r.requester_id === userId ? r.addressee_id : r.requester_id,
@@ -172,8 +195,9 @@ export async function getPendingInvitationCount(
 export async function getPendingInvitations(
   supabase: SupabaseClient<Database>,
   userId: string,
+  connectionRows?: ConnectionRow[],
 ): Promise<NetworkMember[]> {
-  const rows = await loadConnectionRows(supabase, userId);
+  const rows = connectionRows ?? (await loadConnectionRows(supabase, userId));
   const incoming = rows.filter((r) => r.status === "pending" && r.addressee_id === userId);
   const profiles = await loadProfilesByIds(
     supabase,
@@ -197,13 +221,14 @@ export async function searchPeople(
   userId: string,
   query: string,
   limit = 20,
+  connectionRows?: ConnectionRow[],
 ): Promise<NetworkMember[]> {
   const trimmed = query.trim();
   if (trimmed.length < 2) {
     return [];
   }
 
-  const rows = await loadConnectionRows(supabase, userId);
+  const rows = connectionRows ?? (await loadConnectionRows(supabase, userId));
   const pattern = `${escapeIlike(trimmed)}%`;
 
   let { data: profilesRaw, error: searchError } = await supabase
@@ -238,34 +263,41 @@ export async function getConnectionRecommendations(
   supabase: SupabaseClient<Database>,
   userId: string,
   limit = 10,
+  connectionRows?: ConnectionRow[],
 ): Promise<NetworkRecommendation[]> {
-  const rows = await loadConnectionRows(supabase, userId);
-  let data: {
-    profile_id: string;
-    mutual_count: number;
-    mutual_ids?: string[] | null;
-  }[] = [];
+  const rows = connectionRows ?? (await loadConnectionRows(supabase, userId));
+  let data: RecommendationRpcRow[] = [];
 
-  const snapshotResult = await supabase
+  let snapshotResult = await supabase
     .from("connection_recommendation_snapshots")
-    .select("user_id, candidate_id, mutual_count, mutual_ids, rank")
+    .select("user_id, candidate_id, mutual_count, mutual_ids, source, institution_slug, rank")
     .eq("user_id", userId)
     .order("rank", { ascending: true })
     .limit(limit);
+
+  if (snapshotResult.error?.message?.toLowerCase().includes("source")) {
+    snapshotResult = await supabase
+      .from("connection_recommendation_snapshots")
+      .select("user_id, candidate_id, mutual_count, mutual_ids, rank")
+      .eq("user_id", userId)
+      .order("rank", { ascending: true })
+      .limit(limit);
+  }
 
   if (!snapshotResult.error && (snapshotResult.data?.length ?? 0) > 0) {
     data = ((snapshotResult.data ?? []) as RecommendationSnapshotRow[]).map((row) => ({
       profile_id: row.candidate_id,
       mutual_count: Number(row.mutual_count),
       mutual_ids: row.mutual_ids ?? [],
+      source: parseRecommendationSource(row.source),
+      institution_slug: row.institution_slug ?? null,
     }));
   } else {
     const rpc = await supabase.rpc("connection_recommendations", { limit_count: limit } as never);
-    data = (rpc.data ?? []) as {
-      profile_id: string;
-      mutual_count: number;
-      mutual_ids?: string[] | null;
-    }[];
+    data = ((rpc.data ?? []) as RecommendationRpcRow[]).map((row) => ({
+      ...row,
+      source: parseRecommendationSource(row.source),
+    }));
   }
 
   const ids = [...new Set(data.flatMap((row) => [row.profile_id, ...(row.mutual_ids ?? [])]))];
@@ -279,6 +311,8 @@ export async function getConnectionRecommendations(
       }
       return {
         ...toMember(profile, resolveConnectionStatus(userId, row.profile_id, rows)),
+        recommendationSource: parseRecommendationSource(row.source),
+        institutionSlug: row.institution_slug?.trim() || null,
         mutualCount: Number(row.mutual_count),
         mutualConnections: (row.mutual_ids ?? [])
           .map((id) => {
@@ -298,6 +332,35 @@ export async function getConnectionRecommendations(
       } satisfies NetworkRecommendation;
     })
     .filter((m): m is NetworkRecommendation => m !== null);
+}
+
+export type NetworkPageData = {
+  connections: NetworkMember[];
+  invitations: NetworkMember[];
+  searchResults: NetworkMember[];
+  recommendations: NetworkRecommendation[];
+};
+
+/** Single connection-row fetch for the network page (avoids duplicate queries). */
+export async function getNetworkPageData(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  query: string,
+): Promise<NetworkPageData> {
+  const connectionRows = await loadConnectionRows(supabase, userId);
+  const trimmed = query.trim();
+  const showSearch = trimmed.length >= 2;
+
+  const [connections, invitations, searchResults, recommendations] = await Promise.all([
+    getAcceptedConnections(supabase, userId, connectionRows),
+    getPendingInvitations(supabase, userId, connectionRows),
+    showSearch ? searchPeople(supabase, userId, trimmed, 20, connectionRows) : Promise.resolve([]),
+    showSearch
+      ? Promise.resolve([])
+      : getConnectionRecommendations(supabase, userId, 10, connectionRows),
+  ]);
+
+  return { connections, invitations, searchResults, recommendations };
 }
 
 export async function getNetworkPeer(

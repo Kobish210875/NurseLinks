@@ -355,6 +355,8 @@ export type Database = {
           candidate_id: string;
           mutual_count: number;
           mutual_ids: string[];
+          source: "mutual" | "workplace" | "both";
+          institution_slug: string | null;
           rank: number;
           generated_at: string;
         };
@@ -363,12 +365,16 @@ export type Database = {
           candidate_id: string;
           mutual_count?: number;
           mutual_ids?: string[];
+          source?: "mutual" | "workplace" | "both";
+          institution_slug?: string | null;
           rank: number;
           generated_at?: string;
         };
         Update: {
           mutual_count?: number;
           mutual_ids?: string[];
+          source?: "mutual" | "workplace" | "both";
+          institution_slug?: string | null;
           rank?: number;
           generated_at?: string;
         };
@@ -395,6 +401,8 @@ export type Database = {
           profile_id: string;
           mutual_count: number;
           mutual_ids: string[];
+          source: "mutual" | "workplace" | "both";
+          institution_slug: string | null;
         }[];
       };
       connection_recommendations_for_user: {
@@ -403,6 +411,23 @@ export type Database = {
           profile_id: string;
           mutual_count: number;
           mutual_ids: string[];
+        }[];
+      };
+      connection_recommendations_merged_for_user: {
+        Args: { target_user_id: string; limit_count?: number };
+        Returns: {
+          profile_id: string;
+          mutual_count: number;
+          mutual_ids: string[];
+          source: "mutual" | "workplace" | "both";
+          institution_slug: string | null;
+        }[];
+      };
+      workplace_colleague_recommendations_for_user: {
+        Args: { target_user_id: string; limit_count?: number };
+        Returns: {
+          profile_id: string;
+          institution_slug: string | null;
         }[];
       };
       refresh_connection_recommendation_snapshots: {

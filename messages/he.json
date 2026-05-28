@@ -277,8 +277,9 @@
     "message": "הודעה",
     "connectedOn": "מחוברים מאז",
     "recommendationsTitle": "המלצות לחיבורים חדשים",
-    "recommendationsHint": "מבוסס על חברים משותפים ברשת שלכם.",
+    "recommendationsHint": "קולגות באותו מוסד רפואי ואנשים עם חברים משותפים ברשת.",
     "noRecommendations": "אין כרגע המלצות חדשות.",
+    "sameWorkplace": "עובד/ת ב{institution}",
     "mutualConnections": "{count} חיבורים משותפים",
     "mutualConnectionsTitle": "חברים משותפים",
     "back": "סגירה"
