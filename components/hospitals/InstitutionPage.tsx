@@ -1,4 +1,5 @@
 import Link from "next/link";
+import InstitutionJobCard from "@/components/hospitals/InstitutionJobCard";
 import type { InstitutionColleague } from "@/lib/data/institution-colleagues";
 import type { InstitutionOpenJob } from "@/lib/data/institution-jobs";
 import type { MedicalInstitution } from "@/lib/data/medical-institutions";
@@ -7,6 +8,7 @@ type InstitutionPageProps = {
   institution: MedicalInstitution;
   colleagues: InstitutionColleague[];
   openJobs: InstitutionOpenJob[];
+  defaultApplicantName: string;
   regionLabel: string;
   labels: {
     back: string;
@@ -19,6 +21,7 @@ type InstitutionPageProps = {
     jobsEmpty: string;
     jobsOpenAll: string;
     jobsLocation: string;
+    apply: string;
   };
 };
 
@@ -26,6 +29,7 @@ export default function InstitutionPage({
   institution,
   colleagues,
   openJobs,
+  defaultApplicantName,
   regionLabel,
   labels,
 }: InstitutionPageProps) {
@@ -104,16 +108,13 @@ export default function InstitutionPage({
         ) : (
           <ul className="mt-4 space-y-3">
             {openJobs.map((job) => (
-              <li key={job.id} className="rounded-lg border border-border bg-muted/20 px-3 py-2.5">
-                <p className="text-sm font-semibold text-foreground">{job.title}</p>
-                {job.bodyPreview ? (
-                  <p className="mt-1 text-xs text-muted-foreground">{job.bodyPreview}</p>
-                ) : null}
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {job.city ? `${labels.jobsLocation}: ${job.city} · ` : ""}
-                  <time dateTime={job.createdAt}>{job.timeLabel}</time>
-                </p>
-              </li>
+              <InstitutionJobCard
+                key={job.id}
+                job={job}
+                defaultApplicantName={defaultApplicantName}
+                applyLabel={labels.apply}
+                jobsLocationLabel={labels.jobsLocation}
+              />
             ))}
           </ul>
         )}

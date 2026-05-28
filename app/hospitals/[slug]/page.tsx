@@ -52,6 +52,7 @@ export default async function HospitalDetailPage({ params }: HospitalPageProps) 
             institution={institution}
             colleagues={colleagues}
             openJobs={openJobs}
+            defaultApplicantName={user.fullName}
             regionLabel={regionLabel}
             labels={{
               back: t("hospitals.back"),
@@ -64,6 +65,7 @@ export default async function HospitalDetailPage({ params }: HospitalPageProps) 
               jobsEmpty: t("hospitals.jobsEmpty"),
               jobsOpenAll: t("hospitals.jobsOpenAll"),
               jobsLocation: t("jobs.jobLocation"),
+              apply: t("jobs.apply"),
             }}
           />
         </div>
