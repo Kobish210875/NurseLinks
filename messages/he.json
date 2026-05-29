@@ -432,6 +432,7 @@
     "moderationTitle": "דיווחים ותוכן לא הולם",
     "moderationSubtitle": "תוכן שסומן אוטומטית או בדיווח משתמשים. התוכן נשאר מפורסם עד שתטפלו בו.",
     "moderationEmpty": "אין דיווחים ממתינים.",
+    "moderationEmptyHint": "דיווחים שטופלו או נסגרו לא מוצגים כאן. אם ציפיתם לראות דיווח — ייתכן ש-SUPABASE_SERVICE_ROLE_KEY ב-Vercel שגוי (ראו הודעת שגיאה למעלה).",
     "moderationDone": "הפעולה נשמרה.",
     "moderationLoadFailed": "לא ניתן לטעון את תור המודרציה.",
     "moderationSourceAuto": "זיהוי אוטומטי",
@@ -476,7 +477,8 @@
     "missingServiceRole": "פעולות אדמין לא מוגדרות בשרת. ודאו ש-SUPABASE_SERVICE_ROLE_KEY מוגדר ב-Vercel (Production) ושביצעתם Redeploy.",
     "cannotDeleteSelf": "אדמין לא יכול למחוק את עצמו.",
     "cannotDeleteAdmin": "לא ניתן למחוק משתמש אדמין ממסך זה.",
-    "deleteFailed": "לא ניתן למחוק את המשתמש כרגע. נסו שוב."
+    "deleteFailed": "לא ניתן למחוק את המשתמש כרגע. נסו שוב.",
+    "usersLoadFailed": "לא ניתן לטעון את רשימת המשתמשים. ב-Vercel → Environment Variables ודאו ש-SUPABASE_SERVICE_ROLE_KEY הוא מפתח service_role מ-Supabase (Project Settings → API → service_role, מתחיל ב-eyJ…), לא sb_secret. אחרי עדכון — Redeploy."
   },
   "errors": {
     "missing-fields": "נא למלא את כל השדות החובה.",

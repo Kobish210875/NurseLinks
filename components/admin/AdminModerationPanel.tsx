@@ -39,9 +39,10 @@ export default function AdminModerationPanel({ flags }: AdminModerationPanelProp
 
   if (flags.length === 0) {
     return (
-      <p className="feed-card px-4 py-8 text-center text-sm text-muted-foreground">
-        {t("admin.moderationEmpty")}
-      </p>
+      <div className="feed-card px-4 py-8 text-center text-sm text-muted-foreground">
+        <p>{t("admin.moderationEmpty")}</p>
+        <p className="mt-2 text-xs">{t("admin.moderationEmptyHint")}</p>
+      </div>
     );
   }
 

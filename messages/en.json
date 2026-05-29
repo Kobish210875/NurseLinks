@@ -432,6 +432,7 @@
     "moderationTitle": "Reports and inappropriate content",
     "moderationSubtitle": "Content flagged automatically or by users. It stays published until you act.",
     "moderationEmpty": "No pending reports.",
+    "moderationEmptyHint": "Reviewed or dismissed reports are not shown here. If you expected a report, SUPABASE_SERVICE_ROLE_KEY on Vercel may be wrong (see any error above).",
     "moderationDone": "Action saved.",
     "moderationLoadFailed": "Could not load the moderation queue.",
     "moderationSourceAuto": "Auto-detected",
@@ -476,7 +477,8 @@
     "missingServiceRole": "Admin actions are not configured on the server. Make sure SUPABASE_SERVICE_ROLE_KEY is set in Vercel (Production) and redeploy.",
     "cannotDeleteSelf": "An admin cannot delete themselves.",
     "cannotDeleteAdmin": "Admin users cannot be deleted from this screen.",
-    "deleteFailed": "Could not delete the user right now. Please try again."
+    "deleteFailed": "Could not delete the user right now. Please try again.",
+    "usersLoadFailed": "Could not load the user list. In Vercel → Environment Variables, make sure SUPABASE_SERVICE_ROLE_KEY is the service_role key from Supabase (Project Settings → API → service_role, starts with eyJ…), not sb_secret. Then Redeploy."
   },
   "errors": {
     "missing-fields": "Please fill in all required fields.",

@@ -3,6 +3,7 @@ import Navbar from "@/components/Navbar";
 import Link from "next/link";
 import AdminDeleteUserButton from "@/components/admin/AdminDeleteUserButton";
 import { requireAdmin } from "@/lib/auth/admin";
+import { resolveAdminUsersErrorMessage } from "@/lib/admin/page-errors";
 import { getAdminUsers } from "@/lib/admin/users";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
@@ -34,16 +35,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
   const query = typeof params.q === "string" ? params.q.trim() : "";
   const { users, summary, error } = await getAdminUsers(query);
 
-  const errorMessage =
-    params.error === "missing-service-role" || error === "missing-service-role"
-      ? t("admin.missingServiceRole")
-      : params.error === "cannot-delete-self"
-        ? t("admin.cannotDeleteSelf")
-        : params.error === "cannot-delete-admin"
-          ? t("admin.cannotDeleteAdmin")
-          : params.error || error
-            ? t("admin.deleteFailed")
-            : null;
+  const errorMessage = resolveAdminUsersErrorMessage(t, params.error, error);
 
   return (
     <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
