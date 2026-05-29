@@ -48,8 +48,8 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
   return (
     <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
       <Navbar authenticated />
-      <main className="home-main-shell feed-page min-h-0 flex-1 overflow-hidden py-4 max-md:block max-md:flex-none max-md:overflow-visible max-md:py-8 max-md:pb-[calc(var(--mobile-bottom-nav-offset)+1.25rem)]">
-        <div className="mx-auto flex h-full w-full max-w-[1128px] flex-col gap-3 overflow-hidden px-4 max-md:h-auto max-md:overflow-visible">
+      <main className="home-main-shell feed-page min-h-0 w-full min-w-0 max-w-[100vw] flex-1 overflow-hidden py-4 max-md:block max-md:flex-none max-md:overflow-x-clip max-md:py-8 max-md:pb-[calc(var(--mobile-bottom-nav-offset)+1.75rem)] md:py-6">
+        <div className="mx-auto flex h-full w-full min-w-0 max-w-[1128px] flex-col gap-3 overflow-hidden px-4 max-md:block max-md:h-auto max-md:overflow-x-clip max-md:pb-[calc(var(--mobile-bottom-nav-offset)+1.5rem)]">
         <div className="shrink-0 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("admin.usersTitle")}</h1>
@@ -58,7 +58,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
             href="/admin/moderation"
             className="rounded-lg border border-primary/30 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/5"
           >
-            {t("admin.moderationTitle")}
+            {t("nav.adminModeration")}
           </Link>
         </div>
 
@@ -88,14 +88,14 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
           </button>
         </form>
 
-        <section className="feed-card flex min-h-0 flex-1 flex-col overflow-hidden max-md:flex-none max-md:overflow-visible">
+        <section className="feed-card flex min-h-0 flex-1 flex-col overflow-hidden lg:min-h-[min(24rem,50vh)] max-md:flex-none max-md:overflow-visible">
           <div className="border-b border-border bg-muted/20 px-4 py-3">
             <h2 className="text-sm font-bold text-foreground">{t("admin.usersWindowTitle")}</h2>
             <p className="mt-1 text-xs text-muted-foreground">
               {query ? t("admin.usersWindowFilteredHint") : t("admin.usersWindowHint")}
             </p>
           </div>
-          <div className="min-h-0 flex-1 overflow-auto max-md:overflow-x-auto max-md:overflow-y-visible" dir="ltr">
+          <div className="min-h-0 flex-1 overflow-auto max-md:overflow-x-auto max-md:overflow-y-visible max-md:overscroll-auto" dir="ltr">
             <table className="w-full min-w-[760px] text-right text-sm" dir="rtl">
               <thead className="sticky top-0 z-10 bg-muted text-xs font-semibold text-muted-foreground shadow-sm">
                 <tr>
@@ -160,6 +160,8 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
             </span>
           </div>
         </section>
+
+        <div className="mobile-feed-bottom-spacer md:hidden" aria-hidden="true" />
         </div>
       </main>
       <div className="lg:hidden">
