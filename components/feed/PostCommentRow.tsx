@@ -2,6 +2,7 @@
 
 import { deletePostComment, toggleCommentLike } from "@/app/actions/feed";
 import { useT } from "@/components/i18n/LocaleProvider";
+import ReportContentButton from "@/components/moderation/ReportContentButton";
 import { PostLikeIcon, formatEngagementCount } from "@/components/feed/PostEngagementIcons";
 import type { FeedComment } from "@/lib/data/feed";
 import Link from "next/link";
@@ -127,6 +128,14 @@ export default function PostCommentRow({
           ) : null}
         </div>
         <div className="mt-1 flex flex-wrap items-center gap-2 px-1">
+          {!isAuthor ? (
+            <ReportContentButton
+              contentType="comment"
+              contentId={comment.id}
+              subjectUserId={comment.authorId}
+              currentUserId={currentUserId}
+            />
+          ) : null}
           <button
             type="button"
             onClick={handleLike}

@@ -2,7 +2,9 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { assertUserCanPublish } from "@/lib/auth/suspension";
 import { markThreadRead, usersAreConnected } from "@/lib/data/messages";
+import { autoFlagContentIfNeeded } from "@/lib/moderation/flags";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -61,6 +63,11 @@ export async function sendDirectMessage(peerId: string, formData: FormData) {
     redirect("/");
   }
 
+  const publishCheck = await assertUserCanPublish(user.id);
+  if (!publishCheck.ok) {
+    return { error: "suspended" as const };
+  }
+
   const body = (formData.get("body") as string | null)?.trim() ?? "";
   if (!body || body.length > MAX_BODY) {
     return { error: "invalid-body" as const };
@@ -81,11 +88,22 @@ export async function sendDirectMessage(peerId: string, formData: FormData) {
     body,
   };
 
-  const { error } = await supabase.from("direct_messages").insert(row as never);
+  const { data: inserted, error } = await supabase
+    .from("direct_messages")
+    .insert(row as never)
+    .select("id")
+    .single<{ id: string }>();
 
-  if (error) {
-    return { error: classifyMessageError(error.message) };
+  if (error || !inserted?.id) {
+    return { error: classifyMessageError(error?.message ?? "") };
   }
+
+  await autoFlagContentIfNeeded({
+    contentType: "message",
+    contentId: inserted.id,
+    subjectUserId: user.id,
+    body,
+  });
 
   revalidateMessaging(peerId);
   return { success: true as const };

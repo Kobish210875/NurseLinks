@@ -5,6 +5,7 @@ import { addPostComment, deletePost, togglePostLike } from "@/app/actions/feed";
 import { useT } from "@/components/i18n/LocaleProvider";
 import PostCommentRow from "@/components/feed/PostCommentRow";
 import PostShareDialog from "@/components/feed/PostShareDialog";
+import ReportContentButton from "@/components/moderation/ReportContentButton";
 import {
   PostCommentIcon,
   PostLikeBadge,
@@ -91,6 +92,10 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
         setCommentError(t("errors.comment-empty"));
         return;
       }
+      if (res?.error === "suspended") {
+        setCommentError(t("moderation.suspended"));
+        return;
+      }
       if (res?.error) {
         setCommentError(t("errors.comment-failed"));
         return;
@@ -152,17 +157,27 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
             <time dateTime={post.createdAt}>{post.timeLabel}</time>
           </p>
         </div>
-        {canDeletePost ? (
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={pendingDelete}
-            className="shrink-0 rounded-lg px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-60"
-            aria-label={t("post.delete")}
-          >
-            {pendingDelete ? "..." : isAdmin && !isAuthor ? t("post.adminDelete") : t("post.delete")}
-          </button>
-        ) : null}
+        <div className="flex shrink-0 items-center gap-1">
+          {!isAuthor ? (
+            <ReportContentButton
+              contentType="post"
+              contentId={post.id}
+              subjectUserId={post.authorId}
+              currentUserId={currentUserId}
+            />
+          ) : null}
+          {canDeletePost ? (
+            <button
+              type="button"
+              onClick={handleDelete}
+              disabled={pendingDelete}
+              className="rounded-lg px-2 py-1 text-xs font-medium text-red-600 transition hover:bg-red-50 disabled:opacity-60"
+              aria-label={t("post.delete")}
+            >
+              {pendingDelete ? "..." : isAdmin && !isAuthor ? t("post.adminDelete") : t("post.delete")}
+            </button>
+          ) : null}
+        </div>
       </header>
       {deleteError ? (
         <p className="mb-2 text-xs text-red-600" role="alert">

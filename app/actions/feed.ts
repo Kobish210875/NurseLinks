@@ -22,6 +22,8 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 import { postShareUrl } from "@/lib/links/post-share-url";
 import { isCurrentUserAdmin } from "@/lib/auth/admin";
+import { assertUserCanPublish } from "@/lib/auth/suspension";
+import { autoFlagContentIfNeeded } from "@/lib/moderation/flags";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 type PostInsert = Database["public"]["Tables"]["posts"]["Insert"];
@@ -45,6 +47,11 @@ export async function createPost(formData: FormData) {
 
   if (!user) {
     redirect("/");
+  }
+
+  const publishCheck = await assertUserCanPublish(user.id);
+  if (!publishCheck.ok) {
+    return { error: "suspended" as const };
   }
 
   const body = getBody(formData, "body");
@@ -132,6 +139,13 @@ export async function createPost(formData: FormData) {
     return { error: "insert-failed" as const };
   }
 
+  await autoFlagContentIfNeeded({
+    contentType: "post",
+    contentId: postId,
+    subjectUserId: user.id,
+    body,
+  });
+
   revalidatePath("/home");
   return { success: true as const };
 }
@@ -194,6 +208,11 @@ export async function addPostComment(postId: string, formData: FormData) {
     return { error: "unauthorized" as const };
   }
 
+  const publishCheck = await assertUserCanPublish(user.id);
+  if (!publishCheck.ok) {
+    return { error: "suspended" as const };
+  }
+
   const body = getBody(formData, "body");
   if (!body || body.length > MAX_COMMENT_BODY) {
     return { error: "invalid-body" as const };
@@ -205,11 +224,22 @@ export async function addPostComment(postId: string, formData: FormData) {
     body,
   };
 
-  const { error } = await supabase.from("post_comments").insert(row as never);
+  const { data: inserted, error } = await supabase
+    .from("post_comments")
+    .insert(row as never)
+    .select("id")
+    .single<{ id: string }>();
 
-  if (error) {
+  if (error || !inserted?.id) {
     return { error: "insert-failed" as const };
   }
+
+  await autoFlagContentIfNeeded({
+    contentType: "comment",
+    contentId: inserted.id,
+    subjectUserId: user.id,
+    body,
+  });
 
   // Low-cost notification: send one email only on new comments.
   const [{ data: post }, { data: commenterProfile }] = await Promise.all([

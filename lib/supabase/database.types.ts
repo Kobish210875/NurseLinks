@@ -20,6 +20,8 @@ export type Database = {
           avatar_url: string | null;
           cv_draft: Json | null;
           deleted_at: string | null;
+          suspended_until: string | null;
+          suspension_reason: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -33,6 +35,8 @@ export type Database = {
           avatar_url?: string | null;
           cv_draft?: Json | null;
           deleted_at?: string | null;
+          suspended_until?: string | null;
+          suspension_reason?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -45,6 +49,8 @@ export type Database = {
           avatar_url?: string | null;
           cv_draft?: Json | null;
           deleted_at?: string | null;
+          suspended_until?: string | null;
+          suspension_reason?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -347,6 +353,46 @@ export type Database = {
         };
         Update: {
           created_by?: string | null;
+        };
+      };
+      moderation_flags: {
+        Row: {
+          id: string;
+          content_type: "post" | "comment" | "message";
+          content_id: string;
+          subject_user_id: string;
+          reporter_id: string | null;
+          body_excerpt: string;
+          source: "auto" | "user_report";
+          status: "pending" | "reviewed" | "dismissed";
+          matched_term: string | null;
+          report_note: string | null;
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          resolution: "dismissed" | "content_deleted" | "user_suspended" | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          content_type: "post" | "comment" | "message";
+          content_id: string;
+          subject_user_id: string;
+          reporter_id?: string | null;
+          body_excerpt: string;
+          source: "auto" | "user_report";
+          status?: "pending" | "reviewed" | "dismissed";
+          matched_term?: string | null;
+          report_note?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          resolution?: "dismissed" | "content_deleted" | "user_suspended" | null;
+          created_at?: string;
+        };
+        Update: {
+          status?: "pending" | "reviewed" | "dismissed";
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          resolution?: "dismissed" | "content_deleted" | "user_suspended" | null;
         };
       };
       connection_recommendation_snapshots: {

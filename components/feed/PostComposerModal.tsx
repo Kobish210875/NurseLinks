@@ -189,6 +189,10 @@ export default function PostComposerPanel({
         setError(t("feed.postImageStorageMissing"));
         return;
       }
+      if (result?.error === "suspended") {
+        setError(t("moderation.suspended"));
+        return;
+      }
       if (result?.error) {
         setError(t("errors.post-failed"));
         return;

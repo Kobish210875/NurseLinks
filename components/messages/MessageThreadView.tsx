@@ -4,6 +4,7 @@ import Link from "next/link";
 import { sendDirectMessage } from "@/app/actions/messages";
 import { useLocale, useT } from "@/components/i18n/LocaleProvider";
 import MessageBody from "@/components/messages/MessageBody";
+import ReportContentButton from "@/components/moderation/ReportContentButton";
 import NavUnreadDot from "@/components/nav/NavUnreadDot";
 import { formatFeedTimestamp } from "@/lib/i18n/format-feed-time";
 import type { DirectMessage, NetworkMember } from "@/lib/network/types";
@@ -14,9 +15,10 @@ import { useEffect, useRef, useState, useTransition } from "react";
 type MessageThreadViewProps = {
   peer: NetworkMember;
   messages: DirectMessage[];
+  currentUserId: string;
 };
 
-export default function MessageThreadView({ peer, messages }: MessageThreadViewProps) {
+export default function MessageThreadView({ peer, messages, currentUserId }: MessageThreadViewProps) {
   const t = useT();
   const { locale } = useLocale();
   const router = useRouter();
@@ -57,6 +59,10 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
     setError(null);
     startTransition(async () => {
       const res = await sendDirectMessage(peer.id, formData);
+      if (res?.error === "suspended") {
+        setError(t("moderation.suspended"));
+        return;
+      }
       if (res?.error === "not-connected" || res?.error === "send-blocked") {
         setError(t("messages.notConnected"));
         return;
@@ -146,6 +152,17 @@ export default function MessageThreadView({ peer, messages }: MessageThreadViewP
                     <p className="text-sm leading-relaxed">
                       <MessageBody body={m.body} isMine={m.isMine} />
                     </p>
+                    {!m.isMine ? (
+                      <div className="mt-1">
+                        <ReportContentButton
+                          contentType="message"
+                          contentId={m.id}
+                          subjectUserId={m.senderId}
+                          currentUserId={currentUserId}
+                          className="text-[10px] text-muted-foreground hover:text-foreground"
+                        />
+                      </div>
+                    ) : null}
                     <time
                       className={`mt-1 block text-[10px] ${
                         m.isMine ? "text-primary-foreground/80" : "text-muted-foreground"
