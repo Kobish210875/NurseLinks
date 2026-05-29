@@ -14,6 +14,26 @@ type JobApplyDialogProps = {
   onClose: () => void;
 };
 
+function CvUploadIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M12 3v12" />
+      <path d="m7 8 5-5 5 5" />
+      <path d="M5 21h14" />
+    </svg>
+  );
+}
+
 export default function JobApplyDialog({
   jobId,
   jobTitle,
@@ -180,9 +200,12 @@ export default function JobApplyDialog({
                 type="button"
                 disabled={pending}
                 onClick={() => cvInputRef.current?.click()}
-                className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold tracking-wide text-foreground transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:opacity-60"
+                className="flex w-full items-center justify-start rounded-lg border border-border bg-white px-3 py-2 transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/15 disabled:opacity-60"
               >
-                {t("jobs.applyCvBrowse")}
+                <span className="inline-flex items-center gap-1.5 text-sm font-normal text-muted-foreground">
+                  <CvUploadIcon className="size-4 shrink-0" />
+                  <span>{t("jobs.applyCvBrowse")}</span>
+                </span>
               </button>
               {cvFileName ? (
                 <p className="truncate text-xs text-muted-foreground" dir="ltr" title={cvFileName}>
