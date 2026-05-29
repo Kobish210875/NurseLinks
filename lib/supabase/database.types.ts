@@ -325,6 +325,8 @@ export type Database = {
           full_name: string;
           phone: string;
           note: string | null;
+          cv_url: string | null;
+          cv_file_name: string | null;
           created_at: string;
           owner_read_at: string | null;
         };
@@ -335,6 +337,8 @@ export type Database = {
           full_name: string;
           phone: string;
           note?: string | null;
+          cv_url?: string | null;
+          cv_file_name?: string | null;
           created_at?: string;
           owner_read_at?: string | null;
         };

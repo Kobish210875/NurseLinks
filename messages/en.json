@@ -313,6 +313,7 @@
     "navAria": "Jobs navigation",
     "tabBrowse": "Find jobs",
     "tabAll": "All jobs",
+    "tabApplications": "Applications",
     "tabPublish": "Post a job",
     "searchTitle": "Search & filter",
     "searchHint": "Choose one search method only: region, city, or medical institution.",
@@ -380,7 +381,13 @@
     "applyInvalidCvFile": "Please upload a PDF or Word file up to 5MB.",
     "applyCvStorageMissing": "Resume storage is not configured. Run supabase/job-applications.sql.",
     "applyCvUploadFailed": "Could not upload the resume file. Please try again.",
-    "applicationsTitle": "Applications received"
+    "applicationsTitle": "Applications received",
+    "applicationsInboxTitle": "Applications to my job posts",
+    "applicationsInboxHint": "All applicants and attached resumes appear here — use Download resume to open the file.",
+    "applicationsInboxEmpty": "No applications have been received for your job posts yet.",
+    "applicantsCount": "{count} applicants",
+    "downloadCv": "Download resume",
+    "noCvAttached": "No resume attached"
   },
   "messages": {
     "title": "Messages",

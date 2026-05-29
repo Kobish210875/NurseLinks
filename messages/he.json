@@ -313,6 +313,7 @@
     "navAria": "ניווט משרות",
     "tabBrowse": "חיפוש משרות",
     "tabAll": "כל המשרות",
+    "tabApplications": "מועמדויות",
     "tabPublish": "פרסום משרה",
     "searchTitle": "חיפוש וסינון",
     "searchHint": "בחרו דרך חיפוש אחת בלבד: אזור, עיר או מוסד רפואי.",
@@ -380,7 +381,13 @@
     "applyInvalidCvFile": "יש להעלות קובץ PDF או Word עד 5MB.",
     "applyCvStorageMissing": "אחסון קבצי קורות חיים לא הוגדר. הריצו את supabase/job-applications.sql.",
     "applyCvUploadFailed": "לא ניתן להעלות את קובץ קורות החיים. נסו שוב.",
-    "applicationsTitle": "מועמדויות שהתקבלו"
+    "applicationsTitle": "מועמדויות שהתקבלו",
+    "applicationsInboxTitle": "מועמדויות למשרות שפרסמתי",
+    "applicationsInboxHint": "כאן מופיעות כל המועמדויות והקובץ שצורף — לחצו «הורדת קורות חיים» לפתיחה.",
+    "applicationsInboxEmpty": "עדיין לא התקבלו מועמדויות למשרות שפרסמתם.",
+    "applicantsCount": "{count} מועמדים",
+    "downloadCv": "הורדת קורות חיים",
+    "noCvAttached": "לא צורפו קורות חיים"
   },
   "messages": {
     "title": "הודעות",

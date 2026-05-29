@@ -16,6 +16,9 @@ import {
 } from "@/lib/data/jobs";
 import { isHebrewDisplayName } from "@/lib/validation/hebrew-name";
 import { isValidIsraeliMobile, normalizeIsraeliMobile } from "@/lib/validation/phone";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { sendJobApplicationNotificationEmail } from "@/lib/notifications/job-application-email";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -248,16 +251,17 @@ export async function submitJobApplication(jobId: string, formData: FormData) {
     uploadedCvUrl = publicUrl;
   }
 
-  const note = [noteText, uploadedCvUrl ? `CV: ${uploadedCvUrl}` : null]
-    .filter(Boolean)
-    .join("\n")
-    .trim();
+  const note = noteText || null;
+  const cvFileName =
+    cvFile instanceof File && cvFile.size > 0
+      ? cvFile.name.replace(/[^a-zA-Z0-9._\u0590-\u05FF -]/g, "_").slice(0, 255)
+      : null;
 
   const { data: job } = await supabase
     .from("jobs")
-    .select("id, author_id, status")
+    .select("id, author_id, status, title")
     .eq("id", jobId)
-    .maybeSingle<{ id: string; author_id: string; status: string }>();
+    .maybeSingle<{ id: string; author_id: string; status: string; title: string }>();
 
   if (!job || job.status !== "active") {
     return { error: "job-unavailable" as const };
@@ -267,13 +271,34 @@ export async function submitJobApplication(jobId: string, formData: FormData) {
     return { error: "own-job" as const };
   }
 
-  const { error } = await supabase.from("job_applications").insert({
+  const insertRow = {
     job_id: jobId,
     applicant_id: user.id,
     full_name: fullName,
     phone,
-    note: note || null,
-  } as never);
+    note,
+    cv_url: uploadedCvUrl,
+    cv_file_name: cvFileName,
+  };
+
+  let { error } = await supabase.from("job_applications").insert(insertRow as never);
+
+  if (
+    error?.message?.toLowerCase().includes("cv_url") ||
+    error?.message?.toLowerCase().includes("cv_file_name")
+  ) {
+    const legacyNote = [noteText, uploadedCvUrl ? `CV: ${uploadedCvUrl}` : null]
+      .filter(Boolean)
+      .join("\n")
+      .trim();
+    ({ error } = await supabase.from("job_applications").insert({
+      job_id: jobId,
+      applicant_id: user.id,
+      full_name: fullName,
+      phone,
+      note: legacyNote || null,
+    } as never));
+  }
 
   if (error) {
     if (error.code === "23505") {
@@ -283,6 +308,37 @@ export async function submitJobApplication(jobId: string, formData: FormData) {
       return { error: "not-configured" as const };
     }
     return { error: "insert-failed" as const };
+  }
+
+  if (job.author_id !== user.id) {
+    try {
+      const locale = await getLocale();
+      const admin = createAdminClient();
+      if (admin) {
+        const [{ data: posterProfile }, posterUser] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select("full_name")
+            .eq("id", job.author_id)
+            .maybeSingle<{ full_name: string }>(),
+          admin.auth.admin.getUserById(job.author_id),
+        ]);
+
+        const posterEmail = posterUser.data.user?.email;
+        if (posterEmail) {
+          await sendJobApplicationNotificationEmail({
+            locale,
+            toEmail: posterEmail,
+            posterName: posterProfile?.full_name ?? "",
+            applicantName: fullName,
+            jobTitle: job.title,
+            hasCv: Boolean(uploadedCvUrl),
+          });
+        }
+      }
+    } catch {
+      // Do not fail the application if email notification fails.
+    }
   }
 
   revalidateJobs();

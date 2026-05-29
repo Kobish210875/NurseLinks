@@ -17,6 +17,7 @@
    - `supabase/job-applications.sql` (apply with name & phone; poster sees applicants on their jobs)
    - `supabase/job-applications-seen.sql` (optional legacy column on job_list_views)
    - `supabase/job-applications-read.sql` (per-application read state; mark read on open / mark all)
+   - `supabase/job-applications-cv.sql` (dedicated CV URL + filename on applications; inbox download button)
    - `supabase/profile-workplace.sql` (recommended: dedicated `workplace_institution_slug` column; app falls back to `cv_draft` until run)
    - `supabase/medical-institutions.sql` (optional workplaces table columns)
    - `supabase/connections-messaging.sql` (connection requests + direct messages)

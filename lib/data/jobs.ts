@@ -8,9 +8,18 @@ import { MEDICAL_INSTITUTIONS } from "@/lib/data/medical-institutions";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 
-export type { JobListing, JobApplicationView, JobStatus } from "./jobs-types";
+export type {
+  JobListing,
+  JobApplicationView,
+  JobApplicationInboxItem,
+  JobStatus,
+} from "./jobs-types";
 
-import type { JobListing, JobApplicationView } from "./jobs-types";
+import {
+  parseJobApplicationRow,
+  type RawJobApplicationRow,
+} from "@/lib/jobs/application-display";
+import type { JobApplicationInboxItem, JobListing, JobApplicationView } from "./jobs-types";
 
 type JobRow = {
   id: string;
@@ -26,16 +35,98 @@ type JobRow = {
   filled_at: string | null;
 };
 
-type ApplicationRow = {
-  id: string;
-  job_id: string;
-  applicant_id: string;
-  full_name: string;
-  phone: string;
-  note: string | null;
-  created_at: string;
-  owner_read_at: string | null;
-};
+type ApplicationRow = RawJobApplicationRow;
+
+function toApplicationView(
+  row: ApplicationRow,
+  locale: Locale,
+): JobApplicationView {
+  const parsed = parseJobApplicationRow(row);
+  return {
+    id: parsed.id,
+    applicantId: parsed.applicantId,
+    fullName: parsed.fullName,
+    phone: parsed.phone,
+    note: parsed.note,
+    cvUrl: parsed.cvUrl,
+    cvFileName: parsed.cvFileName,
+    createdAt: parsed.createdAt,
+    timeLabel: formatFeedTimestamp(parsed.createdAt, locale),
+    isUnread: parsed.ownerReadAt == null,
+  };
+}
+
+const APPLICATION_SELECT =
+  "id, job_id, applicant_id, full_name, phone, note, created_at, owner_read_at, cv_url, cv_file_name";
+
+const APPLICATION_SELECT_LEGACY =
+  "id, job_id, applicant_id, full_name, phone, note, created_at, owner_read_at";
+
+async function fetchApplicationsForJobs(
+  supabase: SupabaseClient<Database>,
+  jobIds: string[],
+): Promise<{ rows: ApplicationRow[]; configured: boolean }> {
+  if (!jobIds.length) {
+    return { rows: [], configured: true };
+  }
+
+  const withCv = await supabase
+    .from("job_applications")
+    .select(APPLICATION_SELECT)
+    .in("job_id", jobIds)
+    .order("created_at", { ascending: false });
+
+  if (withCv.error?.message?.toLowerCase().includes("cv_url")) {
+    const legacy = await supabase
+      .from("job_applications")
+      .select(APPLICATION_SELECT_LEGACY)
+      .in("job_id", jobIds)
+      .order("created_at", { ascending: false });
+
+    if (legacy.error?.message?.toLowerCase().includes("job_applications")) {
+      return { rows: [], configured: false };
+    }
+
+    return { rows: (legacy.data ?? []) as ApplicationRow[], configured: true };
+  }
+
+  if (withCv.error?.message?.toLowerCase().includes("job_applications")) {
+    return { rows: [], configured: false };
+  }
+
+  if (withCv.error?.message?.toLowerCase().includes("owner_read_at")) {
+    const withoutRead = await supabase
+      .from("job_applications")
+      .select("id, job_id, applicant_id, full_name, phone, note, created_at, cv_url, cv_file_name")
+      .in("job_id", jobIds)
+      .order("created_at", { ascending: false });
+
+    if (withoutRead.error?.message?.toLowerCase().includes("cv_url")) {
+      const legacy = await supabase
+        .from("job_applications")
+        .select("id, job_id, applicant_id, full_name, phone, note, created_at")
+        .in("job_id", jobIds)
+        .order("created_at", { ascending: false });
+      return {
+        rows: ((legacy.data ?? []) as Omit<ApplicationRow, "owner_read_at">[]).map((row) => ({
+          ...row,
+          owner_read_at: new Date().toISOString(),
+        })),
+        configured: !legacy.error,
+      };
+    }
+
+    return {
+      rows: ((withoutRead.data ?? []) as Omit<ApplicationRow, "owner_read_at">[]).map((row) => ({
+        ...row,
+        owner_read_at: new Date().toISOString(),
+      })),
+      configured: !withoutRead.error,
+    };
+  }
+
+  return { rows: (withCv.data ?? []) as ApplicationRow[], configured: true };
+}
 
 const JOB_MINE_MAX = 50;
 
@@ -263,43 +354,20 @@ async function enrichJobRows(
   let myApplicationsRaw: { job_id: string }[] = [];
   let receivedApplicationsRaw: ApplicationRow[] = [];
 
-  const applicationsQueries = await Promise.all([
+  const [myAppsRes, receivedBundle] = await Promise.all([
     supabase.from("job_applications").select("job_id").eq("applicant_id", userId).in("job_id", jobIds),
     ownedJobIds.length
-      ? supabase
-          .from("job_applications")
-          .select(
-            "id, job_id, applicant_id, full_name, phone, note, created_at, owner_read_at",
-          )
-          .in("job_id", ownedJobIds)
-          .order("created_at", { ascending: false })
-      : Promise.resolve({ data: [] as ApplicationRow[], error: null }),
+      ? fetchApplicationsForJobs(supabase, ownedJobIds)
+      : Promise.resolve({ rows: [] as ApplicationRow[], configured: true }),
   ]);
 
-  const appsConfigured = !applicationsQueries.some(
-    (res) => res.error?.message?.toLowerCase().includes("job_applications"),
-  );
+  const appsConfigured =
+    !myAppsRes.error?.message?.toLowerCase().includes("job_applications") &&
+    receivedBundle.configured;
 
   if (appsConfigured) {
-    myApplicationsRaw = (applicationsQueries[0].data ?? []) as { job_id: string }[];
-    let received = (applicationsQueries[1].data ?? []) as ApplicationRow[];
-
-    if (
-      ownedJobIds.length &&
-      applicationsQueries[1].error?.message?.toLowerCase().includes("owner_read_at")
-    ) {
-      const fallback = await supabase
-        .from("job_applications")
-        .select("id, job_id, applicant_id, full_name, phone, note, created_at")
-        .in("job_id", ownedJobIds)
-        .order("created_at", { ascending: false });
-      received = ((fallback.data ?? []) as Omit<ApplicationRow, "owner_read_at">[]).map((row) => ({
-        ...row,
-        owner_read_at: new Date().toISOString(),
-      }));
-    }
-
-    receivedApplicationsRaw = received;
+    myApplicationsRaw = (myAppsRes.data ?? []) as { job_id: string }[];
+    receivedApplicationsRaw = receivedBundle.rows;
   }
 
   const appliedJobIds = new Set(myApplicationsRaw.map((row) => row.job_id));
@@ -307,16 +375,7 @@ async function enrichJobRows(
   const applicationsByJob = new Map<string, JobApplicationView[]>();
   for (const row of receivedApplicationsRaw) {
     const list = applicationsByJob.get(row.job_id) ?? [];
-    list.push({
-      id: row.id,
-      applicantId: row.applicant_id,
-      fullName: row.full_name,
-      phone: row.phone,
-      note: row.note,
-      createdAt: row.created_at,
-      timeLabel: formatFeedTimestamp(row.created_at, locale),
-      isUnread: row.owner_read_at == null,
-    });
+    list.push(toApplicationView(row, locale));
     applicationsByJob.set(row.job_id, list);
   }
 
@@ -453,6 +512,54 @@ async function countCommunityJobs(
   }
 
   return count ?? 0;
+}
+
+export async function getJobApplicationsInbox(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  locale: Locale,
+): Promise<JobApplicationInboxItem[]> {
+  const mineRows = await fetchJobRows(supabase, { q: "", institutionSlug: "", city: "", region: "", page: 1 }, {
+    authorId: userId,
+    limit: JOB_MINE_MAX,
+  });
+
+  if (!mineRows.length) {
+    return [];
+  }
+
+  const jobById = new Map(
+    mineRows.map((job) => [
+      job.id,
+      {
+        id: job.id,
+        title: job.title,
+        hospital: job.hospital,
+        city: job.city,
+      },
+    ]),
+  );
+
+  const { rows } = await fetchApplicationsForJobs(supabase, mineRows.map((job) => job.id));
+  const items: JobApplicationInboxItem[] = [];
+
+  for (const row of rows) {
+    const job = jobById.get(row.job_id);
+    if (!job) {
+      continue;
+    }
+    items.push({
+      job,
+      application: toApplicationView(row, locale),
+    });
+  }
+
+  items.sort(
+    (a, b) =>
+      new Date(b.application.createdAt).getTime() - new Date(a.application.createdAt).getTime(),
+  );
+
+  return items;
 }
 
 export async function getJobFeed(

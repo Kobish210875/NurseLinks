@@ -62,6 +62,11 @@ export default function JobCard({ job, defaultApplicantName }: JobCardProps) {
                   {t("jobs.newBadge")}
                 </span>
               ) : null}
+              {job.isOwner && job.applications.length > 0 ? (
+                <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
+                  {t("jobs.applicantsCount").replace("{count}", String(job.applications.length))}
+                </span>
+              ) : null}
               {job.isOwner && job.hasNewApplications ? (
                 <span
                   className="inline-block size-2 shrink-0 rounded-full bg-primary"

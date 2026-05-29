@@ -2,7 +2,8 @@ import JobFeedList from "@/components/jobs/JobFeedList";
 import JobSearchPanel from "@/components/jobs/JobSearchPanel";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { MEDICAL_INSTITUTIONS } from "@/lib/data/medical-institutions";
-import { getJobFeed } from "@/lib/data/jobs";
+import JobApplicationsInbox from "@/components/jobs/JobApplicationsInbox";
+import { getJobApplicationsInbox, getJobFeed } from "@/lib/data/jobs";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
 import { institutionCityLabel } from "@/lib/profile/display-professional";
@@ -22,11 +23,18 @@ export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
   const locale = await getLocale();
   const t = createT(getMessages(locale));
   const sp = await searchParams;
-  const view = sp.view === "all" ? "all" : "search";
+  const view =
+    sp.view === "all" ? "all" : sp.view === "applications" ? "applications" : "search";
   const filters = parseJobListFilters(sp);
   const published = sp.published === "1";
 
   const supabase = await createClient();
+
+  if (view === "applications") {
+    const inbox = await getJobApplicationsInbox(supabase, user.id, locale);
+    return <JobApplicationsInbox items={inbox} />;
+  }
+
   const effectiveFilters =
     view === "all" ? { q: "", institutionSlug: "", city: "", region: "", page: 1 } : filters;
   const feed = await getJobFeed(supabase, user.id, locale, effectiveFilters);

@@ -5,6 +5,7 @@ import JobsNav from "@/components/jobs/JobsNav";
 import MarkJobsSeenOnOpen from "@/components/jobs/MarkJobsSeenOnOpen";
 import Navbar from "@/components/Navbar";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
+import { getUnreadJobApplicationCount } from "@/lib/data/jobs";
 import { getJobsVersion } from "@/lib/data/sync-versions";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
@@ -23,7 +24,10 @@ export default async function JobsLayout({
   const locale = await getLocale();
   const t = createT(getMessages(locale));
   const supabase = await createClient();
-  const jobsVersion = await getJobsVersion(supabase, user.id);
+  const [jobsVersion, applicationsUnread] = await Promise.all([
+    getJobsVersion(supabase, user.id),
+    getUnreadJobApplicationCount(supabase, user.id),
+  ]);
 
   return (
     <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
@@ -37,7 +41,7 @@ export default async function JobsLayout({
           </header>
           <JobsAutoRefresh initialVersion={jobsVersion} />
           <MarkJobsSeenOnOpen />
-          <JobsNav />
+          <JobsNav applicationsUnread={applicationsUnread} />
           {children}
           <div className="mobile-feed-bottom-spacer md:hidden" aria-hidden="true" />
         </div>

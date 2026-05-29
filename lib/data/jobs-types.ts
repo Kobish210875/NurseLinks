@@ -6,9 +6,21 @@ export type JobApplicationView = {
   fullName: string;
   phone: string;
   note: string | null;
+  cvUrl: string | null;
+  cvFileName: string | null;
   createdAt: string;
   timeLabel: string;
   isUnread: boolean;
+};
+
+export type JobApplicationInboxItem = {
+  application: JobApplicationView;
+  job: {
+    id: string;
+    title: string;
+    hospital: string | null;
+    city: string | null;
+  };
 };
 
 export type JobListing = {

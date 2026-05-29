@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { markJobApplicationsSeen } from "@/app/actions/jobs";
+import JobApplicationCard from "@/components/jobs/JobApplicationCard";
 import { useLocale, useT } from "@/components/i18n/LocaleProvider";
 import type { JobListing } from "@/lib/data/jobs";
 import { formatJobLocation } from "@/lib/jobs/format-location";
@@ -141,34 +141,8 @@ export default function JobDetailDialog({
               <h3 className="mb-2 text-sm font-semibold text-foreground">{t("jobs.applicationsTitle")}</h3>
               <ul className="space-y-2">
                 {job.applications.map((app) => (
-                  <li
-                    key={app.id}
-                    className="rounded-md border border-border/80 bg-white px-3 py-2 text-[15px] sm:text-sm"
-                  >
-                    <div className="flex items-center gap-2">
-                      {app.isUnread ? (
-                        <span
-                          className="inline-block size-2 shrink-0 rounded-full bg-primary"
-                          aria-hidden="true"
-                        />
-                      ) : null}
-                      <Link
-                        href={`/profile/${app.applicantId}`}
-                        className="font-medium text-primary hover:underline"
-                        onClick={() => onClose()}
-                      >
-                        {app.fullName}
-                      </Link>
-                    </div>
-                    <p className="mt-0.5 text-foreground" dir="ltr">
-                      <a href={`tel:${app.phone}`} className="hover:text-primary hover:underline">
-                        {app.phone}
-                      </a>
-                    </p>
-                    {app.note ? (
-                      <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{app.note}</p>
-                    ) : null}
-                    <p className="mt-1 text-xs text-muted-foreground">{app.timeLabel}</p>
+                  <li key={app.id}>
+                    <JobApplicationCard application={app} onNavigate={onClose} />
                   </li>
                 ))}
               </ul>
