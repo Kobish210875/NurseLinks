@@ -27,8 +27,8 @@
     "myProfile": "הפרופיל שלי",
     "pendingInvitations": "{count} הזמנות חברות ממתינות",
     "unreadMessages": "{count} הודעות חדשות",
-    "unreadJobs": "{count} משרות חדשות",
-    "unreadJobsDot": "עדכונים חדשים במשרות",
+    "unreadJobs": "{count} מועמדויות חדשות",
+    "unreadJobsDot": "מועמדויות חדשות למשרות שפרסמתם",
     "admin": "ניהול",
     "adminUsers": "יוזרים",
     "adminModeration": "סינון תכנים"

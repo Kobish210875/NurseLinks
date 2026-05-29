@@ -5,7 +5,7 @@
 3. Fill in:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-   - Optional (for comment email notifications): `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `NOTIFICATIONS_FROM_EMAIL`, `NEXT_PUBLIC_APP_URL`
+   - Optional (required for job-application emails to posters): `SUPABASE_SERVICE_ROLE_KEY`, `RESEND_API_KEY`, `NOTIFICATIONS_FROM_EMAIL`, `NEXT_PUBLIC_APP_URL`
 4. Open the Supabase SQL Editor and run, in order:
    - `supabase/schema.sql`
    - `supabase/storage.sql` (profile photos)

@@ -73,7 +73,7 @@ export default function MobileBottomNav() {
       return t("nav.unreadMessages").replace("{count}", String(count));
     }
     if (kind === "jobs") {
-      return t("nav.unreadJobsDot");
+      return t("nav.unreadJobs").replace("{count}", String(count));
     }
     return "";
   }

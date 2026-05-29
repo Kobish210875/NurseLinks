@@ -27,8 +27,8 @@
     "myProfile": "My profile",
     "pendingInvitations": "{count} pending connection invitations",
     "unreadMessages": "{count} new messages",
-    "unreadJobs": "{count} new jobs",
-    "unreadJobsDot": "New updates in jobs",
+    "unreadJobs": "{count} new applications",
+    "unreadJobsDot": "New applications to your job posts",
     "admin": "Admin",
     "adminUsers": "Users",
     "adminModeration": "Content filtering"

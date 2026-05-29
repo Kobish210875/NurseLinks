@@ -57,11 +57,6 @@ export default function JobCard({ job, defaultApplicantName }: JobCardProps) {
               <h2 className="max-w-full truncate text-sm font-semibold text-foreground sm:text-sm">
                 {job.title}
               </h2>
-              {job.isUnread ? (
-                <span className="rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-bold text-primary-foreground">
-                  {t("jobs.newBadge")}
-                </span>
-              ) : null}
               {job.isOwner && job.applications.length > 0 ? (
                 <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">
                   {t("jobs.applicantsCount").replace("{count}", String(job.applications.length))}

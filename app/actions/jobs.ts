@@ -16,7 +16,6 @@ import {
 } from "@/lib/data/jobs";
 import { isHebrewDisplayName } from "@/lib/validation/hebrew-name";
 import { isValidIsraeliMobile, normalizeIsraeliMobile } from "@/lib/validation/phone";
-import { getLocale } from "@/lib/i18n/get-locale";
 import { sendJobApplicationNotificationEmail } from "@/lib/notifications/job-application-email";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
@@ -312,7 +311,6 @@ export async function submitJobApplication(jobId: string, formData: FormData) {
 
   if (job.author_id !== user.id) {
     try {
-      const locale = await getLocale();
       const admin = createAdminClient();
       if (admin) {
         const [{ data: posterProfile }, posterUser] = await Promise.all([
@@ -327,10 +325,11 @@ export async function submitJobApplication(jobId: string, formData: FormData) {
         const posterEmail = posterUser.data.user?.email;
         if (posterEmail) {
           await sendJobApplicationNotificationEmail({
-            locale,
+            locale: "he",
             toEmail: posterEmail,
             posterName: posterProfile?.full_name ?? "",
             applicantName: fullName,
+            applicantPhone: phone,
             jobTitle: job.title,
             hasCv: Boolean(uploadedCvUrl),
           });

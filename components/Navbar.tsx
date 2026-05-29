@@ -71,7 +71,7 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
       return t("nav.unreadMessages").replace("{count}", String(count));
     }
     if (kind === "jobs") {
-      return t("nav.unreadJobsDot");
+      return t("nav.unreadJobs").replace("{count}", String(count));
     }
     return "";
   }

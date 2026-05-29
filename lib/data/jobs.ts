@@ -317,16 +317,12 @@ export async function getUnreadJobApplicationCount(
   return count ?? 0;
 }
 
-/** Nav blue dot: new community jobs or new applications on my postings. */
+/** Nav blue dot: unread applications on jobs the user posted. */
 export async function getNavJobsUnreadCount(
   supabase: SupabaseClient<Database>,
   userId: string,
 ): Promise<number> {
-  const [community, applications] = await Promise.all([
-    getUnreadCommunityJobCount(supabase, userId),
-    getUnreadJobApplicationCount(supabase, userId),
-  ]);
-  return community + applications;
+  return getUnreadJobApplicationCount(supabase, userId);
 }
 
 /** @deprecated Use getNavJobsUnreadCount or getUnreadCommunityJobCount */
@@ -396,10 +392,7 @@ async function enrichJobRows(
       updatedAt: j.updated_at,
       filledAt: j.filled_at,
       timeLabel: formatFeedTimestamp(j.created_at, locale),
-      isUnread:
-        j.status === "active" &&
-        !isOwner &&
-        new Date(j.created_at).getTime() > new Date(lastSeen).getTime(),
+      isUnread: false,
       hasApplied: appliedJobIds.has(j.id),
       hasNewApplications,
       applications: apps,
