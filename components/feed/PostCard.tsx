@@ -17,6 +17,31 @@ import type { FeedComment, FeedPost } from "@/lib/data/feed";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 
+function findComment(comments: FeedComment[], id: string): FeedComment | undefined {
+  for (const comment of comments) {
+    if (comment.id === id) {
+      return comment;
+    }
+    const nested = findComment(comment.replies, id);
+    if (nested) {
+      return nested;
+    }
+  }
+}
+
+function countCommentSubtree(comment: FeedComment): number {
+  return 1 + comment.replies.reduce((sum, reply) => sum + countCommentSubtree(reply), 0);
+}
+
+function pruneCommentTree(comments: FeedComment[], id: string): FeedComment[] {
+  return comments
+    .filter((comment) => comment.id !== id)
+    .map((comment) => ({
+      ...comment,
+      replies: pruneCommentTree(comment.replies, id),
+    }));
+}
+
 type PostCardProps = {
   post: FeedPost;
   currentUserId: string;
@@ -90,6 +115,10 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
       const res = await addPostComment(post.id, formData);
       if (res?.error === "invalid-body") {
         setCommentError(t("errors.comment-empty"));
+        return;
+      }
+      if (res?.error === "invalid-parent") {
+        setCommentError(t("errors.comment-invalid-parent"));
         return;
       }
       if (res?.error === "suspended") {
@@ -279,13 +308,19 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
           {comments.map((c) => (
             <PostCommentRow
               key={c.id}
+              postId={post.id}
               comment={c}
               currentUserId={currentUserId}
               isAdmin={isAdmin}
-              onDeleted={() => {
-                setComments((prev) => prev.filter((row) => row.id !== c.id));
-                setCommentCount((n) => Math.max(0, n - 1));
+              onDeleted={(commentId) => {
+                setComments((prev) => {
+                  const removed = findComment(prev, commentId);
+                  const removedCount = removed ? countCommentSubtree(removed) : 1;
+                  setCommentCount((n) => Math.max(0, n - removedCount));
+                  return pruneCommentTree(prev, commentId);
+                });
               }}
+              onReplyPosted={() => setCommentCount((n) => n + 1)}
             />
           ))}
         </ul>

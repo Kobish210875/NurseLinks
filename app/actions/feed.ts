@@ -218,10 +218,35 @@ export async function addPostComment(postId: string, formData: FormData) {
     return { error: "invalid-body" as const };
   }
 
+  const parentCommentId = getBody(formData, "parentCommentId") || null;
+
+  if (parentCommentId) {
+    const { data: parent, error: parentError } = await supabase
+      .from("post_comments")
+      .select("id, post_id, parent_comment_id")
+      .eq("id", parentCommentId)
+      .maybeSingle<{ id: string; post_id: string; parent_comment_id: string | null }>();
+
+    if (parentError?.message?.toLowerCase().includes("parent_comment_id")) {
+      const { data: legacyParent, error: legacyError } = await supabase
+        .from("post_comments")
+        .select("id, post_id")
+        .eq("id", parentCommentId)
+        .maybeSingle<{ id: string; post_id: string }>();
+
+      if (legacyError || !legacyParent || legacyParent.post_id !== postId) {
+        return { error: "invalid-parent" as const };
+      }
+    } else if (!parent || parent.post_id !== postId || parent.parent_comment_id) {
+      return { error: "invalid-parent" as const };
+    }
+  }
+
   const row: PostCommentInsert = {
     post_id: postId,
     author_id: user.id,
     body,
+    ...(parentCommentId ? { parent_comment_id: parentCommentId } : {}),
   };
 
   const { data: inserted, error } = await supabase

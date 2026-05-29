@@ -10,6 +10,7 @@ import type { Database } from "@/lib/supabase/database.types";
 export type FeedComment = {
   id: string;
   postId: string;
+  parentCommentId: string | null;
   authorId: string;
   body: string;
   createdAt: string;
@@ -19,6 +20,7 @@ export type FeedComment = {
   authorInitials: string;
   likeCount: number;
   likedByMe: boolean;
+  replies: FeedComment[];
 };
 
 export type FeedPost = {
@@ -41,7 +43,7 @@ export type FeedPost = {
 
 const POST_LIMIT = 40;
 const COMMENTS_FETCH = 200;
-const MAX_COMMENTS_PER_POST = 8;
+const MAX_ROOT_COMMENTS_PER_POST = 8;
 
 type PostRow = {
   id: string;
@@ -57,6 +59,7 @@ type CommentRow = {
   body: string;
   created_at: string;
   author_id: string;
+  parent_comment_id?: string | null;
 };
 
 type LikeRow = { post_id: string };
@@ -120,12 +123,25 @@ export async function getFeedPosts(
 
   const bundle = await Promise.all([
       Promise.resolve(profilesQuery),
-      supabase
-        .from("post_comments")
-        .select("id, post_id, body, created_at, author_id")
-        .in("post_id", postIds)
-        .order("created_at", { ascending: false })
-        .limit(COMMENTS_FETCH),
+      (async () => {
+        const withParent = await supabase
+          .from("post_comments")
+          .select("id, post_id, body, created_at, author_id, parent_comment_id")
+          .in("post_id", postIds)
+          .order("created_at", { ascending: false })
+          .limit(COMMENTS_FETCH);
+        if (
+          withParent.error?.message?.toLowerCase().includes("parent_comment_id")
+        ) {
+          return supabase
+            .from("post_comments")
+            .select("id, post_id, body, created_at, author_id")
+            .in("post_id", postIds)
+            .order("created_at", { ascending: false })
+            .limit(COMMENTS_FETCH);
+        }
+        return withParent;
+      })(),
       supabase.from("post_likes").select("post_id").eq("user_id", currentUserId).in("post_id", postIds),
       // Supabase-js + createServerClient loses RPC arg typing for custom functions.
       supabase.rpc("feed_post_stats", { post_ids: postIds } as never),
@@ -210,13 +226,8 @@ export async function getFeedPosts(
   const commentsByPost = new Map<string, CommentRow[]>();
   for (const c of (commentsRaw ?? []) as CommentRow[]) {
     const list = commentsByPost.get(c.post_id) ?? [];
-    list.push(c);
+    list.push({ ...c, parent_comment_id: c.parent_comment_id ?? null });
     commentsByPost.set(c.post_id, list);
-  }
-
-  for (const [pid, list] of commentsByPost) {
-    list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-    commentsByPost.set(pid, list.slice(0, MAX_COMMENTS_PER_POST).reverse());
   }
 
   const allCommentIds: string[] = [];
@@ -288,28 +299,64 @@ export async function getFeedPosts(
     }
   }
 
+  function buildCommentTree(rows: CommentRow[], localeForTime: Locale): FeedComment[] {
+    const mapRow = (row: CommentRow): FeedComment => {
+      const cp = profileById.get(row.author_id);
+      const name = cp?.full_name?.trim() || "User";
+      return {
+        id: row.id,
+        postId: row.post_id,
+        parentCommentId: row.parent_comment_id ?? null,
+        authorId: row.author_id,
+        body: row.body,
+        createdAt: row.created_at,
+        timeLabel: formatFeedTimestamp(row.created_at, localeForTime),
+        authorName: name,
+        authorAvatarUrl: cp?.avatar_url ?? null,
+        authorInitials: getInitials(name),
+        likeCount: commentLikeCount.get(row.id) ?? 0,
+        likedByMe: commentLikedByMe.has(row.id),
+        replies: [],
+      };
+    };
+
+    const roots = rows.filter((r) => !r.parent_comment_id);
+    const replies = rows.filter((r) => r.parent_comment_id);
+    roots.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    const visibleRoots = roots.slice(0, MAX_ROOT_COMMENTS_PER_POST).reverse();
+    const visibleRootIds = new Set(visibleRoots.map((r) => r.id));
+
+    const repliesByParent = new Map<string, CommentRow[]>();
+    for (const reply of replies) {
+      const parentId = reply.parent_comment_id;
+      if (!parentId || !visibleRootIds.has(parentId)) {
+        continue;
+      }
+      const list = repliesByParent.get(parentId) ?? [];
+      list.push(reply);
+      repliesByParent.set(parentId, list);
+    }
+
+    return visibleRoots.map((root) => {
+      const node = mapRow(root);
+      const childRows = (repliesByParent.get(root.id) ?? []).sort(
+        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      );
+      node.replies = childRows.map(mapRow);
+      return node;
+    });
+  }
+
+  function countCommentsInTree(nodes: FeedComment[]): number {
+    return nodes.reduce((total, node) => total + 1 + countCommentsInTree(node.replies), 0);
+  }
+
   return posts.map((p) => {
     const prof = profileById.get(p.author_id);
     const fullName = prof?.full_name?.trim() || "User";
     const stats = statsMap.get(p.id);
 
-    const comments = (commentsByPost.get(p.id) ?? []).map((c) => {
-      const cp = profileById.get(c.author_id);
-      const name = cp?.full_name?.trim() || "User";
-      return {
-        id: c.id,
-        postId: c.post_id,
-        authorId: c.author_id,
-        body: c.body,
-        createdAt: c.created_at,
-        timeLabel: formatFeedTimestamp(c.created_at, locale),
-        authorName: name,
-        authorAvatarUrl: cp?.avatar_url ?? null,
-        authorInitials: getInitials(name),
-        likeCount: commentLikeCount.get(c.id) ?? 0,
-        likedByMe: commentLikedByMe.has(c.id),
-      };
-    });
+    const comments = buildCommentTree(commentsByPost.get(p.id) ?? [], locale);
 
     return {
       id: p.id,
@@ -328,7 +375,7 @@ export async function getFeedPosts(
       authorAvatarUrl: prof?.avatar_url ?? null,
       authorInitials: getInitials(fullName),
       likeCount: stats?.likeCount ?? 0,
-      commentCount: stats?.commentCount ?? comments.length,
+      commentCount: stats?.commentCount ?? countCommentsInTree(comments),
       shareCount: stats?.shareCount ?? 0,
       likedByMe: likedByMe.has(p.id),
       comments,
