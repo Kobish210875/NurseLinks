@@ -23,14 +23,10 @@ export default function ReportContentButton({
 }: ReportContentButtonProps) {
   const t = useT();
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
   const [note, setNote] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const canUsePortal = typeof document !== "undefined";
 
   useEffect(() => {
     if (!open) {
@@ -97,7 +93,7 @@ export default function ReportContentButton({
         {t("moderation.report")}
       </button>
 
-      {open && mounted
+      {open && canUsePortal
         ? createPortal(
             <div
               className="fixed inset-0 z-[200] flex items-center justify-center bg-black/45 p-4 max-sm:items-end max-sm:p-0"

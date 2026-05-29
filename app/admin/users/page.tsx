@@ -1,5 +1,6 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
+import Link from "next/link";
 import AdminDeleteUserButton from "@/components/admin/AdminDeleteUserButton";
 import { requireAdmin } from "@/lib/auth/admin";
 import { getAdminUsers } from "@/lib/admin/users";
@@ -53,6 +54,12 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("admin.usersTitle")}</h1>
           </div>
+          <Link
+            href="/admin/moderation"
+            className="rounded-lg border border-primary/30 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/5"
+          >
+            {t("admin.moderationTitle")}
+          </Link>
         </div>
 
         {params.deleted === "1" ? (
