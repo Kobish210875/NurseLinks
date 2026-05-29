@@ -24,14 +24,20 @@ export default function JobApplyDialog({
   const t = useT();
   const router = useRouter();
   const dialogRef = useRef<HTMLDivElement>(null);
+  const cvInputRef = useRef<HTMLInputElement>(null);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [cvFileName, setCvFileName] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) {
       setError(null);
       setSuccess(false);
+      setCvFileName(null);
+      if (cvInputRef.current) {
+        cvInputRef.current.value = "";
+      }
       return;
     }
     function onKeyDown(event: KeyboardEvent) {
@@ -153,17 +159,36 @@ export default function JobApplyDialog({
               />
             </div>
             <div className="grid gap-1.5">
-              <label htmlFor="apply-cv" className="text-sm font-medium text-foreground">
+              <span id="apply-cv-label" className="text-sm font-medium text-foreground">
                 {t("jobs.applyCv")}
-              </label>
+              </span>
               <input
+                ref={cvInputRef}
                 id="apply-cv"
                 name="cvFile"
                 type="file"
                 disabled={pending}
                 accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none file:me-2 file:rounded-full file:border file:border-border file:bg-muted/40 file:px-3 file:py-1 file:text-xs file:font-medium file:text-foreground focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60"
+                className="sr-only"
+                aria-labelledby="apply-cv-label"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  setCvFileName(file?.name ?? null);
+                }}
               />
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() => cvInputRef.current?.click()}
+                className="w-full rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold tracking-wide text-foreground transition hover:border-primary/40 hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:opacity-60"
+              >
+                {t("jobs.applyCvBrowse")}
+              </button>
+              {cvFileName ? (
+                <p className="truncate text-xs text-muted-foreground" dir="ltr" title={cvFileName}>
+                  {cvFileName}
+                </p>
+              ) : null}
             </div>
             <div className="grid gap-1.5">
               <label htmlFor="apply-note" className="text-sm font-medium text-foreground">
