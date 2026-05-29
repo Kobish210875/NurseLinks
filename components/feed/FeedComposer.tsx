@@ -131,7 +131,7 @@ export default function FeedComposer({ user }: FeedComposerProps) {
           <PostComposerPanel user={user} onClose={closeComposer} />
         ) : (
           <div className="flex items-center gap-3">
-            <span className="relative flex size-10 shrink-0 overflow-hidden rounded-full border-2 border-border bg-primary/10 md:size-12">
+            <span className="relative hidden size-10 shrink-0 overflow-hidden rounded-full border-2 border-border bg-primary/10 md:flex md:size-12">
               {user.avatarUrl ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={user.avatarUrl} alt="" className="size-full object-cover" />
