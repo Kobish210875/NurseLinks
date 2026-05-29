@@ -377,7 +377,11 @@
   },
   "messages": {
     "title": "Messages",
-    "empty": "No conversations yet. Message a connection from your network.",
+    "newMessage": "New message",
+    "newMessageTitle": "New message",
+    "newMessageHint": "Choose a connected colleague from your network.",
+    "newMessageNoConnections": "No connected colleagues yet. Add friends from your network to send messages.",
+    "empty": "No conversations yet. Tap “New message” to start a chat with someone from your network.",
     "back": "Back",
     "inputLabel": "Message text",
     "inputPlaceholder": "Write a message…",
