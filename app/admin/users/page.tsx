@@ -48,7 +48,7 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
   return (
     <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
       <Navbar authenticated />
-      <main className="home-main-shell feed-page min-h-0 flex-1 overflow-hidden py-4 max-md:block max-md:flex-none max-md:overflow-x-clip max-md:py-8">
+      <main className="home-main-shell feed-page min-h-0 flex-1 overflow-hidden py-4 max-md:block max-md:flex-none max-md:overflow-x-clip max-md:py-8 max-md:pb-[calc(var(--mobile-bottom-nav-offset)+1rem)]">
         <div className="mx-auto flex h-full w-full max-w-[1128px] flex-col gap-3 overflow-hidden px-4 max-md:h-auto max-md:overflow-visible">
         <div className="shrink-0 flex flex-wrap items-center justify-between gap-3">
           <div>
