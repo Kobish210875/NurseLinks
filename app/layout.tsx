@@ -14,6 +14,7 @@ import { getDirection } from "@/lib/i18n/config";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
 import { createClient } from "@/lib/supabase/server";
+import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 const rubik = Rubik({
@@ -32,10 +33,30 @@ export const viewport: Viewport = {
 export async function generateMetadata(): Promise<Metadata> {
   const locale = await getLocale();
   const t = createT(getMessages(locale));
+  const siteUrl = getSiteUrl();
+  const description = t("meta.description");
 
   return {
-    title: "NurseLinks",
-    description: t("meta.description"),
+    metadataBase: new URL(siteUrl),
+    title: {
+      default: "NurseLinks",
+      template: "%s | NurseLinks",
+    },
+    description,
+    applicationName: "NurseLinks",
+    openGraph: {
+      type: "website",
+      locale: locale === "he" ? "he_IL" : "en_US",
+      url: siteUrl,
+      siteName: "NurseLinks",
+      title: "NurseLinks",
+      description,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: "NurseLinks",
+      description,
+    },
   };
 }
 
