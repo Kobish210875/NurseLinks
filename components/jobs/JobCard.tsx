@@ -12,9 +12,10 @@ import { useState, useTransition } from "react";
 type JobCardProps = {
   job: JobListing;
   defaultApplicantName: string;
+  compact?: boolean;
 };
 
-export default function JobCard({ job, defaultApplicantName }: JobCardProps) {
+export default function JobCard({ job, defaultApplicantName, compact = false }: JobCardProps) {
   const t = useT();
   const { locale } = useLocale();
   const router = useRouter();
@@ -49,12 +50,18 @@ export default function JobCard({ job, defaultApplicantName }: JobCardProps) {
         <button
           type="button"
           onClick={() => setDetailOpen(true)}
-          className="flex w-full items-center gap-2 p-2 text-start transition hover:bg-muted/30 sm:gap-2.5 sm:p-2.5"
+          className={`flex w-full items-center text-start transition hover:bg-muted/30 ${
+            compact ? "gap-1.5 p-1.5" : "gap-2 p-2 sm:gap-2.5 sm:p-2.5"
+          }`}
           aria-label={t("jobs.openDetails")}
         >
           <div className="min-w-0 flex-1">
             <div className="flex min-w-0 flex-wrap items-center gap-1">
-              <h2 className="max-w-full truncate text-sm font-semibold text-foreground sm:text-sm">
+              <h2
+                className={`max-w-full truncate font-semibold text-foreground ${
+                  compact ? "text-xs" : "text-sm sm:text-sm"
+                }`}
+              >
                 {job.title}
               </h2>
               {job.isOwner && job.applications.length > 0 ? (
@@ -75,26 +82,41 @@ export default function JobCard({ job, defaultApplicantName }: JobCardProps) {
                 </span>
               ) : null}
             </div>
-            {locationLine ? (
-              <p className="mt-0.5 truncate text-xs text-muted-foreground sm:text-xs">
-                <span className="font-medium text-foreground/75">{t("jobs.jobLocation")}: </span>
-                {locationLine}
+            {compact ? (
+              <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                {locationLine ? (
+                  <>
+                    <span className="font-medium text-foreground/75">{t("jobs.jobLocation")}: </span>
+                    {locationLine}
+                    <span aria-hidden="true"> · </span>
+                  </>
+                ) : null}
+                <time dateTime={job.createdAt}>{job.timeLabel}</time>
               </p>
-            ) : null}
-            <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-[11px]">
-              <time dateTime={job.createdAt}>{job.timeLabel}</time>
-            </p>
+            ) : (
+              <>
+                {locationLine ? (
+                  <p className="mt-0.5 truncate text-xs text-muted-foreground sm:text-xs">
+                    <span className="font-medium text-foreground/75">{t("jobs.jobLocation")}: </span>
+                    {locationLine}
+                  </p>
+                ) : null}
+                <p className="mt-0.5 text-[11px] text-muted-foreground sm:text-[11px]">
+                  <time dateTime={job.createdAt}>{job.timeLabel}</time>
+                </p>
+              </>
+            )}
           </div>
           <span className="shrink-0 text-muted-foreground" aria-hidden="true">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="14"
-              height="14"
+              width={compact ? 12 : 14}
+              height={compact ? 12 : 14}
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
-              className="rtl:rotate-180 sm:h-4 sm:w-4"
+              className={`rtl:rotate-180 ${compact ? "" : "sm:h-4 sm:w-4"}`}
             >
               <path d="m9 18 6-6-6-6" />
             </svg>

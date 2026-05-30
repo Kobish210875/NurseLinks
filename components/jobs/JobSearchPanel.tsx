@@ -58,14 +58,14 @@ export default function JobSearchPanel({
   }
 
   return (
-    <section className="feed-card min-w-0 space-y-3 p-3 sm:p-4 lg:space-y-2.5 lg:p-3">
-      <div>
+    <section className="feed-card flex h-full min-h-0 min-w-0 flex-col space-y-3 p-3 sm:p-4 lg:max-h-[calc(100dvh-11rem)] lg:space-y-2.5 lg:p-3">
+      <div className="shrink-0">
         <h2 className="text-[15px] font-semibold text-foreground sm:text-sm">{t("jobs.searchTitle")}</h2>
         <p className="mt-0.5 text-sm text-muted-foreground sm:text-xs lg:leading-snug">{t("jobs.searchHint")}</p>
       </div>
 
       <form
-        className="space-y-3 lg:space-y-2"
+        className="flex min-h-0 flex-1 flex-col space-y-3 lg:space-y-2"
         onSubmit={(event) => {
           event.preventDefault();
           applyFilters();
@@ -158,7 +158,7 @@ export default function JobSearchPanel({
           </select>
         </div>
 
-        <div className="flex flex-wrap gap-2 pt-1 lg:flex-col lg:gap-1.5 lg:pt-0">
+        <div className="mt-auto flex flex-wrap gap-2 pt-1 lg:flex-col lg:gap-1.5 lg:pt-2">
           <button
             type="submit"
             className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 lg:w-full lg:px-3 lg:py-1.5 lg:text-xs"
