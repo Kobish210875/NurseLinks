@@ -9,6 +9,7 @@ import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 const DEBOUNCE_MS = 200;
 const MOBILE_MAX_WIDTH = 767;
+const MIN_SEARCH_CHARS = 2;
 
 type NavPeopleSearchProps = {
   /** Slightly smaller field for the mobile header bar. */
@@ -45,7 +46,7 @@ export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProp
 
   const fetchResults = useCallback(async (q: string, signal: AbortSignal) => {
     const trimmed = q.trim();
-    if (!trimmed) {
+    if (!trimmed || trimmed.length < MIN_SEARCH_CHARS) {
       setResults([]);
       setLoading(false);
       return;
@@ -106,9 +107,10 @@ export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProp
   }
 
   function handleKeyDown(event: React.KeyboardEvent<HTMLInputElement>) {
+    const trimmed = query.trim();
     if (!isOpen || results.length === 0) {
-      if (event.key === "Enter" && query.trim().length >= 1) {
-        router.push(`/network?q=${encodeURIComponent(query.trim())}`);
+      if (event.key === "Enter" && trimmed.length >= MIN_SEARCH_CHARS) {
+        router.push(`/network?q=${encodeURIComponent(trimmed)}`);
       }
       return;
     }
@@ -132,14 +134,19 @@ export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProp
     }
   }
 
-  const showList = isOpen && query.trim().length >= 1;
+  const trimmedQuery = query.trim();
+  const showList = isOpen && trimmedQuery.length >= 1;
+  const queryTooShort = trimmedQuery.length > 0 && trimmedQuery.length < MIN_SEARCH_CHARS;
 
   const listContent = (
     <>
-      {loading && results.length === 0 ? (
+      {queryTooShort ? (
+        <li className="px-3 py-2 text-sm text-muted-foreground">{t("nav.searchMinChars")}</li>
+      ) : null}
+      {!queryTooShort && loading && results.length === 0 ? (
         <li className="px-3 py-2 text-sm text-muted-foreground">{t("nav.searchLoading")}</li>
       ) : null}
-      {!loading && results.length === 0 ? (
+      {!queryTooShort && !loading && results.length === 0 ? (
         <li className="px-3 py-2 text-sm text-muted-foreground">{t("nav.searchEmpty")}</li>
       ) : null}
       {results.map((person, index) => {

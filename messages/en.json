@@ -12,6 +12,7 @@
     "search": "Search",
     "searchPlaceholder": "Search nurses…",
     "searchLoading": "Searching…",
+    "searchMinChars": "Please enter at least two characters",
     "searchEmpty": "No people found",
     "searchSeeAll": "See all in My Network",
     "home": "Home",
