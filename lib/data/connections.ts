@@ -229,7 +229,7 @@ export async function searchPeople(
   }
 
   const rows = connectionRows ?? (await loadConnectionRows(supabase, userId));
-  const pattern = `${escapeIlike(trimmed)}%`;
+  const pattern = `%${escapeIlike(trimmed)}%`;
 
   let { data: profilesRaw, error: searchError } = await supabase
     .from("profiles")
