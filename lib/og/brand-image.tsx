@@ -1,17 +1,17 @@
 import { ImageResponse } from "next/og";
 
-export const ogImageSize = { width: 1200, height: 630 };
+export const ogImageSize = { width: 600, height: 600 };
 export const ogImageContentType = "image/png";
 
-async function loadRubik(weight: 400 | 700) {
+async function loadRubikBold() {
   const css = await fetch(
-    `https://fonts.googleapis.com/css2?family=Rubik:wght@${weight}&display=swap`,
+    "https://fonts.googleapis.com/css2?family=Rubik:wght@700&display=swap",
     { next: { revalidate: 60 * 60 * 24 } },
   ).then((res) => res.text());
 
   const match = css.match(/src: url\((.+)\) format\('(?:opentype|truetype)'\)/);
   if (!match?.[1]) {
-    throw new Error(`Rubik ${weight} font URL not found`);
+    throw new Error("Rubik bold font URL not found");
   }
 
   return fetch(match[1]).then((res) => res.arrayBuffer());
@@ -36,26 +36,12 @@ function StethoscopeIcon({ size }: { size: number }) {
   );
 }
 
-type BrandImageOptions = {
-  width: number;
-  height: number;
-  titleSize: number;
-  subtitleSize: number;
-  iconSize: number;
-  padding: number;
-  subtitle: string;
-};
-
-export async function renderNurseLinksBrandImage({
-  width,
-  height,
-  titleSize,
-  subtitleSize,
-  iconSize,
-  padding,
-  subtitle,
-}: BrandImageOptions) {
-  const [rubikRegular, rubikBold] = await Promise.all([loadRubik(400), loadRubik(700)]);
+/** Compact share preview: site name + stethoscope only. */
+export async function renderNurseLinksShareImage(size = 600) {
+  const rubikBold = await loadRubikBold();
+  const titleSize = Math.round(size * 0.11);
+  const iconSize = Math.round(size * 0.12);
+  const gap = Math.round(size * 0.035);
 
   return new ImageResponse(
     (
@@ -64,11 +50,9 @@ export async function renderNurseLinksBrandImage({
           width: "100%",
           height: "100%",
           display: "flex",
-          flexDirection: "row",
           alignItems: "center",
-          justifyContent: "space-between",
-          padding,
-          background: "linear-gradient(135deg, #1e4f7a 0%, #2b6cb0 55%, #3d7ec4 100%)",
+          justifyContent: "center",
+          background: "#2b6cb0",
           color: "#ffffff",
           fontFamily: "Rubik",
         }}
@@ -76,9 +60,10 @@ export async function renderNurseLinksBrandImage({
         <div
           style={{
             display: "flex",
-            flexDirection: "column",
-            gap: 20,
-            maxWidth: width - iconSize - padding * 2 - 48,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap,
           }}
         >
           <div
@@ -86,42 +71,19 @@ export async function renderNurseLinksBrandImage({
               fontSize: titleSize,
               fontWeight: 700,
               letterSpacing: "-0.02em",
-              lineHeight: 1.05,
+              lineHeight: 1,
             }}
           >
             NurseLinks
           </div>
-          <div
-            style={{
-              fontSize: subtitleSize,
-              fontWeight: 400,
-              lineHeight: 1.45,
-              opacity: 0.95,
-            }}
-          >
-            {subtitle}
-          </div>
-          <div
-            style={{
-              fontSize: Math.round(subtitleSize * 0.82),
-              fontWeight: 400,
-              opacity: 0.82,
-            }}
-          >
-            nurselinks.net
-          </div>
+          <StethoscopeIcon size={iconSize} />
         </div>
-
-        <StethoscopeIcon size={iconSize} />
       </div>
     ),
     {
-      width,
-      height,
-      fonts: [
-        { name: "Rubik", data: rubikRegular, weight: 400, style: "normal" },
-        { name: "Rubik", data: rubikBold, weight: 700, style: "normal" },
-      ],
+      width: size,
+      height: size,
+      fonts: [{ name: "Rubik", data: rubikBold, weight: 700, style: "normal" }],
     },
   );
 }
