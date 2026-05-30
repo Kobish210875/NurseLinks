@@ -49,7 +49,7 @@ export default async function JobApplicationsInbox({ items }: JobApplicationsInb
             return (
               <section key={jobId} className="rounded-lg border border-border bg-muted/20 p-3">
                 <h3 className="mb-2 text-start text-sm font-semibold text-foreground">{job.title}</h3>
-                <ul className="space-y-2">
+                <ul className="space-y-2.5 sm:space-y-2">
                   {jobItems.map((item) => (
                     <li key={item.application.id}>
                       <JobApplicationCard application={item.application} />

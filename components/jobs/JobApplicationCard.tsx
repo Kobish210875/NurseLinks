@@ -18,50 +18,86 @@ export default function JobApplicationCard({
   const t = useT();
 
   return (
-    <article className="rounded-md border border-border/80 bg-white px-3 py-2.5 text-start text-[15px] sm:text-sm">
+    <article className="rounded-md border border-border/80 bg-white px-3 py-3 text-start sm:py-2.5">
       {jobTitle ? (
-        <p className="mb-1 text-xs font-semibold text-muted-foreground">{jobTitle}</p>
+        <p className="mb-2 text-xs font-semibold text-muted-foreground">{jobTitle}</p>
       ) : null}
-      <div className="flex items-center gap-2">
-        {application.isUnread ? (
-          <span className="inline-block size-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
-        ) : null}
-        <Link
-          href={`/profile/${application.applicantId}`}
-          className="font-medium text-primary hover:underline"
-          onClick={() => onNavigate?.()}
-        >
-          {application.fullName}
-        </Link>
-      </div>
-      <p className="mt-0.5 text-foreground" dir="ltr">
-        <a href={`tel:${application.phone}`} className="hover:text-primary hover:underline">
-          {application.phone}
-        </a>
-      </p>
-      {application.note ? (
-        <p className="mt-1 whitespace-pre-wrap text-sm text-muted-foreground">{application.note}</p>
-      ) : null}
-      {application.cvUrl ? (
-        <a
-          href={application.cvUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          download={application.cvFileName ?? undefined}
-          className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary/10"
-        >
-          <CvDownloadIcon className="size-3.5 shrink-0" />
-          <span>{t("jobs.downloadCv")}</span>
-          {application.cvFileName ? (
-            <span className="max-w-[10rem] truncate font-normal text-primary/80" dir="ltr">
-              ({application.cvFileName})
-            </span>
+
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-2">
+          {application.isUnread ? (
+            <span className="mt-1.5 inline-block size-2 shrink-0 rounded-full bg-primary" aria-hidden="true" />
           ) : null}
-        </a>
-      ) : (
-        <p className="mt-2 text-xs text-muted-foreground">{t("jobs.noCvAttached")}</p>
-      )}
-      <p className="mt-1.5 text-xs text-muted-foreground">{application.timeLabel}</p>
+          <Link
+            href={`/profile/${application.applicantId}`}
+            className="break-words text-[15px] font-semibold text-primary hover:underline sm:text-sm"
+            onClick={() => onNavigate?.()}
+          >
+            {application.fullName}
+          </Link>
+        </div>
+        <time className="shrink-0 text-[11px] text-muted-foreground sm:text-xs">
+          {application.timeLabel}
+        </time>
+      </div>
+
+      <dl className="mt-2.5 space-y-2 border-t border-border/60 pt-2.5 sm:mt-2 sm:space-y-1.5 sm:pt-2">
+        <div className="flex flex-col gap-0.5">
+          <dt className="text-[11px] font-medium text-muted-foreground sm:text-xs">
+            {t("jobs.applyPhone")}
+          </dt>
+          <dd className="m-0">
+            <a
+              href={`tel:${application.phone}`}
+              dir="ltr"
+              className="inline-block text-start text-[15px] font-medium text-foreground hover:text-primary hover:underline sm:text-sm"
+            >
+              {application.phone}
+            </a>
+          </dd>
+        </div>
+
+        {application.note ? (
+          <div className="flex flex-col gap-0.5">
+            <dt className="text-[11px] font-medium text-muted-foreground sm:text-xs">
+              {t("jobs.applicationNoteLabel")}
+            </dt>
+            <dd className="m-0 whitespace-pre-wrap text-sm text-foreground">{application.note}</dd>
+          </div>
+        ) : null}
+
+        <div className="flex flex-col gap-1">
+          <dt className="text-[11px] font-medium text-muted-foreground sm:text-xs">
+            {t("jobs.applicationCvLabel")}
+          </dt>
+          <dd className="m-0">
+            {application.cvUrl ? (
+              <a
+                href={application.cvUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                download={application.cvFileName ?? undefined}
+                className="flex w-full flex-col gap-1 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2.5 text-start transition hover:bg-primary/10 sm:inline-flex sm:w-auto sm:flex-row sm:items-center sm:gap-1.5 sm:rounded-full sm:py-1.5"
+              >
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary">
+                  <CvDownloadIcon className="size-3.5 shrink-0" />
+                  {t("jobs.downloadCv")}
+                </span>
+                {application.cvFileName ? (
+                  <span
+                    className="break-all text-[11px] font-normal leading-snug text-primary/80 sm:max-w-[10rem] sm:truncate sm:break-normal"
+                    dir="ltr"
+                  >
+                    {application.cvFileName}
+                  </span>
+                ) : null}
+              </a>
+            ) : (
+              <p className="text-xs text-muted-foreground">{t("jobs.noCvAttached")}</p>
+            )}
+          </dd>
+        </div>
+      </dl>
     </article>
   );
 }

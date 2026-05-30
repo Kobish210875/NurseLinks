@@ -387,6 +387,8 @@
     "applicationsInboxEmpty": "עדיין לא התקבלו מועמדויות למשרות שפרסמתם.",
     "applicantsCount": "{count} מועמדים",
     "downloadCv": "הורדת קורות חיים",
+    "applicationCvLabel": "קורות חיים",
+    "applicationNoteLabel": "הערות",
     "noCvAttached": "לא צורפו קורות חיים"
   },
   "messages": {

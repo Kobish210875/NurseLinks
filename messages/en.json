@@ -387,6 +387,8 @@
     "applicationsInboxEmpty": "No applications have been received for your job posts yet.",
     "applicantsCount": "{count} applicants",
     "downloadCv": "Download resume",
+    "applicationCvLabel": "Resume",
+    "applicationNoteLabel": "Notes",
     "noCvAttached": "No resume attached"
   },
   "messages": {
