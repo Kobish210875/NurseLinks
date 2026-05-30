@@ -15,7 +15,9 @@ type JobFeedListProps = {
 };
 
 const panelScrollClass =
-  "jobs-panel-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain pe-0.5 max-md:max-h-[min(22rem,calc(100vh-14rem))]";
+  "jobs-panel-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain max-md:max-h-[min(22rem,calc(100vh-14rem))] max-lg:dir-rtl lg:dir-ltr";
+
+const panelInnerClass = "max-lg:ps-2.5 lg:ps-0";
 
 const jobsBrowseHeightClass = "lg:max-h-[calc(100dvh-11rem)]";
 
@@ -50,8 +52,8 @@ export default async function JobFeedList({
         className={`feed-card flex min-h-0 min-w-0 flex-1 flex-col p-3 sm:p-4 ${jobsBrowseHeightClass}`}
         aria-label={t("jobs.feedAria")}
       >
-        <div className={`${panelScrollClass} lg:max-h-none`} dir="ltr">
-          <div className="space-y-4" dir="rtl">
+        <div className={`${panelScrollClass} lg:max-h-none`}>
+          <div className={`space-y-4 ${panelInnerClass}`} dir="rtl">
             {feed.mine.length > 0 ? (
               <div>
                 <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
@@ -119,8 +121,8 @@ export default async function JobFeedList({
             </h2>
             <MarkAllApplicationsRead visible={hasUnreadApplications} />
           </div>
-          <div className={panelScrollClass} dir="ltr">
-            <div className="space-y-2" dir="rtl">
+          <div className={panelScrollClass}>
+            <div className={`space-y-2 ${panelInnerClass}`} dir="rtl">
               {feed.mine.map((job) => (
                 <JobCard key={job.id} job={job} defaultApplicantName={defaultApplicantName} />
               ))}
@@ -134,8 +136,8 @@ export default async function JobFeedList({
           <h2 className="mb-2 shrink-0 text-start text-sm font-semibold text-foreground">
             {t("jobs.sectionCommunity")}
           </h2>
-          <div className={panelScrollClass} dir="ltr">
-            <div className="space-y-2" dir="rtl">
+          <div className={panelScrollClass}>
+            <div className={`space-y-2 ${panelInnerClass}`} dir="rtl">
               {feed.community.map((job) => (
                 <JobCard key={job.id} job={job} defaultApplicantName={defaultApplicantName} />
               ))}
