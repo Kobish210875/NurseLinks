@@ -170,6 +170,14 @@ body {
   overscroll-behavior-y: contain;
 }
 
+/* Feed: wrap long unbroken comment/post text on narrow viewports */
+.post-comment-bubble,
+.post-comment-body,
+.post-body {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 /* Messages inbox: visible frame on page background (WEB + mobile) */
 .messages-thread-card {
   background: var(--card);

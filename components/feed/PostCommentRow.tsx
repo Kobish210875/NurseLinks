@@ -133,8 +133,8 @@ export default function PostCommentRow({
   const replyPlaceholder = t("post.replyPlaceholder").replace("{name}", comment.authorName);
 
   return (
-    <li className={`flex flex-col text-start ${depth > 0 ? "mt-3" : ""}`}>
-      <div className={`flex gap-2 ${depth > 0 ? "ms-2 sm:ms-4" : ""}`}>
+    <li className={`flex min-w-0 flex-col text-start ${depth > 0 ? "mt-3" : ""}`}>
+      <div className={`flex min-w-0 w-full gap-2 ${depth > 0 ? "ms-2 sm:ms-4" : ""}`}>
         <Link
           href={`/profile/${comment.authorId}`}
           className="flex size-8 shrink-0 overflow-hidden rounded-full border border-border bg-muted/40 transition hover:ring-2 hover:ring-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
@@ -150,14 +150,16 @@ export default function PostCommentRow({
           )}
         </Link>
         <div className="min-w-0 flex-1">
-          <div className="post-comment-bubble rounded-lg bg-muted/25 px-3 py-2">
+          <div className="post-comment-bubble min-w-0 max-w-full rounded-lg bg-muted/25 px-3 py-2">
             <div className="flex flex-wrap items-baseline gap-2">
               <span className="text-sm font-semibold text-foreground">{comment.authorName}</span>
               <time className="text-[10px] text-muted-foreground" dateTime={comment.createdAt}>
                 {comment.timeLabel}
               </time>
             </div>
-            <p className="mt-1 whitespace-pre-wrap text-sm text-foreground">{comment.body}</p>
+            <p className="post-comment-body mt-1 whitespace-pre-wrap text-sm text-foreground">
+              {comment.body}
+            </p>
             {canDelete ? (
               <div className="post-comment-delete-row mt-1.5 text-left">
                 <button
@@ -260,7 +262,7 @@ export default function PostCommentRow({
 
       {comment.replies.length > 0 ? (
         <ul
-          className="mt-2 space-y-0 border-s-2 border-border/40 ps-2 sm:ps-3"
+          className="mt-2 min-w-0 space-y-0 border-s-2 border-border/40 ps-2 sm:ps-3"
           aria-label={t("post.comments")}
         >
           {comment.replies.map((reply) => (

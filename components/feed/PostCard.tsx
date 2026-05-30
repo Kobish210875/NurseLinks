@@ -159,7 +159,7 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
   const hasEngagementStats = likeCount > 0 || commentCount > 0 || shareCount > 0;
 
   return (
-    <article id={`post-${post.id}`} className="feed-card post-card flex flex-col p-4">
+    <article id={`post-${post.id}`} className="feed-card post-card flex min-w-0 flex-col p-4">
       <header className="mb-3 flex items-start gap-3">
         <Link
           href={`/profile/${post.authorId}`}
@@ -214,7 +214,7 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
         </p>
       ) : null}
       {post.body.trim() ? (
-        <p className="mb-3 whitespace-pre-wrap text-start text-[15px] leading-relaxed text-foreground">
+        <p className="post-body mb-3 whitespace-pre-wrap text-start text-[15px] leading-relaxed text-foreground">
           {post.body}
         </p>
       ) : null}
@@ -304,7 +304,7 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
       />
 
       {comments.length > 0 ? (
-        <ul className="post-comment-list order-3 mt-3 space-y-3 md:order-none md:mt-4 md:border-t md:border-border md:pt-4">
+        <ul className="post-comment-list order-3 mt-3 min-w-0 space-y-3 md:order-none md:mt-4 md:border-t md:border-border md:pt-4">
           {comments.map((c) => (
             <PostCommentRow
               key={c.id}
