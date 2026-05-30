@@ -68,20 +68,23 @@ export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
         </p>
       ) : null}
       <div
-        className={`jobs-browse-grid grid grid-cols-1 items-start gap-4 ${
-          view === "all" ? "" : "lg:grid-cols-[minmax(0,1fr)_minmax(0,13.5rem)] lg:gap-4"
+        className={`jobs-browse-grid flex min-h-0 min-w-0 flex-1 flex-col gap-4 ${
+          view === "search"
+            ? "lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,13.5rem)] lg:grid-rows-1 lg:items-stretch"
+            : ""
         }`}
       >
-        <div className="jobs-browse-feed order-2 min-w-0 lg:order-1">
+        <div className="jobs-browse-feed order-2 flex min-h-0 min-w-0 flex-col lg:order-1 lg:overflow-hidden">
           <JobFeedList
             feed={feed}
             filters={effectiveFilters}
             defaultApplicantName={user.fullName}
             hasSearchFilters={hasSearchFilters}
+            viewMode={view === "all" ? "all" : "search"}
           />
         </div>
         {view === "search" ? (
-          <aside className="jobs-browse-search order-1 min-w-0 lg:sticky lg:top-20 lg:order-2 lg:self-start">
+          <aside className="jobs-browse-search order-1 min-w-0 shrink-0 lg:sticky lg:top-20 lg:order-2 lg:self-start">
             <JobSearchPanel
               initialInstitution={filters.institutionSlug}
               initialCity={filters.city}

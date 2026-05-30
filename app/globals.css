@@ -153,9 +153,21 @@ body {
   scrollbar-gutter: stable;
 }
 
-/* Jobs browse: two-column layout + scrollable panels */
+/* Jobs browse: scrollable panels (WEB fixed shell + mobile capped height) */
+@media (min-width: 1024px) {
+  .jobs-browse-shell {
+    display: flex;
+    min-height: 0;
+    flex: 1 1 auto;
+    flex-direction: column;
+    overflow: hidden;
+  }
+}
+
 .jobs-panel-scroll {
   scrollbar-gutter: stable;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
 }
 
 /* Messages inbox: visible frame on page background (WEB + mobile) */

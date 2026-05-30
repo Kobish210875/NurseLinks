@@ -11,18 +11,26 @@ type JobFeedListProps = {
   filters: JobListFilters;
   defaultApplicantName: string;
   hasSearchFilters: boolean;
+  viewMode?: "all" | "search";
 };
+
+const panelScrollClass =
+  "jobs-panel-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain pe-0.5 max-md:max-h-[min(22rem,calc(100vh-14rem))]";
 
 export default async function JobFeedList({
   feed,
   filters,
   defaultApplicantName,
   hasSearchFilters,
+  viewMode = "search",
 }: JobFeedListProps) {
   const locale = await getLocale();
   const t = createT(getMessages(locale));
   const isEmpty = feed.mine.length === 0 && feed.community.length === 0;
   const hasUnreadApplications = feed.mine.some((job) => job.hasNewApplications);
+  const showSideBySide =
+    viewMode === "all" && feed.mine.length > 0 && feed.community.length > 0;
+  const usePanelScroll = viewMode === "all";
 
   if (isEmpty) {
     return (
@@ -32,10 +40,23 @@ export default async function JobFeedList({
     );
   }
 
+  const listLayoutClass = showSideBySide
+    ? "lg:grid lg:grid-cols-2 lg:grid-rows-1 lg:items-stretch lg:gap-4 lg:max-h-[calc(100dvh-11rem)]"
+    : usePanelScroll
+      ? "lg:max-h-[calc(100dvh-11rem)]"
+      : "jobs-panel-scroll lg:max-h-[calc(100dvh-11rem)] lg:overflow-y-auto lg:overscroll-contain";
+
+  const sectionClass = usePanelScroll
+    ? "feed-card flex min-h-0 min-w-0 flex-1 flex-col p-3 sm:p-4 lg:min-h-[12rem] lg:max-h-full"
+    : "feed-card flex min-w-0 flex-col p-3 sm:p-4";
+
   return (
-    <div className="flex flex-col gap-4" aria-label={t("jobs.feedAria")}>
+    <div
+      className={`flex min-h-0 flex-1 flex-col gap-4 ${listLayoutClass}`}
+      aria-label={t("jobs.feedAria")}
+    >
       {feed.mine.length > 0 ? (
-        <section className="feed-card flex min-h-0 min-w-0 flex-col p-3 sm:p-4">
+        <section className={sectionClass}>
           <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2">
             <h2 className="text-start text-sm font-semibold text-foreground">
               {t("jobs.sectionMyPublished")}
@@ -43,7 +64,7 @@ export default async function JobFeedList({
             <MarkAllApplicationsRead visible={hasUnreadApplications} />
           </div>
           <div
-            className="jobs-panel-scroll max-h-[min(16rem,calc(100vh-14rem))] overflow-y-auto overscroll-contain pe-0.5 lg:max-h-[min(14rem,calc(100vh-18rem))]"
+            className={usePanelScroll ? panelScrollClass : "jobs-panel-scroll pe-0.5"}
             dir="ltr"
           >
             <div className="space-y-2" dir="rtl">
@@ -56,12 +77,12 @@ export default async function JobFeedList({
       ) : null}
 
       {feed.community.length > 0 ? (
-        <section className="feed-card flex min-h-0 min-w-0 flex-col p-3 sm:p-4">
+        <section className={sectionClass}>
           <h2 className="mb-2 shrink-0 text-start text-sm font-semibold text-foreground">
             {hasSearchFilters ? t("jobs.sectionSearchResults") : t("jobs.sectionCommunity")}
           </h2>
           <div
-            className="jobs-panel-scroll max-h-[min(20rem,calc(100vh-14rem))] overflow-y-auto overscroll-contain pe-0.5 lg:max-h-[min(18rem,calc(100vh-18rem))]"
+            className={usePanelScroll ? panelScrollClass : "jobs-panel-scroll pe-0.5"}
             dir="ltr"
           >
             <div className="space-y-2" dir="rtl">
