@@ -40,7 +40,7 @@ export default async function JobsLayout({
           </header>
           <JobsAutoRefresh initialVersion={jobsVersion} />
           <JobsNav applicationsUnread={applicationsUnread} />
-          <div className="jobs-browse-shell min-h-0 min-w-0 flex-1">{children}</div>
+          <div className="jobs-browse-shell min-h-0 min-w-0 max-md:overflow-visible lg:flex-1">{children}</div>
           <div className="mobile-feed-bottom-spacer md:hidden" aria-hidden="true" />
         </div>
       </main>

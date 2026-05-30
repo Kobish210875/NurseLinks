@@ -153,7 +153,7 @@ body {
   scrollbar-gutter: stable;
 }
 
-/* Jobs browse: scrollable panels (WEB fixed shell + mobile capped height) */
+/* Jobs browse: scrollable panels on WEB only (mobile uses page scroll) */
 @media (min-width: 1024px) {
   .jobs-browse-shell {
     display: flex;
@@ -168,12 +168,6 @@ body {
   scrollbar-gutter: stable;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-}
-
-@media (max-width: 1023px) {
-  html[dir="rtl"] .jobs-panel-scroll {
-    padding-inline-start: 0.25rem;
-  }
 }
 
 /* Feed: wrap long unbroken comment/post text on narrow viewports */

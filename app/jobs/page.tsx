@@ -74,7 +74,7 @@ export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
             : ""
         }`}
       >
-        <div className="jobs-browse-feed order-2 flex min-h-0 min-w-0 flex-col lg:order-1 lg:min-h-0 lg:overflow-hidden">
+        <div className="jobs-browse-feed order-2 flex min-w-0 flex-col max-md:overflow-visible lg:order-1 lg:min-h-0 lg:overflow-hidden">
           <JobFeedList
             feed={feed}
             filters={effectiveFilters}

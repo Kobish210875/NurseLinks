@@ -58,14 +58,14 @@ export default function JobSearchPanel({
   }
 
   return (
-    <section className="feed-card flex h-full min-h-0 min-w-0 flex-col space-y-3 p-3 sm:p-4 lg:max-h-[calc(100dvh-11rem)] lg:space-y-2.5 lg:p-3">
+    <section className="feed-card flex min-w-0 flex-col space-y-3 p-3 sm:p-4 lg:h-full lg:min-h-0 lg:max-h-[calc(100dvh-11rem)] lg:space-y-2.5 lg:p-3">
       <div className="shrink-0">
         <h2 className="text-[15px] font-semibold text-foreground sm:text-sm">{t("jobs.searchTitle")}</h2>
         <p className="mt-0.5 text-sm text-muted-foreground sm:text-xs lg:leading-snug">{t("jobs.searchHint")}</p>
       </div>
 
       <form
-        className="flex min-h-0 flex-1 flex-col space-y-3 lg:space-y-2"
+        className="flex flex-col space-y-3 lg:min-h-0 lg:flex-1 lg:space-y-2"
         onSubmit={(event) => {
           event.preventDefault();
           applyFilters();

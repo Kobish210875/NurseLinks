@@ -14,10 +14,9 @@ type JobFeedListProps = {
   viewMode?: "all" | "search";
 };
 
+/** Inner panel scroll only on WEB (lg+); mobile uses natural page scroll. */
 const panelScrollClass =
-  "jobs-panel-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain max-md:max-h-[min(22rem,calc(100vh-14rem))] max-lg:dir-rtl lg:dir-ltr";
-
-const panelInnerClass = "max-lg:ps-2.5 lg:ps-0";
+  "lg:jobs-panel-scroll lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:dir-ltr";
 
 const jobsBrowseHeightClass = "lg:max-h-[calc(100dvh-11rem)]";
 
@@ -39,7 +38,7 @@ export default async function JobFeedList({
   if (isEmpty) {
     return (
       <div
-        className={`feed-card p-6 text-center text-sm text-muted-foreground ${isSearchView ? `flex min-h-0 flex-1 flex-col justify-center ${jobsBrowseHeightClass}` : ""}`}
+        className={`feed-card p-6 text-center text-sm text-muted-foreground ${isSearchView ? `lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:justify-center ${jobsBrowseHeightClass}` : ""}`}
       >
         {hasSearchFilters ? t("jobs.emptyFiltered") : t("jobs.empty")}
       </div>
@@ -49,11 +48,11 @@ export default async function JobFeedList({
   if (isSearchView) {
     return (
       <section
-        className={`feed-card flex min-h-0 min-w-0 flex-1 flex-col p-3 sm:p-4 ${jobsBrowseHeightClass}`}
+        className={`feed-card flex min-w-0 flex-col p-3 sm:p-4 lg:min-h-0 lg:flex-1 ${jobsBrowseHeightClass}`}
         aria-label={t("jobs.feedAria")}
       >
-        <div className={`${panelScrollClass} lg:max-h-none`}>
-          <div className={`space-y-4 ${panelInnerClass}`} dir="rtl">
+        <div className={panelScrollClass}>
+          <div className="space-y-4" dir="rtl">
             {feed.mine.length > 0 ? (
               <div>
                 <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
@@ -106,11 +105,11 @@ export default async function JobFeedList({
     : jobsBrowseHeightClass;
 
   const sectionClass =
-    "feed-card flex min-h-0 min-w-0 flex-1 flex-col p-3 sm:p-4 lg:min-h-[12rem] lg:max-h-full";
+    "feed-card flex min-w-0 flex-col p-3 sm:p-4 lg:flex-1 lg:min-h-[12rem] lg:max-h-full";
 
   return (
     <div
-      className={`flex min-h-0 flex-1 flex-col gap-4 ${listLayoutClass}`}
+      className={`flex flex-col gap-4 lg:min-h-0 lg:flex-1 ${listLayoutClass}`}
       aria-label={t("jobs.feedAria")}
     >
       {feed.mine.length > 0 ? (
@@ -122,7 +121,7 @@ export default async function JobFeedList({
             <MarkAllApplicationsRead visible={hasUnreadApplications} />
           </div>
           <div className={panelScrollClass}>
-            <div className={`space-y-2 ${panelInnerClass}`} dir="rtl">
+            <div className="space-y-2" dir="rtl">
               {feed.mine.map((job) => (
                 <JobCard key={job.id} job={job} defaultApplicantName={defaultApplicantName} />
               ))}
@@ -137,7 +136,7 @@ export default async function JobFeedList({
             {t("jobs.sectionCommunity")}
           </h2>
           <div className={panelScrollClass}>
-            <div className={`space-y-2 ${panelInnerClass}`} dir="rtl">
+            <div className="space-y-2" dir="rtl">
               {feed.community.map((job) => (
                 <JobCard key={job.id} job={job} defaultApplicantName={defaultApplicantName} />
               ))}
