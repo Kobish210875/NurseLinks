@@ -267,7 +267,11 @@
     "deleteAccountButton": "Delete my account",
     "deleteAccountConfirm": "Delete your account? This removes your profile and connections and cannot be undone.",
     "deleteFailed": "Could not delete the account right now. Please try again.",
-    "deleteNotConfigured": "Account deletion is not configured on the server. Run supabase/account-deletion-and-recommendations.sql and make sure SUPABASE_SERVICE_ROLE_KEY is set."
+    "deleteNotConfigured": "Account deletion is not configured on the server. Run supabase/account-deletion-and-recommendations.sql and make sure SUPABASE_SERVICE_ROLE_KEY is set.",
+    "changePasswordTitle": "Change password",
+    "changePasswordDescription": "Choose a new password and confirm it. After saving, you will sign in again with your new password.",
+    "changePasswordSubmit": "Save new password",
+    "changePasswordSessionExpired": "Your session expired. Sign in again to change your password."
   },
   "network": {
     "title": "My network",

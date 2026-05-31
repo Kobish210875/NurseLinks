@@ -24,14 +24,15 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [body, setBody] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesListRef = useRef<HTMLUListElement>(null);
 
-  const canMessage = peer.connectionStatus === "connected";
+  const canSend = body.trim().length > 0;
   const closeAfterSend = messages.length === 0;
 
   useEffect(() => {
-    if (!canMessage || messages.length === 0) {
+    if (messages.length === 0) {
       return;
     }
 
@@ -48,15 +49,24 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
       window.setTimeout(scrollToLatest, 80);
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [canMessage, messages, peer.id]);
+  }, [messages, peer.id]);
   const professionalLine = formatProfileHeadline(
     peer.headline,
     peer.workplaceInstitutionSlug,
     t("profile.institutionOther"),
   );
 
-  function submit(formData: FormData) {
+  function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmed = body.trim();
+    if (!trimmed) {
+      return;
+    }
+
     setError(null);
+    const formData = new FormData();
+    formData.set("body", trimmed);
+
     startTransition(async () => {
       const res = await sendDirectMessage(peer.id, formData);
       if (res?.error === "suspended") {
@@ -75,6 +85,7 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
         setError(t("messages.sendFailed"));
         return;
       }
+      setBody("");
       if (closeAfterSend) {
         router.push("/messages");
         return;
@@ -119,10 +130,7 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
         </div>
       </header>
 
-      {!canMessage ? (
-        <p className="p-4 text-sm text-muted-foreground">{t("messages.notConnected")}</p>
-      ) : (
-        <>
+      <>
           <ul
             ref={messagesListRef}
             className="message-thread-messages flex-1 space-y-3 overflow-y-auto overscroll-contain p-4"
@@ -176,7 +184,7 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
               ))
             )}
           </ul>
-          <form action={submit} className="message-thread-compose shrink-0 border-t border-border p-4">
+          <form onSubmit={submit} className="message-thread-compose shrink-0 border-t border-border p-4">
             <label className="sr-only" htmlFor="message-body">
               {t("messages.inputLabel")}
             </label>
@@ -185,6 +193,8 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
               name="body"
               rows={3}
               maxLength={4000}
+              value={body}
+              onChange={(event) => setBody(event.target.value)}
               disabled={pending}
               placeholder={t("messages.inputPlaceholder")}
               className="message-thread-input w-full resize-none rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60 md:resize-y md:text-sm"
@@ -197,8 +207,8 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
             <div className="mt-2 flex justify-end">
               <button
                 type="submit"
-                disabled={pending}
-                className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:opacity-60"
+                disabled={pending || !canSend}
+                className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {pending ? "..." : t("messages.send")}
               </button>
@@ -209,8 +219,7 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
             className="message-thread-end-anchor h-px shrink-0"
             aria-hidden="true"
           />
-        </>
-      )}
+      </>
     </div>
   );
 }

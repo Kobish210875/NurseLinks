@@ -21,6 +21,7 @@
    - `supabase/profile-workplace.sql` (recommended: dedicated `workplace_institution_slug` column; app falls back to `cv_draft` until run)
    - `supabase/medical-institutions.sql` (optional workplaces table columns)
    - `supabase/connections-messaging.sql` (connection requests + direct messages)
+   - `supabase/messages-open-send.sql` (optional: allow messaging users who are not connected friends)
    - `supabase/profile-cv.sql` (CV visible on other users' profile pages)
    - `supabase/recommendation-snapshots.sql` (optional: scheduled friendship recommendation snapshots)
    - `supabase/recommendation-workplace.sql` (upgrade: same-workplace recommendations + index; run if snapshots already exist)

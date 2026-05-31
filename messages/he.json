@@ -267,7 +267,11 @@
     "deleteAccountButton": "מחיקת החשבון שלי",
     "deleteAccountConfirm": "למחוק את החשבון? הפעולה תסיר את הפרופיל והקשרים ולא ניתן לבטל אותה.",
     "deleteFailed": "לא ניתן למחוק את החשבון כרגע. נסו שוב.",
-    "deleteNotConfigured": "מחיקת חשבון לא הוגדרה בשרת. הריצו את supabase/account-deletion-and-recommendations.sql וודאו ש-SUPABASE_SERVICE_ROLE_KEY מוגדר."
+    "deleteNotConfigured": "מחיקת חשבון לא הוגדרה בשרת. הריצו את supabase/account-deletion-and-recommendations.sql וודאו ש-SUPABASE_SERVICE_ROLE_KEY מוגדר.",
+    "changePasswordTitle": "שינוי סיסמה",
+    "changePasswordDescription": "בחרו סיסמה חדשה ואשרו אותה. לאחר השמירה תועברו להתחברות מחדש עם הסיסמה החדשה.",
+    "changePasswordSubmit": "שמירת סיסמה חדשה",
+    "changePasswordSessionExpired": "פג תוקף ההתחברות. התחברו שוב ונסו לשנות את הסיסמה."
   },
   "network": {
     "title": "הרשת שלי",

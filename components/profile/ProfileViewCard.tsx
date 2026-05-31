@@ -82,33 +82,33 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
               {t("profile.editProfile")}
             </Link>
           ) : null}
+          {!isOwnProfile ? (
+            <Link
+              href={`/messages/${profile.id}`}
+              className="rounded-full border border-primary bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
+            >
+              {t("network.message")}
+            </Link>
+          ) : null}
           {!isOwnProfile && profile.connectionStatus === "connected" ? (
-            <>
-              <Link
-                href={`/messages/${profile.id}`}
-                className="rounded-full border border-primary bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
-              >
-                {t("network.message")}
-              </Link>
-              <button
-                type="button"
-                disabled={pendingRemove}
-                onClick={() => {
-                  if (!window.confirm(t("network.removeFriendConfirm"))) {
-                    return;
+            <button
+              type="button"
+              disabled={pendingRemove}
+              onClick={() => {
+                if (!window.confirm(t("network.removeFriendConfirm"))) {
+                  return;
+                }
+                startRemove(async () => {
+                  const result = await removeConnection(profile.id);
+                  if (!result || typeof result !== "object" || !("error" in result)) {
+                    router.refresh();
                   }
-                  startRemove(async () => {
-                    const result = await removeConnection(profile.id);
-                    if (!result || typeof result !== "object" || !("error" in result)) {
-                      router.refresh();
-                    }
-                  });
-                }}
-                className="rounded-full border border-border px-4 py-1.5 text-sm font-medium text-muted-foreground transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 disabled:opacity-60"
-              >
-                {pendingRemove ? "..." : t("network.removeFriend")}
-              </button>
-            </>
+                });
+              }}
+              className="rounded-full border border-border px-4 py-1.5 text-sm font-medium text-muted-foreground transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 disabled:opacity-60"
+            >
+              {pendingRemove ? "..." : t("network.removeFriend")}
+            </button>
           ) : null}
           {!isOwnProfile && profile.connectionStatus === "none" ? (
             <button

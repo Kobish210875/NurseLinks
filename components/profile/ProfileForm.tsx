@@ -39,6 +39,19 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
     setIsDirty(false);
     setFormKey((k) => k + 1);
     window.history.replaceState(null, "", "/profile");
+
+    const scrollToPageTop = () => {
+      document.getElementById("profile-page-top")?.scrollIntoView({ block: "start", behavior: "instant" });
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    };
+
+    requestAnimationFrame(() => {
+      scrollToPageTop();
+      window.setTimeout(scrollToPageTop, 0);
+      window.setTimeout(scrollToPageTop, 100);
+    });
   }, [saved]);
 
   function markDirty() {

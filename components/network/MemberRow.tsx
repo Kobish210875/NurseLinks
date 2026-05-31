@@ -66,8 +66,7 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
     });
   }
 
-  const messageHref =
-    optimisticStatus === "connected" ? `/messages/${member.id}` : undefined;
+  const messageHref = `/messages/${member.id}`;
   const professionalLine = formatProfileHeadline(
     member.headline,
     member.workplaceInstitutionSlug,
@@ -149,11 +148,9 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
 
             {variant === "connection" ? (
               <>
-                {messageHref ? (
-                  <Link href={messageHref} className={msgBtn}>
-                    {t("network.message")}
-                  </Link>
-                ) : null}
+                <Link href={messageHref} className={msgBtn}>
+                  {t("network.message")}
+                </Link>
                 <button
                   type="button"
                   disabled={pending}
@@ -212,11 +209,9 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
                     </button>
                   </>
                 ) : null}
-                {optimisticStatus === "connected" && messageHref ? (
-                  <Link href={messageHref} className={msgBtn}>
-                    {t("network.message")}
-                  </Link>
-                ) : null}
+                <Link href={messageHref} className={msgBtn}>
+                  {t("network.message")}
+                </Link>
               </>
             ) : null}
           </div>

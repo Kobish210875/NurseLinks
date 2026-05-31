@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { assertUserCanPublish } from "@/lib/auth/suspension";
-import { markThreadRead, usersAreConnected } from "@/lib/data/messages";
+import { markThreadRead } from "@/lib/data/messages";
 import { autoFlagContentIfNeeded } from "@/lib/moderation/flags";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
@@ -43,11 +43,6 @@ export async function markThreadAsRead(peerId: string) {
     return { error: "unauthorized" as const };
   }
 
-  const connected = await usersAreConnected(supabase, user.id, peerId);
-  if (!connected) {
-    return { error: "not-connected" as const };
-  }
-
   await markThreadRead(supabase, user.id, peerId);
   revalidateMessaging(peerId);
   return { success: true as const };
@@ -75,11 +70,6 @@ export async function sendDirectMessage(peerId: string, formData: FormData) {
 
   if (peerId === user.id) {
     return { error: "self" as const };
-  }
-
-  const connected = await usersAreConnected(supabase, user.id, peerId);
-  if (!connected) {
-    return { error: "not-connected" as const };
   }
 
   const row: MessageInsert = {
