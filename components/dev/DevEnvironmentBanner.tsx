@@ -7,7 +7,7 @@ export default function DevEnvironmentBanner() {
 
   return (
     <div
-      className="sticky top-0 z-[100] border-b border-amber-300 bg-amber-100 px-3 py-1.5 text-center text-xs font-semibold text-amber-950"
+      className="border-b border-amber-300 bg-amber-100 px-3 py-1.5 text-center text-xs font-semibold text-amber-950"
       role="status"
     >
       {t("dev.banner")}

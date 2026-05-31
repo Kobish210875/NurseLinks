@@ -35,7 +35,10 @@ export default function InstitutionPage({
 }: InstitutionPageProps) {
   return (
     <div className="space-y-4">
-      <Link href="/home" className="text-sm font-medium text-primary hover:underline">
+      <Link
+        href="/home"
+        className="mb-4 inline-block text-sm font-medium text-primary hover:underline lg:hidden"
+      >
         {labels.back}
       </Link>
 

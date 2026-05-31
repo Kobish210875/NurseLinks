@@ -1,14 +1,10 @@
-"use client";
-
-import { useT } from "@/components/i18n/LocaleProvider";
 import HospitalsSidebar from "@/components/feed/HospitalsSidebar";
+import type { InstitutionActivityMap } from "@/lib/data/institution-activity";
 
-export default function SidebarLeft() {
-  const t = useT();
+type SidebarLeftProps = {
+  institutionActivity: InstitutionActivityMap;
+};
 
-  return (
-    <aside className="flex flex-col gap-4" aria-label={t("feed.navAria")}>
-      <HospitalsSidebar />
-    </aside>
-  );
+export default function SidebarLeft({ institutionActivity }: SidebarLeftProps) {
+  return <HospitalsSidebar activity={institutionActivity} />;
 }
