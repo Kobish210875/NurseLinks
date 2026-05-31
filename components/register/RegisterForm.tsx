@@ -14,6 +14,7 @@ import RequiredLabel from "./RequiredLabel";
 
 const inputClassName =
   "w-full max-w-full rounded-lg border border-border bg-white px-3 py-2.5 text-base outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm";
+const hebrewOnlyHintClassName = "text-sm font-bold text-primary";
 const nonHebrewNameChars = /[^\u05D0-\u05EA\s\-'׳״.]/gu;
 
 type RegisterFormProps = {
@@ -142,6 +143,9 @@ export default function RegisterForm({
         <fieldset disabled={formLocked} className="grid gap-4 sm:grid-cols-2 disabled:opacity-70">
           <label className="grid gap-1.5 sm:col-span-1">
             <RequiredLabel>{t("register.firstName")}</RequiredLabel>
+            <span id="firstName-hint" className={hebrewOnlyHintClassName}>
+              {t("register.firstNameHint")}
+            </span>
             <input
               id="firstName"
               name="firstName"
@@ -154,9 +158,6 @@ export default function RegisterForm({
               aria-invalid={Boolean(fieldErrors.firstName)}
               aria-describedby="firstName-hint"
             />
-            <span id="firstName-hint" className="text-xs text-muted-foreground">
-              {t("register.firstNameHint")}
-            </span>
             {fieldErrors.firstName ? (
               <span className="text-sm text-red-600">{fieldErrors.firstName}</span>
             ) : null}
@@ -164,6 +165,9 @@ export default function RegisterForm({
 
           <label className="grid gap-1.5 sm:col-span-1">
             <RequiredLabel>{t("register.lastName")}</RequiredLabel>
+            <span id="lastName-hint" className={hebrewOnlyHintClassName}>
+              {t("register.lastNameHint")}
+            </span>
             <input
               id="lastName"
               name="lastName"
@@ -176,9 +180,6 @@ export default function RegisterForm({
               aria-invalid={Boolean(fieldErrors.lastName)}
               aria-describedby="lastName-hint"
             />
-            <span id="lastName-hint" className="text-xs text-muted-foreground">
-              {t("register.lastNameHint")}
-            </span>
             {fieldErrors.lastName ? (
               <span className="text-sm text-red-600">{fieldErrors.lastName}</span>
             ) : null}

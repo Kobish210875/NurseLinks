@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 export type MobileNavUser = {
   id: string;
@@ -11,18 +11,35 @@ export type MobileNavUser = {
 };
 
 const CurrentUserContext = createContext<MobileNavUser | null>(null);
+const UpdateAvatarContext = createContext<((avatarUrl: string) => void) | null>(null);
 
 type CurrentUserProviderProps = {
   user: MobileNavUser | null;
   children: React.ReactNode;
 };
 
-export function CurrentUserProvider({ user, children }: CurrentUserProviderProps) {
+export function CurrentUserProvider({ user: initialUser, children }: CurrentUserProviderProps) {
+  const [user, setUser] = useState(initialUser);
+
+  useEffect(() => {
+    setUser(initialUser);
+  }, [initialUser]);
+
+  const updateAvatarUrl = useCallback((avatarUrl: string) => {
+    setUser((current) => (current ? { ...current, avatarUrl } : null));
+  }, []);
+
   return (
-    <CurrentUserContext.Provider value={user}>{children}</CurrentUserContext.Provider>
+    <CurrentUserContext.Provider value={user}>
+      <UpdateAvatarContext.Provider value={updateAvatarUrl}>{children}</UpdateAvatarContext.Provider>
+    </CurrentUserContext.Provider>
   );
 }
 
 export function useCurrentUser() {
   return useContext(CurrentUserContext);
+}
+
+export function useUpdateCurrentUserAvatar() {
+  return useContext(UpdateAvatarContext);
 }

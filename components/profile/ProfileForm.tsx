@@ -4,7 +4,7 @@ import { saveProfile } from "@/app/profile/actions";
 import CityCombobox from "@/components/register/CityCombobox";
 import { useT } from "@/components/i18n/LocaleProvider";
 import type { CurrentUser } from "@/lib/auth/get-current-user";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import InstitutionSelect from "./InstitutionSelect";
 import ProfileAvatar from "./ProfileAvatar";
 
@@ -22,12 +22,16 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
   const { cvDraft } = user;
   const [formKey, setFormKey] = useState(0);
   const [isDirty, setIsDirty] = useState(false);
+  const savedHandledRef = useRef(false);
 
   useEffect(() => {
-    if (saved) {
-      setIsDirty(false);
-      setFormKey((k) => k + 1);
+    if (!saved || savedHandledRef.current) {
+      return;
     }
+    savedHandledRef.current = true;
+    setIsDirty(false);
+    setFormKey((k) => k + 1);
+    window.history.replaceState(null, "", "/profile");
   }, [saved]);
 
   function markDirty() {
@@ -40,12 +44,7 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
   }
 
   return (
-    <form
-      key={formKey}
-      action={saveProfile}
-      className="mx-auto max-w-xl space-y-6"
-      onChange={markDirty}
-    >
+    <div className="mx-auto max-w-xl space-y-6">
       <div className="feed-card p-6">
         <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
           <ProfileAvatar
@@ -62,6 +61,7 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
         </div>
       </div>
 
+      <form key={formKey} action={saveProfile} className="space-y-6" onChange={markDirty}>
       {saved ? (
         <p className="rounded-lg border border-accent/30 bg-accent/10 px-4 py-3 text-sm text-foreground">
           {t("profile.saved")}
@@ -159,6 +159,7 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
           </button>
         ) : null}
       </div>
-    </form>
+      </form>
+    </div>
   );
 }

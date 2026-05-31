@@ -5,7 +5,7 @@ import { uploadAvatar } from "@/app/profile/actions";
 import AvatarCropModal from "@/components/profile/AvatarCropModal";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { isSupportedAvatarFile } from "@/lib/images/avatar-file";
-import { useRouter } from "next/navigation";
+import { useUpdateCurrentUserAvatar } from "@/components/nav/CurrentUserProvider";
 import { useEffect, useRef, useState, useTransition } from "react";
 
 export type AvatarUploadError =
@@ -34,7 +34,7 @@ export default function ProfileAvatar({
   sizeClassName = "size-28 text-2xl",
 }: ProfileAvatarProps) {
   const t = useT();
-  const router = useRouter();
+  const updateCurrentUserAvatar = useUpdateCurrentUserAvatar();
   const inputRef = useRef<HTMLInputElement>(null);
   const [pending, startTransition] = useTransition();
   const [displayUrl, setDisplayUrl] = useState<string | null>(null);
@@ -44,10 +44,8 @@ export default function ProfileAvatar({
   const shownUrl = displayUrl ?? avatarUrl;
 
   useEffect(() => {
-    if (!pending) {
-      setDisplayUrl(null);
-    }
-  }, [avatarUrl, pending]);
+    setDisplayUrl(null);
+  }, [avatarUrl]);
 
   useEffect(() => {
     return () => {
@@ -98,7 +96,7 @@ export default function ProfileAvatar({
 
         URL.revokeObjectURL(previewUrl);
         setDisplayUrl(result.avatarUrl);
-        router.refresh();
+        updateCurrentUserAvatar?.(result.avatarUrl);
       } catch {
         URL.revokeObjectURL(previewUrl);
         setDisplayUrl(avatarUrl);
