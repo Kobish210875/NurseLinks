@@ -2,6 +2,7 @@ import JobApplicationCard from "@/components/jobs/JobApplicationCard";
 import MarkAllApplicationsRead from "@/components/jobs/MarkAllApplicationsRead";
 import MarkApplicationsInboxSeen from "@/components/jobs/MarkApplicationsInboxSeen";
 import type { JobApplicationInboxItem } from "@/lib/data/jobs";
+import { truncateJobTitle } from "@/lib/jobs/field-limits";
 import { createT, getMessages } from "@/lib/i18n/messages";
 import { getLocale } from "@/lib/i18n/get-locale";
 
@@ -48,7 +49,9 @@ export default async function JobApplicationsInbox({ items }: JobApplicationsInb
             }
             return (
               <section key={jobId} className="rounded-lg border border-border bg-muted/20 p-3">
-                <h3 className="mb-2 text-start text-sm font-semibold text-foreground">{job.title}</h3>
+                <h3 className="job-detail-title mb-2 text-start text-sm font-semibold text-foreground">
+                  {truncateJobTitle(job.title)}
+                </h3>
                 <ul className="space-y-2.5 sm:space-y-2">
                   {jobItems.map((item) => (
                     <li key={item.application.id}>

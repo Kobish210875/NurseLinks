@@ -4,6 +4,7 @@ import { createJob } from "@/app/actions/jobs";
 import { useT } from "@/components/i18n/LocaleProvider";
 import InstitutionSelect from "@/components/profile/InstitutionSelect";
 import { INSTITUTION_OTHER_SLUG } from "@/lib/data/medical-institutions";
+import { JOB_BODY_MAX_LENGTH, JOB_TITLE_MAX_LENGTH } from "@/lib/jobs/field-limits";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -43,7 +44,7 @@ export default function JobComposer() {
           name="title"
           type="text"
           required
-          maxLength={200}
+          maxLength={JOB_TITLE_MAX_LENGTH}
           disabled={pending}
           placeholder={t("jobs.fieldTitlePlaceholder")}
           className="w-full max-w-full rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60 md:text-sm"
@@ -69,7 +70,7 @@ export default function JobComposer() {
           name="body"
           rows={4}
           required
-          maxLength={4000}
+          maxLength={JOB_BODY_MAX_LENGTH}
           disabled={pending}
           placeholder={
             isOtherInstitution

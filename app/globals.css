@@ -173,7 +173,9 @@ body {
 /* Feed: wrap long unbroken comment/post text on narrow viewports */
 .post-comment-bubble,
 .post-comment-body,
-.post-body {
+.post-body,
+.job-detail-title,
+.job-detail-body {
   overflow-wrap: anywhere;
   word-break: break-word;
 }

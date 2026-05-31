@@ -2,6 +2,7 @@
 
 import { submitJobApplication } from "@/app/actions/jobs";
 import { useT } from "@/components/i18n/LocaleProvider";
+import { truncateJobTitle } from "@/lib/jobs/field-limits";
 import { isHebrewDisplayName } from "@/lib/validation/hebrew-name";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
@@ -144,7 +145,7 @@ export default function JobApplyDialog({
         <h2 id="job-apply-title" className="text-base font-semibold text-foreground">
           {t("jobs.applyTitle")}
         </h2>
-        <p className="mt-1 text-sm text-muted-foreground">{jobTitle}</p>
+        <p className="job-detail-title mt-1 text-sm text-muted-foreground">{truncateJobTitle(jobTitle)}</p>
         <p className="mt-2 text-xs text-muted-foreground">{t("jobs.applyHint")}</p>
 
         {success ? (

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import JobApplyDialog from "@/components/jobs/JobApplyDialog";
 import type { InstitutionOpenJob } from "@/lib/data/institution-jobs";
+import { truncateJobTitle } from "@/lib/jobs/field-limits";
 
 type InstitutionJobCardProps = {
   job: InstitutionOpenJob;
@@ -22,8 +23,12 @@ export default function InstitutionJobCard({
   return (
     <>
       <li className="rounded-lg border border-border bg-muted/20 px-3 py-2.5">
-        <p className="text-sm font-semibold text-foreground">{job.title}</p>
-        {job.bodyPreview ? <p className="mt-1 text-xs text-muted-foreground">{job.bodyPreview}</p> : null}
+        <p className="job-detail-title text-sm font-semibold text-foreground">
+          {truncateJobTitle(job.title)}
+        </p>
+        {job.bodyPreview ? (
+          <p className="job-detail-body mt-1 text-xs text-muted-foreground">{job.bodyPreview}</p>
+        ) : null}
         <p className="mt-1 text-xs text-muted-foreground">
           {job.city ? `${jobsLocationLabel}: ${job.city} · ` : ""}
           <time dateTime={job.createdAt}>{job.timeLabel}</time>

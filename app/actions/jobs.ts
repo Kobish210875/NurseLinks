@@ -17,12 +17,13 @@ import {
 import { isHebrewDisplayName } from "@/lib/validation/hebrew-name";
 import { isValidIsraeliMobile, normalizeIsraeliMobile } from "@/lib/validation/phone";
 import { sendJobApplicationNotificationEmail } from "@/lib/notifications/job-application-email";
+import { JOB_BODY_MAX_LENGTH, JOB_TITLE_MAX_LENGTH, truncateJobBody, truncateJobTitle } from "@/lib/jobs/field-limits";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 
-const MAX_TITLE = 200;
-const MAX_BODY = 4000;
+const MAX_TITLE = JOB_TITLE_MAX_LENGTH;
+const MAX_BODY = JOB_BODY_MAX_LENGTH;
 const MAX_HOSPITAL = 200;
 
 type JobInsert = Database["public"]["Tables"]["jobs"]["Insert"];
@@ -98,8 +99,8 @@ export async function createJob(formData: FormData) {
     redirect("/");
   }
 
-  const title = getString(formData, "title");
-  const body = getString(formData, "body");
+  const title = truncateJobTitle(getString(formData, "title"));
+  const body = truncateJobBody(getString(formData, "body"));
   const institutionSlug = getString(formData, "workplaceInstitution");
 
   if (!title || title.length > MAX_TITLE || !body || body.length > MAX_BODY) {

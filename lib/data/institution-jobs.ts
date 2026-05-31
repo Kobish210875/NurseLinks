@@ -1,4 +1,5 @@
 import { formatFeedTimestamp } from "@/lib/i18n/format-feed-time";
+import { JOB_BODY_MAX_LENGTH, truncateJobBody, truncateJobTitle } from "@/lib/jobs/field-limits";
 import type { Locale } from "@/lib/i18n/config";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
@@ -20,10 +21,10 @@ export type InstitutionOpenJob = {
   timeLabel: string;
 };
 
-const MAX_PREVIEW_LEN = 140;
+const MAX_PREVIEW_LEN = JOB_BODY_MAX_LENGTH;
 
 function toPreview(body: string) {
-  const normalized = body.replace(/\s+/g, " ").trim();
+  const normalized = truncateJobBody(body.replace(/\s+/g, " "));
   if (normalized.length <= MAX_PREVIEW_LEN) {
     return normalized;
   }
@@ -49,7 +50,7 @@ export async function getInstitutionOpenJobs(
 
   return ((data ?? []) as InstitutionJobRow[]).map((row) => ({
     id: row.id,
-    title: row.title,
+    title: truncateJobTitle(row.title),
     bodyPreview: toPreview(row.body),
     city: row.city,
     createdAt: row.created_at,

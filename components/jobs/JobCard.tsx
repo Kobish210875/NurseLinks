@@ -6,6 +6,7 @@ import JobApplyDialog from "@/components/jobs/JobApplyDialog";
 import JobDetailDialog from "@/components/jobs/JobDetailDialog";
 import type { JobListing } from "@/lib/data/jobs";
 import { formatJobLocation } from "@/lib/jobs/format-location";
+import { truncateJobTitle } from "@/lib/jobs/field-limits";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 
@@ -62,7 +63,7 @@ export default function JobCard({ job, defaultApplicantName, compact = false }: 
                   compact ? "text-xs" : "text-sm sm:text-sm"
                 }`}
               >
-                {job.title}
+                {truncateJobTitle(job.title)}
               </h2>
               {job.isOwner && job.applications.length > 0 ? (
                 <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">

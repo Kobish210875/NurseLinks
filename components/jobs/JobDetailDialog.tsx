@@ -5,6 +5,7 @@ import JobApplicationCard from "@/components/jobs/JobApplicationCard";
 import { useLocale, useT } from "@/components/i18n/LocaleProvider";
 import type { JobListing } from "@/lib/data/jobs";
 import { formatJobLocation } from "@/lib/jobs/format-location";
+import { truncateJobBody, truncateJobTitle } from "@/lib/jobs/field-limits";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef } from "react";
 
@@ -34,6 +35,8 @@ export default function JobDetailDialog({
   const markedReadRef = useRef(false);
   const scrollLockYRef = useRef(0);
   const locationLine = formatJobLocation(job.hospital, job.city, locale);
+  const displayTitle = truncateJobTitle(job.title);
+  const displayBody = truncateJobBody(job.body);
   const canApply = !job.isOwner && !job.hasApplied;
 
   useEffect(() => {
@@ -99,12 +102,26 @@ export default function JobDetailDialog({
     >
       <div
         ref={dialogRef}
-        className="job-detail-panel feed-card flex max-h-[min(78dvh,calc(100dvh-var(--mobile-bottom-nav-offset)-4rem))] w-full max-w-md flex-col overflow-hidden rounded-2xl shadow-xl sm:max-h-[min(85vh,32rem)]"
+        className="job-detail-panel feed-card flex max-h-[min(78dvh,calc(100dvh-var(--mobile-bottom-nav-offset)-4rem))] w-full min-w-0 max-w-md flex-col overflow-hidden rounded-2xl shadow-xl sm:max-h-[min(85vh,32rem)]"
       >
-        <header className="flex shrink-0 items-start justify-between gap-3 border-b border-border px-4 py-3 text-start sm:px-5 sm:py-4">
-          <div className="min-w-0 flex-1">
-            <h2 id="job-detail-title" className="text-base font-semibold text-foreground sm:text-lg">
-              {job.title}
+        <header className="shrink-0 border-b border-border px-4 py-3 text-start sm:px-5 sm:py-4">
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={markFilledPending}
+              aria-label={t("jobs.closeDetails")}
+              className="job-detail-close shrink-0 rounded-full border border-border bg-white px-3 py-1.5 text-sm font-semibold text-muted-foreground transition hover:bg-muted disabled:opacity-60"
+            >
+              {t("jobs.closeDetails")}
+            </button>
+          </div>
+          <div className="mt-2 min-w-0">
+            <h2
+              id="job-detail-title"
+              className="job-detail-title text-base font-semibold text-foreground sm:text-lg"
+            >
+              {displayTitle}
             </h2>
             {locationLine ? (
               <p className="mt-1 text-sm text-muted-foreground md:text-[15px]">
@@ -116,21 +133,12 @@ export default function JobDetailDialog({
               <time dateTime={job.createdAt}>{job.timeLabel}</time>
             </p>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            disabled={markFilledPending}
-            aria-label={t("jobs.closeDetails")}
-            className="job-detail-close shrink-0 rounded-full border border-border bg-white px-3 py-1.5 text-sm font-semibold text-muted-foreground transition hover:bg-muted disabled:opacity-60"
-          >
-            {t("jobs.closeDetails")}
-          </button>
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-3 sm:px-5 sm:py-4">
-          {job.body.trim() ? (
-            <p className="whitespace-pre-wrap text-start text-[15px] leading-relaxed text-foreground sm:text-sm">
-              {job.body}
+          {displayBody ? (
+            <p className="job-detail-body whitespace-pre-wrap text-start text-[15px] leading-relaxed text-foreground sm:text-sm">
+              {displayBody}
             </p>
           ) : (
             <p className="text-[15px] text-muted-foreground sm:text-sm">{t("jobs.noDescription")}</p>
