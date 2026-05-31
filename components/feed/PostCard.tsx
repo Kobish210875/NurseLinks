@@ -93,7 +93,6 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
       if (res?.success) {
         setLiked(res.liked);
       }
-      router.refresh();
     });
   }
 

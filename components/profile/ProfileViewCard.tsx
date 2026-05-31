@@ -6,11 +6,11 @@ import { useLocale, useT } from "@/components/i18n/LocaleProvider";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { getCityDisplayName } from "@/lib/data/israeli-cities";
 import type { ProfileView } from "@/lib/data/profile-view";
+import type { ConnectionStatus } from "@/lib/network/types";
 import { formatFeedTimestamp } from "@/lib/i18n/format-feed-time";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
 import { sanitizeLicenseNumber } from "@/lib/validation/license-number";
-import { useRouter } from "next/navigation";
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 
 type ProfileViewCardProps = {
   profile: ProfileView;
@@ -20,9 +20,15 @@ type ProfileViewCardProps = {
 export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCardProps) {
   const t = useT();
   const { locale } = useLocale();
-  const router = useRouter();
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus>(
+    profile.connectionStatus,
+  );
   const [pendingConnect, startConnect] = useTransition();
   const [pendingRemove, startRemove] = useTransition();
+
+  useEffect(() => {
+    setConnectionStatus(profile.connectionStatus);
+  }, [profile.connectionStatus, profile.id]);
   const cityLabel = profile.city ? getCityDisplayName(profile.city, locale) : null;
   const professionalLine = formatProfileHeadline(
     profile.headline,
@@ -62,7 +68,7 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
                 {t("profile.licenseNumber")}: {sanitizeLicenseNumber(profile.licenseNumber)}
               </p>
             ) : null}
-            {!isOwnProfile && profile.connectionStatus === "connected" && profile.connectedAt ? (
+            {!isOwnProfile && connectionStatus === "connected" && profile.connectedAt ? (
               <p className="mt-2 text-xs text-muted-foreground">
                 <time dateTime={profile.connectedAt}>
                   {t("network.connectedOn")}{" "}
@@ -90,7 +96,7 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
               {t("network.message")}
             </Link>
           ) : null}
-          {!isOwnProfile && profile.connectionStatus === "connected" ? (
+          {!isOwnProfile && connectionStatus === "connected" ? (
             <button
               type="button"
               disabled={pendingRemove}
@@ -101,7 +107,7 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
                 startRemove(async () => {
                   const result = await removeConnection(profile.id);
                   if (!result || typeof result !== "object" || !("error" in result)) {
-                    router.refresh();
+                    setConnectionStatus("none");
                   }
                 });
               }}
@@ -110,7 +116,7 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
               {pendingRemove ? "..." : t("network.removeFriend")}
             </button>
           ) : null}
-          {!isOwnProfile && profile.connectionStatus === "none" ? (
+          {!isOwnProfile && connectionStatus === "none" ? (
             <button
               type="button"
               disabled={pendingConnect}
@@ -118,7 +124,11 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
                 startConnect(async () => {
                   const result = await sendConnectionRequest(profile.id);
                   if (!result || typeof result !== "object" || !("error" in result)) {
-                    router.refresh();
+                    setConnectionStatus(
+                      result && typeof result === "object" && "accepted" in result && result.accepted
+                        ? "connected"
+                        : "pending_out",
+                    );
                   }
                 })
               }
@@ -127,7 +137,7 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
               {pendingConnect ? "..." : t("network.connect")}
             </button>
           ) : null}
-          {!isOwnProfile && profile.connectionStatus === "pending_out" ? (
+          {!isOwnProfile && connectionStatus === "pending_out" ? (
             <Link
               href={`/network?q=${encodeURIComponent(profile.fullName)}`}
               className="rounded-full border border-border px-4 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted/60"

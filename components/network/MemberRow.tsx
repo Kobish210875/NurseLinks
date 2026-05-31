@@ -19,7 +19,6 @@ import {
   formatProfileHeadline,
   getInstitutionLabel,
 } from "@/lib/profile/display-professional";
-import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 
 type MemberRowProps = {
@@ -40,7 +39,6 @@ const msgBtn =
 
 export default function MemberRow({ member, variant = "connection" }: MemberRowProps) {
   const t = useT();
-  const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [optimisticStatus, setOptimisticStatus] = useState<ConnectionStatus>(member.connectionStatus);
   const [showMutualConnections, setShowMutualConnections] = useState(false);
@@ -62,7 +60,6 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
         setOptimisticStatus(previous);
         return;
       }
-      router.refresh();
     });
   }
 

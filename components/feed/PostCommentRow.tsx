@@ -81,7 +81,6 @@ export default function PostCommentRow({
         setLikeError(t("errors.comment-like-failed"));
         return;
       }
-      router.refresh();
     });
   }
 
@@ -100,7 +99,6 @@ export default function PostCommentRow({
         return;
       }
       onDeleted(comment.id);
-      router.refresh();
     });
   }
 
