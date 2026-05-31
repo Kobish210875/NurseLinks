@@ -4,6 +4,7 @@ import { saveProfile } from "@/app/profile/actions";
 import CityCombobox from "@/components/register/CityCombobox";
 import { useT } from "@/components/i18n/LocaleProvider";
 import type { CurrentUser } from "@/lib/auth/get-current-user";
+import { sanitizeLicenseNumber } from "@/lib/validation/license-number";
 import { useEffect, useRef, useState } from "react";
 import InstitutionSelect from "./InstitutionSelect";
 import ProfileAvatar from "./ProfileAvatar";
@@ -41,6 +42,14 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
   function handleCancel() {
     setFormKey((k) => k + 1);
     setIsDirty(false);
+  }
+
+  function sanitizeLicenseNumberInput(event: React.FormEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const digitsOnly = sanitizeLicenseNumber(input.value);
+    if (input.value !== digitsOnly) {
+      input.value = digitsOnly;
+    }
   }
 
   return (
@@ -99,8 +108,11 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
             id="licenseNumber"
             name="licenseNumber"
             type="text"
-            defaultValue={user.licenseNumber ?? ""}
+            inputMode="numeric"
+            autoComplete="off"
+            defaultValue={sanitizeLicenseNumber(user.licenseNumber ?? "")}
             className={fieldClassName}
+            onInput={sanitizeLicenseNumberInput}
           />
         </div>
 

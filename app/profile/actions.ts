@@ -12,6 +12,7 @@ import {
   mergeCvDraftWithWorkplace,
 } from "@/lib/profile/workplace";
 import { updateProfile, type ProfileUpdate } from "@/lib/supabase/profiles";
+import { sanitizeLicenseNumber } from "@/lib/validation/license-number";
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 
@@ -94,7 +95,7 @@ export async function saveProfile(formData: FormData) {
 
   const profession = getRequiredString(formData, "profession");
   const institutionSlug = getRequiredString(formData, "workplaceInstitution");
-  const licenseNumber = getRequiredString(formData, "licenseNumber");
+  const licenseNumber = sanitizeLicenseNumber(getRequiredString(formData, "licenseNumber"));
   const cityInput = getRequiredString(formData, "city");
   const bio = getRequiredString(formData, "bio");
   const experience = getRequiredString(formData, "experience");
