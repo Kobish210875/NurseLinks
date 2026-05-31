@@ -5,6 +5,7 @@ import { uploadAvatar } from "@/app/profile/actions";
 import AvatarCropModal from "@/components/profile/AvatarCropModal";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { isSupportedAvatarFile } from "@/lib/images/avatar-file";
+import { unlockBodyOverflowForFilePicker } from "@/lib/ui/body-scroll-unlock";
 import { useUpdateCurrentUserAvatar } from "@/components/nav/CurrentUserProvider";
 import { useEffect, useRef, useState } from "react";
 
@@ -36,6 +37,7 @@ export default function ProfileAvatar({
   const t = useT();
   const updateCurrentUserAvatar = useUpdateCurrentUserAvatar();
   const inputRef = useRef<HTMLInputElement>(null);
+  const restoreBodyOverflowRef = useRef<(() => void) | null>(null);
   const [uploading, setUploading] = useState(false);
   const [displayUrl, setDisplayUrl] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<AvatarUploadError | null>(null);
@@ -56,11 +58,10 @@ export default function ProfileAvatar({
 
   useEffect(() => {
     return () => {
-      if (cropSession?.previewUrl) {
-        URL.revokeObjectURL(cropSession.previewUrl);
-      }
+      restoreBodyOverflowRef.current?.();
+      restoreBodyOverflowRef.current = null;
     };
-  }, [cropSession?.previewUrl]);
+  }, []);
 
   function errorMessage(code: AvatarUploadError) {
     switch (code) {
@@ -76,10 +77,21 @@ export default function ProfileAvatar({
   }
 
   function closeCropSession() {
+    restoreBodyOverflowRef.current?.();
+    restoreBodyOverflowRef.current = null;
     if (cropSession?.previewUrl) {
       URL.revokeObjectURL(cropSession.previewUrl);
     }
     setCropSession(null);
+  }
+
+  function openFilePicker() {
+    if (pending) {
+      return;
+    }
+    restoreBodyOverflowRef.current?.();
+    restoreBodyOverflowRef.current = unlockBodyOverflowForFilePicker();
+    inputRef.current?.click();
   }
 
   function uploadCroppedFile(file: File, previewUrl: string) {
@@ -183,7 +195,7 @@ export default function ProfileAvatar({
             <>
               <button
                 type="button"
-                onClick={() => inputRef.current?.click()}
+                onClick={openFilePicker}
                 disabled={pending}
                 className="absolute bottom-0 end-0 z-20 flex size-8 items-center justify-center rounded-full border-2 border-card bg-primary text-primary-foreground shadow-sm transition hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 disabled:opacity-60"
                 aria-label={t("profile.changePhoto")}

@@ -7,7 +7,9 @@ import {
   getAvatarCenteredOffset,
   getAvatarCoverScale,
 } from "@/lib/images/crop-avatar";
+import { useMounted } from "@/lib/ui/use-mounted";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 
 export const AVATAR_CROP_VIEWPORT = 300;
 
@@ -30,6 +32,7 @@ export default function AvatarCropModal({
   onCropFailed,
 }: AvatarCropModalProps) {
   const t = useT();
+  const mounted = useMounted();
   const [imageSize, setImageSize] = useState<{ w: number; h: number } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -37,6 +40,21 @@ export default function AvatarCropModal({
   const dragRef = useRef<{ startX: number; startY: number; originX: number; originY: number } | null>(
     null,
   );
+
+  useEffect(() => {
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape" && !saving) {
+        onCancel();
+      }
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previous;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [onCancel, saving]);
 
   useEffect(() => {
     const img = new Image();
@@ -157,12 +175,21 @@ export default function AvatarCropModal({
     }
   }
 
-  return (
+  if (!mounted) {
+    return null;
+  }
+
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4"
+      className="avatar-crop-overlay fixed inset-0 z-[200] flex items-center justify-center bg-black/45 p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="avatar-crop-title"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !saving) {
+          onCancel();
+        }
+      }}
     >
       <div className="feed-card w-full max-w-sm p-5 shadow-lg">
         <h2 id="avatar-crop-title" className="text-center text-base font-semibold text-foreground">
@@ -256,6 +283,7 @@ export default function AvatarCropModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

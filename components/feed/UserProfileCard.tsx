@@ -52,7 +52,6 @@ export default function UserProfileCard({ user }: UserProfileCardProps) {
             initials={user.initials}
             name={user.fullName}
             editable
-            profileHref="/profile"
           />
         </div>
         <div className="text-center">
