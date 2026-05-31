@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import Link from "next/link";
+import LinkifiedText from "@/components/ui/LinkifiedText";
 import { addPostComment, deletePost, togglePostLike } from "@/app/actions/feed";
 import { useT } from "@/components/i18n/LocaleProvider";
 import PostCommentRow from "@/components/feed/PostCommentRow";
@@ -214,7 +215,7 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
       ) : null}
       {post.body.trim() ? (
         <p className="post-body mb-3 whitespace-pre-wrap text-start text-[15px] leading-relaxed text-foreground">
-          {post.body}
+          <LinkifiedText text={post.body} />
         </p>
       ) : null}
 

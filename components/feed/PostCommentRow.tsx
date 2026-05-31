@@ -6,6 +6,7 @@ import ReportContentButton from "@/components/moderation/ReportContentButton";
 import { PostLikeIcon, formatEngagementCount } from "@/components/feed/PostEngagementIcons";
 import type { FeedComment } from "@/lib/data/feed";
 import Link from "next/link";
+import LinkifiedText from "@/components/ui/LinkifiedText";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
 
@@ -156,7 +157,7 @@ export default function PostCommentRow({
               </time>
             </div>
             <p className="post-comment-body mt-1 whitespace-pre-wrap text-sm text-foreground">
-              {comment.body}
+              <LinkifiedText text={comment.body} />
             </p>
             {canDelete ? (
               <div className="post-comment-delete-row mt-1.5 text-left">
