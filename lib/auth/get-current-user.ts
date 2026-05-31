@@ -4,6 +4,7 @@ import { resolveWorkplaceSlug } from "@/lib/profile/workplace";
 import { truncateHeadline, truncateProfileText } from "@/lib/profile/field-limits";
 import { sanitizeLicenseNumber } from "@/lib/validation/license-number";
 import { createClient } from "@/lib/supabase/server";
+import { cache } from "react";
 import { getInitials } from "./initials";
 
 export type CurrentUser = {
@@ -25,7 +26,7 @@ export type CurrentUser = {
   };
 };
 
-export async function getCurrentUser(): Promise<CurrentUser | null> {
+export const getCurrentUser = cache(async function getCurrentUser(): Promise<CurrentUser | null> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -130,4 +131,4 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
         : undefined,
     },
   };
-}
+});

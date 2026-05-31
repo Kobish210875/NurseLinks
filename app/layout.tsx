@@ -1,19 +1,17 @@
 import type { Metadata, Viewport } from "next";
 import { Rubik } from "next/font/google";
+import { Suspense } from "react";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
 import { CurrentUserProvider } from "@/components/nav/CurrentUserProvider";
 import MobileBottomNav from "@/components/nav/MobileBottomNav";
 import MobileShellEffects from "@/components/nav/MobileShellEffects";
+import NavCountsLoader from "@/components/nav/NavCountsLoader";
 import { NavCountsProvider } from "@/components/nav/NavCountsProvider";
-import { Suspense } from "react";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
-import { getPendingInvitationCount } from "@/lib/data/connections";
-import { getNavJobsUnreadCount } from "@/lib/data/jobs";
-import { getUnreadMessageCount } from "@/lib/data/messages";
+import { getAppEnvironment } from "@/lib/env/app-environment";
 import { getDirection } from "@/lib/i18n/config";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
-import { createClient } from "@/lib/supabase/server";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
@@ -26,7 +24,6 @@ const rubik = Rubik({
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  /* Keep layout height stable; fixed bottom nav overlays browser chrome instead of shrinking the page */
   interactiveWidget: "overlays-content",
 };
 
@@ -60,6 +57,14 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+function NavCountsFallback({ children }: { children: React.ReactNode }) {
+  return (
+    <NavCountsProvider pendingInvitations={0} unreadMessages={0} unreadJobs={0}>
+      {children}
+    </NavCountsProvider>
+  );
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -68,51 +73,42 @@ export default async function RootLayout({
   const locale = await getLocale();
   const messages = getMessages(locale);
   const dir = getDirection(locale);
-
   const user = await getCurrentUser();
-  let pendingInvitations = 0;
-  let unreadMessages = 0;
-  let unreadJobs = 0;
-  if (user) {
-    const supabase = await createClient();
-    [pendingInvitations, unreadMessages, unreadJobs] = await Promise.all([
-      getPendingInvitationCount(supabase, user.id),
-      getUnreadMessageCount(supabase, user.id),
-      getNavJobsUnreadCount(supabase, user.id),
-    ]);
-  }
+  const appEnv = getAppEnvironment();
+
+  const currentUserValue = user
+    ? {
+        id: user.id,
+        avatarUrl: user.avatarUrl,
+        initials: user.initials,
+        fullName: user.fullName,
+        isAdmin: user.isAdmin,
+      }
+    : null;
+
+  const shell = (
+    <CurrentUserProvider user={currentUserValue}>
+      <MobileShellEffects />
+      {children}
+      {user ? (
+        <Suspense fallback={null}>
+          <MobileBottomNav />
+        </Suspense>
+      ) : null}
+    </CurrentUserProvider>
+  );
 
   return (
-    <html lang={locale} dir={dir} className={`${rubik.variable} scroll-smooth`}>
+    <html lang={locale} dir={dir} data-app-env={appEnv} className={`${rubik.variable} scroll-smooth`}>
       <body className="min-h-screen overflow-x-clip antialiased">
         <LocaleProvider locale={locale} messages={messages}>
-          <NavCountsProvider
-            pendingInvitations={pendingInvitations}
-            unreadMessages={unreadMessages}
-            unreadJobs={unreadJobs}
-          >
-            <CurrentUserProvider
-              user={
-                user
-                  ? {
-                      id: user.id,
-                      avatarUrl: user.avatarUrl,
-                      initials: user.initials,
-                      fullName: user.fullName,
-                      isAdmin: user.isAdmin,
-                    }
-                  : null
-              }
-            >
-              <MobileShellEffects />
-              {children}
-              {user ? (
-                <Suspense fallback={null}>
-                  <MobileBottomNav />
-                </Suspense>
-              ) : null}
-            </CurrentUserProvider>
-          </NavCountsProvider>
+          {user ? (
+            <Suspense fallback={<NavCountsFallback>{shell}</NavCountsFallback>}>
+              <NavCountsLoader userId={user.id}>{shell}</NavCountsLoader>
+            </Suspense>
+          ) : (
+            <NavCountsFallback>{shell}</NavCountsFallback>
+          )}
         </LocaleProvider>
       </body>
     </html>

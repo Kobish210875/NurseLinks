@@ -42,6 +42,8 @@ To refresh friend recommendations automatically (morning + evening):
 The cron endpoint is `GET /api/sync/recommendations` and accepts
 `Authorization: Bearer $CRON_SECRET`.
 
+See **docs/DEV-AND-PROD.md** for separate dev and production Supabase projects.
+
 ### Auth redirect URLs (password reset & email links)
 
 In Supabase Dashboard → **Authentication** → **URL Configuration**:
