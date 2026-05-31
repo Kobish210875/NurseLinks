@@ -22,7 +22,21 @@ export function CurrentUserProvider({ user: initialUser, children }: CurrentUser
   const [user, setUser] = useState(initialUser);
 
   useEffect(() => {
-    setUser(initialUser);
+    setUser((current) => {
+      if (!initialUser) {
+        return null;
+      }
+      if (!current || current.id !== initialUser.id) {
+        return initialUser;
+      }
+      return {
+        ...current,
+        fullName: initialUser.fullName,
+        initials: initialUser.initials,
+        isAdmin: initialUser.isAdmin,
+        avatarUrl: current.avatarUrl ?? initialUser.avatarUrl,
+      };
+    });
   }, [initialUser]);
 
   const updateAvatarUrl = useCallback((avatarUrl: string) => {

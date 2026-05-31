@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { signOut } from "@/app/actions/auth";
 import { useT } from "@/components/i18n/LocaleProvider";
+import { useCurrentUser } from "@/components/nav/CurrentUserProvider";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import type { CurrentUser } from "@/lib/auth/get-current-user";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
@@ -28,6 +29,9 @@ function getProfileCompletionPercent(user: CurrentUser) {
 
 export default function UserProfileCard({ user }: UserProfileCardProps) {
   const t = useT();
+  const currentUser = useCurrentUser();
+  const avatarUrl =
+    currentUser?.id === user.id && currentUser.avatarUrl ? currentUser.avatarUrl : user.avatarUrl;
   const professionalLine = formatProfileHeadline(
     user.headline,
     user.workplaceInstitutionSlug,
@@ -44,7 +48,7 @@ export default function UserProfileCard({ user }: UserProfileCardProps) {
       <div className="px-4 pb-4">
         <div className="-mt-9 mb-3">
           <ProfileAvatar
-            avatarUrl={user.avatarUrl}
+            avatarUrl={avatarUrl}
             initials={user.initials}
             name={user.fullName}
             editable

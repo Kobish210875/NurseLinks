@@ -6,7 +6,7 @@ import AvatarCropModal from "@/components/profile/AvatarCropModal";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { isSupportedAvatarFile } from "@/lib/images/avatar-file";
 import { useUpdateCurrentUserAvatar } from "@/components/nav/CurrentUserProvider";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export type AvatarUploadError =
   | "no-file"
@@ -36,16 +36,23 @@ export default function ProfileAvatar({
   const t = useT();
   const updateCurrentUserAvatar = useUpdateCurrentUserAvatar();
   const inputRef = useRef<HTMLInputElement>(null);
-  const [pending, startTransition] = useTransition();
+  const [uploading, setUploading] = useState(false);
   const [displayUrl, setDisplayUrl] = useState<string | null>(null);
   const [uploadError, setUploadError] = useState<AvatarUploadError | null>(null);
   const [cropSession, setCropSession] = useState<{ file: File; previewUrl: string } | null>(null);
 
   const shownUrl = displayUrl ?? avatarUrl;
+  const pending = uploading;
+  const useLinkWrapper = Boolean(profileHref && !editable);
 
   useEffect(() => {
-    setDisplayUrl(null);
-  }, [avatarUrl]);
+    if (!displayUrl || !avatarUrl || uploading) {
+      return;
+    }
+    if (displayUrl.split("?")[0] === avatarUrl.split("?")[0]) {
+      setDisplayUrl(null);
+    }
+  }, [avatarUrl, displayUrl, uploading]);
 
   useEffect(() => {
     return () => {
@@ -79,8 +86,9 @@ export default function ProfileAvatar({
     closeCropSession();
     setUploadError(null);
     setDisplayUrl(previewUrl);
+    setUploading(true);
 
-    startTransition(async () => {
+    void (async () => {
       try {
         const formData = new FormData();
         formData.set("avatar", file);
@@ -89,7 +97,7 @@ export default function ProfileAvatar({
 
         if (!result || "error" in result) {
           URL.revokeObjectURL(previewUrl);
-          setDisplayUrl(avatarUrl);
+          setDisplayUrl(null);
           setUploadError(result?.error ?? "upload-failed");
           return;
         }
@@ -99,10 +107,12 @@ export default function ProfileAvatar({
         updateCurrentUserAvatar?.(result.avatarUrl);
       } catch {
         URL.revokeObjectURL(previewUrl);
-        setDisplayUrl(avatarUrl);
+        setDisplayUrl(null);
         setUploadError("resize-failed");
+      } finally {
+        setUploading(false);
       }
-    });
+    })();
   }
 
   function onFileChange(event: React.ChangeEvent<HTMLInputElement>) {
@@ -127,9 +137,9 @@ export default function ProfileAvatar({
     <>
       <div className="grid gap-1">
         <div className="relative inline-block w-fit shrink-0">
-          {profileHref ? (
+          {useLinkWrapper ? (
             <Link
-              href={profileHref}
+              href={profileHref!}
               className={`relative flex items-center justify-center overflow-hidden rounded-full border-4 border-card bg-primary/15 font-bold text-primary transition hover:ring-2 hover:ring-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${sizeClassName} ${
                 pending ? "opacity-80" : ""
               }`}

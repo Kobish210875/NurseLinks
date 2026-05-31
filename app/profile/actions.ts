@@ -70,7 +70,6 @@ export async function uploadAvatar(formData: FormData) {
     return { error: "profile-update-failed" as const };
   }
 
-  revalidatePath("/home");
   revalidatePath("/profile");
 
   return { success: true as const, avatarUrl };
