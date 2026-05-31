@@ -215,7 +215,10 @@
     "authProfileFailed": "The account was verified, but the profile could not be completed. Please try signing in again in a moment.",
     "missing-fields": "Please enter your email and password.",
     "missing-email": "Please enter your email.",
-    "missing-password": "Please enter a new password."
+    "missing-password": "Please enter a new password.",
+    "resetSessionLoading": "Verifying your reset link…",
+    "resetSessionExpired": "This reset link has expired or was already used. Request a new link and try again.",
+    "resetLinkExpired": "This reset link has expired or was already used. Send a new link to your email."
   },
   "profile": {
     "signOut": "Sign out",

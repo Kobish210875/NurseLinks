@@ -89,6 +89,11 @@ export default function AuthCallbackClient() {
       } = await supabase.auth.getSession();
 
       if (session?.user) {
+        if (recoveryFlow) {
+          window.location.replace(next);
+          return;
+        }
+
         const result = await completeAuthCallback();
         if (!result.ok) {
           await supabase.auth.signOut({ scope: "local" });
@@ -111,17 +116,34 @@ export default function AuthCallbackClient() {
         return;
       }
 
+      if (recoveryFlow && exchangeError && isRecoverableCallbackError(exchangeError.message)) {
+        router.replace("/forgot-password?error=reset-link-expired");
+        return;
+      }
+
       if (!code && !tokenHash && window.location.hash.length <= 1) {
+        if (recoveryFlow) {
+          router.replace("/forgot-password?error=reset-link-expired");
+          return;
+        }
         router.replace(signupFlow ? "/login?verified=1" : "/login?error=auth-callback-failed");
         return;
       }
 
       if (exchangeError) {
+        if (recoveryFlow) {
+          router.replace("/forgot-password?error=reset-link-expired");
+          return;
+        }
         router.replace(signupFlow ? "/login?verified=1" : "/login?error=auth-callback-failed");
         return;
       }
 
       setStatus("error");
+      if (recoveryFlow) {
+        router.replace("/forgot-password?error=reset-link-expired");
+        return;
+      }
       router.replace(signupFlow ? "/login?verified=1" : "/login?error=auth-callback-failed");
     })();
   }, [router]);

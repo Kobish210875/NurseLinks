@@ -1,6 +1,7 @@
 import Link from "next/link";
 import LanguageToggle from "@/components/i18n/LanguageToggle";
 import ResetPasswordForm from "@/components/login/ResetPasswordForm";
+import ResetPasswordSessionGate from "@/components/login/ResetPasswordSessionGate";
 import NurseLinkWordmark from "@/components/NurseLinkWordmark";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
@@ -17,11 +18,13 @@ export default async function ResetPasswordPage({ searchParams }: ResetPasswordP
   const errorMessage = params.error
     ? params.error === "missing-password"
       ? t("login.missing-password")
-      : params.error.startsWith("password-")
-        ? t(`errors.${params.error}`)
-        : params.error === "email-rate-limit"
-          ? t("errors.email-rate-limit")
-          : decodeURIComponent(params.error)
+      : params.error === "reset-session-expired"
+        ? t("login.resetSessionExpired")
+        : params.error.startsWith("password-")
+          ? t(`errors.${params.error}`)
+          : params.error === "email-rate-limit"
+            ? t("errors.email-rate-limit")
+            : decodeURIComponent(params.error)
     : null;
 
   return (
@@ -33,7 +36,9 @@ export default async function ResetPasswordPage({ searchParams }: ResetPasswordP
         <LanguageToggle />
       </header>
       <main className="flex flex-1 items-center justify-center px-4 py-10">
-        <ResetPasswordForm errorMessage={errorMessage} />
+        <ResetPasswordSessionGate>
+          <ResetPasswordForm errorMessage={errorMessage} />
+        </ResetPasswordSessionGate>
       </main>
     </div>
   );

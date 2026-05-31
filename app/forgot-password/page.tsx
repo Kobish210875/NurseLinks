@@ -19,7 +19,9 @@ export default async function ForgotPasswordPage({ searchParams }: ForgotPasswor
       ? t("login.missing-email")
       : params.error === "email-rate-limit"
         ? t("errors.email-rate-limit")
-        : decodeURIComponent(params.error)
+        : params.error === "reset-link-expired"
+          ? t("login.resetLinkExpired")
+          : decodeURIComponent(params.error)
     : null;
 
   return (

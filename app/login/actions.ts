@@ -100,7 +100,7 @@ export async function requestPasswordReset(formData: FormData) {
   const origin = (await headers()).get("origin") ?? "http://localhost:3000";
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/auth/callback?next=/reset-password`,
+    redirectTo: `${origin}/auth/callback?flow=recovery&next=/reset-password`,
   });
 
   if (error) {
@@ -123,6 +123,14 @@ export async function updatePassword(formData: FormData) {
   }
 
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/reset-password?error=reset-session-expired");
+  }
+
   const { error } = await supabase.auth.updateUser({ password });
 
   if (error) {
