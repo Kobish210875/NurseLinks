@@ -73,8 +73,8 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
         setError(t("moderation.suspended"));
         return;
       }
-      if (res?.error === "not-connected" || res?.error === "send-blocked") {
-        setError(t("messages.notConnected"));
+      if (res?.error === "send-blocked") {
+        setError(t("messages.sendFailed"));
         return;
       }
       if (res?.error === "messaging-not-configured") {
