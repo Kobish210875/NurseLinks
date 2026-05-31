@@ -2,6 +2,9 @@
   "meta": {
     "description": "The platform connecting nurses to professional communities, knowledge, colleagues, and career opportunities."
   },
+  "dev": {
+    "banner": "DEV MODE — localhost only. Changes here do not affect production."
+  },
   "lang": {
     "switchToEn": "English",
     "switchToHe": "עברית",
