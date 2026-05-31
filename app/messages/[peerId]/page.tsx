@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import Footer from "@/components/Footer";
-import MarkThreadReadOnOpen from "@/components/messages/MarkThreadReadOnOpen";
 import MessagesAutoRefresh from "@/components/messages/MessagesAutoRefresh";
 import MessageThreadView from "@/components/messages/MessageThreadView";
 import Navbar from "@/components/Navbar";
@@ -39,7 +38,6 @@ export default async function MessageThreadPage({ params }: ThreadPageProps) {
       <main className="feed-page min-h-0 py-4 max-md:pb-[calc(var(--mobile-bottom-nav-offset)+0.5rem)] md:min-h-[calc(100vh-4rem)] md:py-6">
         <div className="mx-auto max-w-2xl px-3 sm:px-4">
           <MessagesAutoRefresh initialVersion={messagesVersion} peerId={peerId} />
-          <MarkThreadReadOnOpen peerId={peerId} />
           <MessageThreadView peer={peer} messages={messages} currentUserId={user.id} />
         </div>
       </main>

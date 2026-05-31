@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { sendDirectMessage } from "@/app/actions/messages";
+import { markThreadAsRead, sendDirectMessage } from "@/app/actions/messages";
 import { useLocale, useT } from "@/components/i18n/LocaleProvider";
 import MessageBody from "@/components/messages/MessageBody";
 import ReportContentButton from "@/components/moderation/ReportContentButton";
 import NavUnreadDot from "@/components/nav/NavUnreadDot";
+import { useNavCounts } from "@/components/nav/NavCountsProvider";
 import { formatFeedTimestamp } from "@/lib/i18n/format-feed-time";
 import type { DirectMessage, NetworkMember } from "@/lib/network/types";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
@@ -22,17 +23,58 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
   const t = useT();
   const { locale } = useLocale();
   const router = useRouter();
+  const {
+    pendingInvitations,
+    unreadMessages,
+    unreadJobs,
+    updateCounts,
+  } = useNavCounts();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [body, setBody] = useState("");
+  const [displayMessages, setDisplayMessages] = useState(messages);
+  const markedReadRef = useRef(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesListRef = useRef<HTMLUListElement>(null);
 
   const canSend = body.trim().length > 0;
-  const closeAfterSend = messages.length === 0;
+  const closeAfterSend = displayMessages.length === 0;
 
   useEffect(() => {
-    if (messages.length === 0) {
+    setDisplayMessages(messages);
+  }, [messages]);
+
+  useEffect(() => {
+    if (markedReadRef.current) {
+      return;
+    }
+    markedReadRef.current = true;
+
+    const unreadInThread = messages.filter((m) => !m.isMine && m.isUnread).length;
+    if (unreadInThread === 0) {
+      return;
+    }
+
+    setDisplayMessages((prev) =>
+      prev.map((m) => (!m.isMine && m.isUnread ? { ...m, isUnread: false } : m)),
+    );
+    updateCounts({
+      pendingInvitations,
+      unreadJobs,
+      unreadMessages: Math.max(0, unreadMessages - unreadInThread),
+    });
+    void markThreadAsRead(peer.id);
+  }, [
+    messages,
+    peer.id,
+    pendingInvitations,
+    unreadJobs,
+    unreadMessages,
+    updateCounts,
+  ]);
+
+  useEffect(() => {
+    if (displayMessages.length === 0) {
       return;
     }
 
@@ -49,7 +91,7 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
       window.setTimeout(scrollToLatest, 80);
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [messages, peer.id]);
+  }, [displayMessages, peer.id]);
   const professionalLine = formatProfileHeadline(
     peer.headline,
     peer.workplaceInstitutionSlug,
@@ -135,12 +177,12 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
             ref={messagesListRef}
             className="message-thread-messages flex-1 space-y-3 overflow-y-auto overscroll-contain p-4"
           >
-            {messages.length === 0 ? (
+            {displayMessages.length === 0 ? (
               <li className="text-center text-sm text-muted-foreground">
                 {t("messages.threadEmpty")}
               </li>
             ) : (
-              messages.map((m) => (
+              displayMessages.map((m) => (
                 <li
                   key={m.id}
                   className={`flex items-end gap-1.5 ${m.isMine ? "justify-end" : "justify-start"}`}
