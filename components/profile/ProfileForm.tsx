@@ -4,6 +4,12 @@ import { saveProfile } from "@/app/profile/actions";
 import CityCombobox from "@/components/register/CityCombobox";
 import { useT } from "@/components/i18n/LocaleProvider";
 import type { CurrentUser } from "@/lib/auth/get-current-user";
+import {
+  PROFILE_CV_TEXT_MAX_LENGTH,
+  PROFILE_HEADLINE_MAX_LENGTH,
+  PROFILE_LICENSE_NUMBER_MAX_LENGTH,
+  truncateHeadline,
+} from "@/lib/profile/field-limits";
 import { sanitizeLicenseNumber } from "@/lib/validation/license-number";
 import { useEffect, useRef, useState } from "react";
 import InstitutionSelect from "./InstitutionSelect";
@@ -89,7 +95,8 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
             id="profession"
             name="profession"
             type="text"
-            defaultValue={user.headline ?? ""}
+            maxLength={PROFILE_HEADLINE_MAX_LENGTH}
+            defaultValue={truncateHeadline(user.headline ?? "")}
             className={fieldClassName}
             placeholder={t("profile.professionPlaceholder")}
           />
@@ -110,6 +117,7 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
             type="text"
             inputMode="numeric"
             autoComplete="off"
+            maxLength={PROFILE_LICENSE_NUMBER_MAX_LENGTH}
             defaultValue={sanitizeLicenseNumber(user.licenseNumber ?? "")}
             className={fieldClassName}
             onInput={sanitizeLicenseNumberInput}
@@ -144,8 +152,9 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
               id={name}
               name={name}
               rows={4}
+              maxLength={PROFILE_CV_TEXT_MAX_LENGTH}
               defaultValue={defaultValue ?? ""}
-              className={fieldClassName}
+              className={`${fieldClassName} break-words`}
             />
           </div>
         ))}

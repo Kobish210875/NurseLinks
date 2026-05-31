@@ -1,6 +1,8 @@
 import type { CvDraft } from "@/app/profile/actions";
 import { isCurrentUserAdmin } from "@/lib/auth/admin";
 import { resolveWorkplaceSlug } from "@/lib/profile/workplace";
+import { truncateHeadline, truncateProfileText } from "@/lib/profile/field-limits";
+import { sanitizeLicenseNumber } from "@/lib/validation/license-number";
 import { createClient } from "@/lib/supabase/server";
 import { getInitials } from "./initials";
 
@@ -109,16 +111,23 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
     id: user.id,
     email: user.email ?? "",
     fullName,
-    headline: profile?.headline ?? metadata.headline ?? null,
+    headline: truncateHeadline(profile?.headline ?? metadata.headline ?? "") || null,
     workplaceInstitutionSlug: resolveWorkplaceSlug(
       profile?.workplace_institution_slug,
       cvDraft,
     ),
     city: profile?.city ?? metadata.city ?? null,
-    licenseNumber: profile?.license_number ?? null,
+    licenseNumber: sanitizeLicenseNumber(profile?.license_number ?? "") || null,
     avatarUrl: profile?.avatar_url ?? null,
     initials: getInitials(fullName),
     isAdmin: await isCurrentUserAdmin(),
-    cvDraft,
+    cvDraft: {
+      bio: cvDraft.bio ? truncateProfileText(cvDraft.bio) : undefined,
+      experience: cvDraft.experience ? truncateProfileText(cvDraft.experience) : undefined,
+      education: cvDraft.education ? truncateProfileText(cvDraft.education) : undefined,
+      certifications: cvDraft.certifications
+        ? truncateProfileText(cvDraft.certifications)
+        : undefined,
+    },
   };
 }

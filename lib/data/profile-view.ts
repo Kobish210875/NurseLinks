@@ -1,6 +1,8 @@
 import type { CvDraft } from "@/app/profile/actions";
 import { getInitials } from "@/lib/auth/initials";
 import { resolveWorkplaceSlug } from "@/lib/profile/workplace";
+import { truncateHeadline, truncateProfileText } from "@/lib/profile/field-limits";
+import { sanitizeLicenseNumber } from "@/lib/validation/license-number";
 import { resolveConnectionStatus, loadConnectionRows } from "@/lib/data/connections";
 import type { ConnectionStatus } from "@/lib/network/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -38,10 +40,11 @@ function normalizeCvDraft(raw: unknown): CvDraft {
   }
   const o = raw as Record<string, unknown>;
   return {
-    bio: typeof o.bio === "string" ? o.bio : undefined,
-    experience: typeof o.experience === "string" ? o.experience : undefined,
-    education: typeof o.education === "string" ? o.education : undefined,
-    certifications: typeof o.certifications === "string" ? o.certifications : undefined,
+    bio: typeof o.bio === "string" ? truncateProfileText(o.bio) : undefined,
+    experience: typeof o.experience === "string" ? truncateProfileText(o.experience) : undefined,
+    education: typeof o.education === "string" ? truncateProfileText(o.education) : undefined,
+    certifications:
+      typeof o.certifications === "string" ? truncateProfileText(o.certifications) : undefined,
     workplace_institution_slug:
       typeof o.workplace_institution_slug === "string"
         ? o.workplace_institution_slug
@@ -133,13 +136,13 @@ export async function getProfileView(
   return {
     id: profile.id,
     fullName,
-    headline: profile.headline,
+    headline: truncateHeadline(profile.headline ?? "") || null,
     workplaceInstitutionSlug: resolveWorkplaceSlug(
       profile.workplace_institution_slug,
       cvDraft,
     ),
     city: profile.city,
-    licenseNumber: profile.license_number,
+    licenseNumber: sanitizeLicenseNumber(profile.license_number ?? "") || null,
     avatarUrl: profile.avatar_url,
     initials: getInitials(fullName),
     cvDraft,

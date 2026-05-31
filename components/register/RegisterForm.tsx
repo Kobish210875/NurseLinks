@@ -7,6 +7,7 @@ import { signUp } from "@/app/register/actions";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { validateHebrewNamePart } from "@/lib/validation/hebrew-name";
 import { validatePassword } from "@/lib/validation/password";
+import { PROFILE_HEADLINE_MAX_LENGTH } from "@/lib/profile/field-limits";
 import PasswordInput from "./PasswordInput";
 import RegisterSubmitButton from "./RegisterSubmitButton";
 import RegistrationSuccessDialog from "./RegistrationSuccessDialog";
@@ -243,6 +244,7 @@ export default function RegisterForm({
             <span className="text-sm font-medium text-foreground">{t("register.profession")}</span>
             <input
               name="profession"
+              maxLength={PROFILE_HEADLINE_MAX_LENGTH}
               className={inputClassName}
               placeholder={t("register.professionPlaceholder")}
             />

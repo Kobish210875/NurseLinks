@@ -8,6 +8,7 @@ import { getCityDisplayName } from "@/lib/data/israeli-cities";
 import type { ProfileView } from "@/lib/data/profile-view";
 import { formatFeedTimestamp } from "@/lib/i18n/format-feed-time";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
+import { sanitizeLicenseNumber } from "@/lib/validation/license-number";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
@@ -53,11 +54,11 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
           <div className="min-w-0 flex-1 text-center sm:text-start">
             <h1 className="text-xl font-bold text-foreground">{profile.fullName}</h1>
             {professionalLine ? (
-              <p className="mt-1 text-sm text-muted-foreground">{professionalLine}</p>
+              <p className="mt-1 break-words text-sm text-muted-foreground">{professionalLine}</p>
             ) : null}
             {profile.licenseNumber ? (
-              <p className="mt-1 text-xs text-muted-foreground">
-                {t("profile.licenseNumber")}: {profile.licenseNumber}
+              <p className="mt-1 break-all text-xs text-muted-foreground">
+                {t("profile.licenseNumber")}: {sanitizeLicenseNumber(profile.licenseNumber)}
               </p>
             ) : null}
             {!isOwnProfile && profile.connectionStatus === "connected" && profile.connectedAt ? (
@@ -135,7 +136,7 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
               value?.trim() ? (
                 <section key={key} className="text-start">
                   <h3 className="text-sm font-medium text-foreground">{t(labelKey)}</h3>
-                  <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+                  <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-muted-foreground">
                     {value}
                   </p>
                 </section>

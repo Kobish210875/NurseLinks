@@ -11,6 +11,7 @@ import {
   isMissingWorkplaceColumnError,
   mergeCvDraftWithWorkplace,
 } from "@/lib/profile/workplace";
+import { truncateHeadline, truncateProfileText } from "@/lib/profile/field-limits";
 import { updateProfile, type ProfileUpdate } from "@/lib/supabase/profiles";
 import { sanitizeLicenseNumber } from "@/lib/validation/license-number";
 
@@ -93,14 +94,14 @@ export async function saveProfile(formData: FormData) {
     redirect("/");
   }
 
-  const profession = getRequiredString(formData, "profession");
+  const profession = truncateHeadline(getRequiredString(formData, "profession"));
   const institutionSlug = getRequiredString(formData, "workplaceInstitution");
   const licenseNumber = sanitizeLicenseNumber(getRequiredString(formData, "licenseNumber"));
   const cityInput = getRequiredString(formData, "city");
-  const bio = getRequiredString(formData, "bio");
-  const experience = getRequiredString(formData, "experience");
-  const education = getRequiredString(formData, "education");
-  const certifications = getRequiredString(formData, "certifications");
+  const bio = truncateProfileText(getRequiredString(formData, "bio"));
+  const experience = truncateProfileText(getRequiredString(formData, "experience"));
+  const education = truncateProfileText(getRequiredString(formData, "education"));
+  const certifications = truncateProfileText(getRequiredString(formData, "certifications"));
 
   let city: string | null = null;
   if (cityInput) {

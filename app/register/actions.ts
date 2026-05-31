@@ -15,6 +15,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { validateHebrewNamePart } from "@/lib/validation/hebrew-name";
 import { validatePassword } from "@/lib/validation/password";
+import { truncateHeadline } from "@/lib/profile/field-limits";
 
 function getRequiredString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -127,8 +128,9 @@ export async function signUp(formData: FormData) {
   const fullName = `${firstName} ${lastName}`.trim();
   const email = getRequiredString(formData, "email").toLowerCase();
   const password = getRequiredString(formData, "password");
-  const profession =
-    getRequiredString(formData, "profession") || getRequiredString(formData, "headline");
+  const profession = truncateHeadline(
+    getRequiredString(formData, "profession") || getRequiredString(formData, "headline"),
+  );
   const requireEmailVerification = isEmailVerificationRequired();
 
   if (!firstName || !lastName || !email || !password) {

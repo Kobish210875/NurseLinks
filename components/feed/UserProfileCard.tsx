@@ -61,7 +61,7 @@ export default function UserProfileCard({ user }: UserProfileCardProps) {
             ) : null}
           </div>
           {professionalLine ? (
-            <p className="mt-0.5 text-sm text-muted-foreground">{professionalLine}</p>
+            <p className="mt-0.5 break-words text-sm text-muted-foreground">{professionalLine}</p>
           ) : (
             <p className="mt-0.5 text-sm text-primary">{t("profile.completeCv")}</p>
           )}

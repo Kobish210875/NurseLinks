@@ -5,6 +5,8 @@ import {
   type MedicalInstitution,
 } from "@/lib/data/medical-institutions";
 
+import { truncateHeadline } from "@/lib/profile/field-limits";
+
 /** Hospital + city (e.g. אסותא, תל אביב). */
 export function institutionCityLabel(inst: MedicalInstitution): string {
   return inst.locationShort
@@ -73,7 +75,7 @@ export function formatProfileHeadline(
   institutionSlug: string | null | undefined,
   otherLabel: string,
 ): string | null {
-  const roleRaw = profession?.trim() ?? "";
+  const roleRaw = truncateHeadline(profession ?? "");
   const inst = institutionSlug
     ? getInstitutionBySlug(institutionSlug)
     : undefined;
