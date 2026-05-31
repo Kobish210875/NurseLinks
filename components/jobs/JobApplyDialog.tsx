@@ -81,42 +81,50 @@ export default function JobApplyDialog({
       return;
     }
     startTransition(async () => {
-      const res = await submitJobApplication(jobId, formData);
-      if (res?.error === "invalid-name") {
-        setError(t("errors.invalid-hebrew-name"));
-        return;
+      try {
+        const res = await submitJobApplication(jobId, formData);
+        if (res?.error === "invalid-name") {
+          setError(t("errors.invalid-hebrew-name"));
+          return;
+        }
+        if (res?.error === "invalid-phone") {
+          setError(t("jobs.applyInvalidPhone"));
+          return;
+        }
+        if (res?.error === "already-applied") {
+          setError(t("jobs.applyAlready"));
+          return;
+        }
+        if (res?.error === "not-configured") {
+          setError(t("jobs.applyNotConfigured"));
+          return;
+        }
+        if (res?.error === "invalid-cv-file") {
+          setError(t("jobs.applyInvalidCvFile"));
+          return;
+        }
+        if (res?.error === "cv-storage-missing") {
+          setError(t("jobs.applyCvStorageMissing"));
+          return;
+        }
+        if (res?.error === "cv-upload-failed") {
+          setError(t("jobs.applyCvUploadFailed"));
+          return;
+        }
+        if (res?.error === "submit-failed") {
+          setError(t("jobs.applyPayloadTooLarge"));
+          return;
+        }
+        if (res?.error) {
+          setError(t("jobs.applyFailed"));
+          return;
+        }
+        setSuccess(true);
+        router.refresh();
+        window.setTimeout(() => onClose(), 1200);
+      } catch {
+        setError(t("jobs.applyPayloadTooLarge"));
       }
-      if (res?.error === "invalid-phone") {
-        setError(t("jobs.applyInvalidPhone"));
-        return;
-      }
-      if (res?.error === "already-applied") {
-        setError(t("jobs.applyAlready"));
-        return;
-      }
-      if (res?.error === "not-configured") {
-        setError(t("jobs.applyNotConfigured"));
-        return;
-      }
-      if (res?.error === "invalid-cv-file") {
-        setError(t("jobs.applyInvalidCvFile"));
-        return;
-      }
-      if (res?.error === "cv-storage-missing") {
-        setError(t("jobs.applyCvStorageMissing"));
-        return;
-      }
-      if (res?.error === "cv-upload-failed") {
-        setError(t("jobs.applyCvUploadFailed"));
-        return;
-      }
-      if (res?.error) {
-        setError(t("jobs.applyFailed"));
-        return;
-      }
-      setSuccess(true);
-      router.refresh();
-      window.setTimeout(() => onClose(), 1200);
     });
   }
 

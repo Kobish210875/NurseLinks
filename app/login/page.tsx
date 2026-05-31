@@ -19,7 +19,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       ? t("login.missing-fields")
       : params.error === "account-not-found"
         ? t("login.accountNotFound")
-        : params.error === "email-not-confirmed"
+        : params.error === "wrong-password"
+          ? t("login.wrongPassword")
+          : params.error === "email-not-confirmed"
           ? t("login.emailNotConfirmed")
         : params.error === "auth-callback-failed"
           ? t("login.authCallbackFailed")

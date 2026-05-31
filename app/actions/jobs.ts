@@ -190,7 +190,34 @@ const ALLOWED_CV_TYPES = new Set([
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
 ]);
 
+function resolveCvContentType(file: File): string | null {
+  if (file.type && ALLOWED_CV_TYPES.has(file.type)) {
+    return file.type;
+  }
+
+  const extension = file.name.split(".").pop()?.toLowerCase();
+  if (extension === "pdf") {
+    return "application/pdf";
+  }
+  if (extension === "doc") {
+    return "application/msword";
+  }
+  if (extension === "docx") {
+    return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+  }
+
+  return null;
+}
+
 export async function submitJobApplication(jobId: string, formData: FormData) {
+  try {
+    return await submitJobApplicationInternal(jobId, formData);
+  } catch {
+    return { error: "submit-failed" as const };
+  }
+}
+
+async function submitJobApplicationInternal(jobId: string, formData: FormData) {
   const supabase = await createClient();
   const {
     data: { user },
@@ -226,7 +253,8 @@ export async function submitJobApplication(jobId: string, formData: FormData) {
   let uploadedCvUrl: string | null = null;
 
   if (cvFile instanceof File && cvFile.size > 0) {
-    if (cvFile.size > MAX_CV_BYTES || !ALLOWED_CV_TYPES.has(cvFile.type)) {
+    const contentType = resolveCvContentType(cvFile);
+    if (!contentType || cvFile.size > MAX_CV_BYTES) {
       return { error: "invalid-cv-file" as const };
     }
 
@@ -235,7 +263,7 @@ export async function submitJobApplication(jobId: string, formData: FormData) {
     const fileBuffer = await cvFile.arrayBuffer();
     const { error: uploadError } = await supabase.storage
       .from("job-applications")
-      .upload(cvPath, fileBuffer, { contentType: cvFile.type, upsert: false });
+      .upload(cvPath, fileBuffer, { contentType, upsert: false });
 
     if (uploadError) {
       if (uploadError.message.toLowerCase().includes("bucket")) {

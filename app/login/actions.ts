@@ -49,7 +49,22 @@ export async function signIn(formData: FormData) {
 
     const message = error.message.toLowerCase();
     if (message.includes("invalid login credentials")) {
-      redirect("/login?error=account-not-found");
+      const existingUser = await findAuthUserByEmail(email);
+      if (!existingUser) {
+        redirect("/login?error=account-not-found");
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("deleted_at")
+        .eq("id", existingUser.id)
+        .maybeSingle<{ deleted_at: string | null }>();
+
+      if (profile?.deleted_at) {
+        redirect("/login?error=account-not-found");
+      }
+
+      redirect("/login?error=wrong-password");
     }
     redirect(`/login?error=${normalizedError}`);
   }
