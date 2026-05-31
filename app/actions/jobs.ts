@@ -33,11 +33,18 @@ function getString(formData: FormData, key: string) {
   return typeof v === "string" ? v.trim() : "";
 }
 
-function revalidateJobs() {
+function revalidateJobsList() {
   revalidatePath("/jobs");
   revalidatePath("/jobs/new");
-  revalidatePath("/home");
+}
+
+function revalidateJobsNav() {
   revalidatePath("/", "layout");
+}
+
+function revalidateJobsAll() {
+  revalidateJobsList();
+  revalidateJobsNav();
 }
 
 export async function markJobsSeen() {
@@ -51,7 +58,7 @@ export async function markJobsSeen() {
   }
 
   await markJobsListSeen(supabase, user.id);
-  revalidateJobs();
+  revalidateJobsAll();
   return { success: true as const };
 }
 
@@ -70,7 +77,7 @@ export async function markJobApplicationsSeen(jobId: string) {
     return { error: "update-failed" as const };
   }
 
-  revalidateJobs();
+  revalidateJobsList();
   return { success: true as const };
 }
 
@@ -85,7 +92,7 @@ export async function markAllJobApplicationsSeen() {
   }
 
   await markAllJobApplicationsRead(supabase, user.id);
-  revalidateJobs();
+  revalidateJobsList();
   return { success: true as const };
 }
 
@@ -153,7 +160,7 @@ export async function createJob(formData: FormData) {
     return { error: "insert-failed" as const };
   }
 
-  revalidateJobs();
+  revalidateJobsAll();
   return { success: true as const };
 }
 
@@ -178,7 +185,7 @@ export async function markJobFilled(jobId: string) {
     return { error: "delete-failed" as const };
   }
 
-  revalidateJobs();
+  revalidateJobsList();
   return { success: true as const };
 }
 
@@ -369,6 +376,6 @@ async function submitJobApplicationInternal(jobId: string, formData: FormData) {
     }
   }
 
-  revalidateJobs();
+  revalidateJobsAll();
   return { success: true as const };
 }

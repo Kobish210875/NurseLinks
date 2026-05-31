@@ -15,7 +15,6 @@ type MessageInsert = Database["public"]["Tables"]["direct_messages"]["Insert"];
 function revalidateMessaging(peerId: string) {
   revalidatePath("/messages");
   revalidatePath(`/messages/${peerId}`);
-  revalidatePath("/", "layout");
 }
 
 function classifyMessageError(message: string) {

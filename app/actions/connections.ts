@@ -7,15 +7,15 @@ import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 
 type ConnectionInsert = Database["public"]["Tables"]["connections"]["Insert"];
-function revalidateNetworkPages() {
+
+/** Network list pages only. */
+function revalidateNetworkList() {
   revalidatePath("/network");
-  revalidatePath("/messages");
-  revalidatePath("/home");
 }
 
-/** Nav badge counts (pending invitations) live in the root layout. */
+/** Pending-invitation badge lives in the root layout. */
 function revalidateNetworkNav() {
-  revalidateNetworkPages();
+  revalidateNetworkList();
   revalidatePath("/", "layout");
 }
 
@@ -76,7 +76,7 @@ export async function sendConnectionRequest(addresseeId: string) {
     return { error: "request-failed" as const };
   }
 
-  revalidateNetworkPages();
+  revalidateNetworkNav();
   return { success: true as const };
 }
 
@@ -151,7 +151,7 @@ export async function cancelConnectionRequest(addresseeId: string) {
     return { error: "cancel-failed" as const };
   }
 
-  revalidateNetworkPages();
+  revalidateNetworkNav();
   return { success: true as const };
 }
 

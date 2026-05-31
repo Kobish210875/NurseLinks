@@ -182,7 +182,6 @@ export async function togglePostLike(postId: string) {
       return { error: "toggle-failed" as const };
     }
 
-    revalidatePath("/home");
     return { success: true as const, liked: false as const };
   }
 
@@ -194,7 +193,6 @@ export async function togglePostLike(postId: string) {
     return { error: "toggle-failed" as const };
   }
 
-  revalidatePath("/home");
   return { success: true as const, liked: true as const };
 }
 
@@ -350,7 +348,6 @@ export async function toggleCommentLike(commentId: string) {
       return { error: "toggle-failed" as const };
     }
 
-    revalidatePath("/home");
     return { success: true as const, liked: false as const };
   }
 
@@ -366,7 +363,6 @@ export async function toggleCommentLike(commentId: string) {
     return { error: "toggle-failed" as const };
   }
 
-  revalidatePath("/home");
   return { success: true as const, liked: true as const };
 }
 
@@ -389,7 +385,6 @@ export async function deletePostComment(commentId: string) {
     return { error: "delete-failed" as const };
   }
 
-  revalidatePath("/home");
   return { success: true as const };
 }
 
