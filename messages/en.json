@@ -283,6 +283,8 @@
     "accept": "Accept",
     "ignore": "Ignore",
     "message": "Message",
+    "removeFriend": "Remove",
+    "removeFriendConfirm": "Remove this connection? You will also disappear from their connections list.",
     "connectedOn": "Connected since",
     "recommendationsTitle": "Recommended new connections",
     "recommendationsHint": "Colleagues at your medical institution and people with mutual connections.",

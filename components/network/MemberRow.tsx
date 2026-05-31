@@ -5,6 +5,7 @@ import {
   acceptConnectionRequest,
   cancelConnectionRequest,
   rejectConnectionRequest,
+  removeConnection,
   sendConnectionRequest,
 } from "@/app/actions/connections";
 import { useT } from "@/components/i18n/LocaleProvider";
@@ -146,6 +147,29 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
               </>
             ) : null}
 
+            {variant === "connection" ? (
+              <>
+                {messageHref ? (
+                  <Link href={messageHref} className={msgBtn}>
+                    {t("network.message")}
+                  </Link>
+                ) : null}
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => {
+                    if (!window.confirm(t("network.removeFriendConfirm"))) {
+                      return;
+                    }
+                    run(() => removeConnection(member.id), "none");
+                  }}
+                  className={`${actionBtn} border-border text-muted-foreground hover:border-red-200 hover:bg-red-50 hover:text-red-700`}
+                >
+                  {t("network.removeFriend")}
+                </button>
+              </>
+            ) : null}
+
             {variant === "search" || variant === "recommendation" ? (
               <>
                 {optimisticStatus === "none" ? (
@@ -194,12 +218,6 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
                   </Link>
                 ) : null}
               </>
-            ) : null}
-
-            {variant === "connection" && messageHref ? (
-              <Link href={messageHref} className={msgBtn}>
-                {t("network.message")}
-              </Link>
             ) : null}
           </div>
         </div>

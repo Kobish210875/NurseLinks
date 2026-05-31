@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { sendConnectionRequest } from "@/app/actions/connections";
+import { removeConnection, sendConnectionRequest } from "@/app/actions/connections";
 import { useLocale, useT } from "@/components/i18n/LocaleProvider";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { getCityDisplayName } from "@/lib/data/israeli-cities";
@@ -22,6 +22,7 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
   const { locale } = useLocale();
   const router = useRouter();
   const [pendingConnect, startConnect] = useTransition();
+  const [pendingRemove, startRemove] = useTransition();
   const cityLabel = profile.city ? getCityDisplayName(profile.city, locale) : null;
   const professionalLine = formatProfileHeadline(
     profile.headline,
@@ -82,12 +83,32 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
             </Link>
           ) : null}
           {!isOwnProfile && profile.connectionStatus === "connected" ? (
-            <Link
-              href={`/messages/${profile.id}`}
-              className="rounded-full border border-primary bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
-            >
-              {t("network.message")}
-            </Link>
+            <>
+              <Link
+                href={`/messages/${profile.id}`}
+                className="rounded-full border border-primary bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
+              >
+                {t("network.message")}
+              </Link>
+              <button
+                type="button"
+                disabled={pendingRemove}
+                onClick={() => {
+                  if (!window.confirm(t("network.removeFriendConfirm"))) {
+                    return;
+                  }
+                  startRemove(async () => {
+                    const result = await removeConnection(profile.id);
+                    if (!result || typeof result !== "object" || !("error" in result)) {
+                      router.refresh();
+                    }
+                  });
+                }}
+                className="rounded-full border border-border px-4 py-1.5 text-sm font-medium text-muted-foreground transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 disabled:opacity-60"
+              >
+                {pendingRemove ? "..." : t("network.removeFriend")}
+              </button>
+            </>
           ) : null}
           {!isOwnProfile && profile.connectionStatus === "none" ? (
             <button

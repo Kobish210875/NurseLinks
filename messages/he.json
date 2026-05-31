@@ -283,6 +283,8 @@
     "accept": "אישור",
     "ignore": "דחייה",
     "message": "הודעה",
+    "removeFriend": "הסרה",
+    "removeFriendConfirm": "להסיר את החיבור? גם אצל הצד השני תוסרו מרשימת החברים.",
     "connectedOn": "מחוברים מאז",
     "recommendationsTitle": "המלצות לחיבורים חדשים",
     "recommendationsHint": "קולגות באותו מוסד רפואי ואנשים עם חברים משותפים ברשת.",

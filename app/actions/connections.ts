@@ -154,3 +154,52 @@ export async function cancelConnectionRequest(addresseeId: string) {
   revalidateNetworkPages();
   return { success: true as const };
 }
+
+export async function removeConnection(peerId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/");
+  }
+
+  if (peerId === user.id) {
+    return { error: "self" as const };
+  }
+
+  const rows = await loadConnectionRows(supabase, user.id);
+  const existing = resolveConnectionStatus(user.id, peerId, rows);
+
+  if (existing.status !== "connected") {
+    return { error: "not-connected" as const };
+  }
+
+  const row = rows.find(
+    (entry) =>
+      entry.status === "accepted" &&
+      ((entry.requester_id === user.id && entry.addressee_id === peerId) ||
+        (entry.requester_id === peerId && entry.addressee_id === user.id)),
+  );
+
+  if (!row) {
+    return { error: "not-connected" as const };
+  }
+
+  const { error } = await supabase
+    .from("connections")
+    .delete()
+    .eq("requester_id", row.requester_id)
+    .eq("addressee_id", row.addressee_id)
+    .eq("status", "accepted");
+
+  if (error) {
+    return { error: "remove-failed" as const };
+  }
+
+  revalidateNetworkNav();
+  revalidatePath(`/profile/${peerId}`);
+  revalidatePath(`/messages/${peerId}`);
+  return { success: true as const };
+}
