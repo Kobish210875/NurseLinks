@@ -41,6 +41,19 @@ To refresh friend recommendations automatically (morning + evening):
 The cron endpoint is `GET /api/sync/recommendations` and accepts
 `Authorization: Bearer $CRON_SECRET`.
 
+### Auth redirect URLs (password reset & email links)
+
+In Supabase Dashboard → **Authentication** → **URL Configuration**:
+
+- **Site URL**: `https://nurselinks.net` (or your production domain)
+- **Redirect URLs** (add each):
+  - `https://nurselinks.net/auth/confirm`
+  - `https://nurselinks.net/auth/confirm?**`
+  - `https://nurselinks.net/reset-password`
+  - `https://nurselinks.net/auth/callback` (legacy signup / old reset emails)
+
+Set `NEXT_PUBLIC_APP_URL=https://nurselinks.net` in production so reset emails use the correct domain.
+
 ### Post photos on the feed (required for image posts)
 
 If publishing a post with a photo shows **“אחסון תמונות לפוסטים לא הוגדר”**:

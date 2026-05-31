@@ -40,6 +40,12 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (user && isAuthRoute(pathname)) {
+    if (pathname === "/login") {
+      const q = request.nextUrl.searchParams;
+      if (q.has("error") || q.get("reset") === "success") {
+        return response;
+      }
+    }
     return NextResponse.redirect(new URL("/home", request.url));
   }
 

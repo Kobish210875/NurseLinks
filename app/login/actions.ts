@@ -1,7 +1,7 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { getSiteUrl } from "@/lib/site-url";
 import { confirmUserEmail } from "@/lib/auth/confirm-user-email";
 import { isEmailVerificationRequired } from "@/lib/auth/email-verification-config";
 import { findAuthUserByEmail } from "@/lib/auth/find-auth-user-by-email";
@@ -97,10 +97,10 @@ export async function requestPasswordReset(formData: FormData) {
     redirect("/forgot-password?error=missing-email");
   }
 
-  const origin = (await headers()).get("origin") ?? "http://localhost:3000";
+  const siteUrl = getSiteUrl();
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/auth/callback?flow=recovery&next=/reset-password`,
+    redirectTo: `${siteUrl}/auth/confirm?next=/reset-password`,
   });
 
   if (error) {
@@ -112,10 +112,15 @@ export async function requestPasswordReset(formData: FormData) {
 
 export async function updatePassword(formData: FormData) {
   const password = getRequiredString(formData, "password");
+  const passwordConfirm = getRequiredString(formData, "passwordConfirm");
   const passwordError = validatePassword(password);
 
-  if (!password) {
+  if (!password || !passwordConfirm) {
     redirect("/reset-password?error=missing-password");
+  }
+
+  if (password !== passwordConfirm) {
+    redirect("/reset-password?error=password-mismatch");
   }
 
   if (passwordError) {

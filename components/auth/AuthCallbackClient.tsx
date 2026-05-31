@@ -32,10 +32,15 @@ function isSignupFlow(search: URLSearchParams) {
   return flow === "signup" || next === "/login" || next.startsWith("/login?");
 }
 
-function isRecoveryFlow(search: URLSearchParams) {
+function isRecoveryFlow(search: URLSearchParams, hash?: URLSearchParams) {
   const flow = search.get("flow");
   const next = search.get("next") ?? "";
-  return flow === "recovery" || next.startsWith("/reset-password");
+  const type = search.get("type") ?? hash?.get("type") ?? "";
+  return (
+    flow === "recovery" ||
+    type === "recovery" ||
+    next.startsWith("/reset-password")
+  );
 }
 
 export default function AuthCallbackClient() {
@@ -47,12 +52,20 @@ export default function AuthCallbackClient() {
     void (async () => {
       const supabase = createClient();
       const search = new URLSearchParams(window.location.search);
+      const hashParams =
+        window.location.hash.length > 1
+          ? new URLSearchParams(window.location.hash.slice(1))
+          : undefined;
       const signupFlow = isSignupFlow(search);
-      const recoveryFlow = isRecoveryFlow(search);
+      const recoveryFlow = isRecoveryFlow(search, hashParams);
       const nextParam = search.get("next") ?? (recoveryFlow ? "/reset-password" : "/home");
       const next = nextParam.startsWith("/") ? nextParam : "/home";
 
       if (search.get("error")) {
+        if (recoveryFlow) {
+          router.replace("/forgot-password?error=reset-link-expired");
+          return;
+        }
         router.replace(signupFlow ? "/login?verified=1" : "/login?error=auth-callback-failed");
         return;
       }
@@ -89,8 +102,8 @@ export default function AuthCallbackClient() {
       } = await supabase.auth.getSession();
 
       if (session?.user) {
-        if (recoveryFlow) {
-          window.location.replace(next);
+        if (recoveryFlow || typeParam === "recovery") {
+          window.location.replace("/reset-password");
           return;
         }
 
