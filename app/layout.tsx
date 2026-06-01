@@ -9,13 +9,9 @@ import MobileShellEffects from "@/components/nav/MobileShellEffects";
 import { NavCountsProvider } from "@/components/nav/NavCountsProvider";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getAppEnvironment } from "@/lib/env/app-environment";
-import { getPendingInvitationCount } from "@/lib/data/connections";
-import { getNavJobsUnreadCount } from "@/lib/data/jobs";
-import { getUnreadMessageCount } from "@/lib/data/messages";
 import { getDirection } from "@/lib/i18n/config";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
-import { createClient } from "@/lib/supabase/server";
 import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
@@ -73,27 +69,16 @@ export default async function RootLayout({
   const showDevBanner = appEnv === "development";
 
   const user = await getCurrentUser();
-  let pendingInvitations = 0;
-  let unreadMessages = 0;
-  let unreadJobs = 0;
-  if (user) {
-    const supabase = await createClient();
-    [pendingInvitations, unreadMessages, unreadJobs] = await Promise.all([
-      getPendingInvitationCount(supabase, user.id),
-      getUnreadMessageCount(supabase, user.id),
-      getNavJobsUnreadCount(supabase, user.id),
-    ]);
-  }
 
   return (
     <html lang={locale} dir={dir} data-app-env={appEnv} className={`${rubik.variable} scroll-smooth`}>
       <body className="min-h-screen overflow-x-clip antialiased">
         <LocaleProvider locale={locale} messages={messages}>
-          {showDevBanner ? <DevEnvironmentBanner /> : null}
+          {showDevBanner ? <DevEnvironmentBanner label={messages.dev.banner} /> : null}
           <NavCountsProvider
-            pendingInvitations={pendingInvitations}
-            unreadMessages={unreadMessages}
-            unreadJobs={unreadJobs}
+            pendingInvitations={0}
+            unreadMessages={0}
+            unreadJobs={0}
             enablePolling={Boolean(user)}
           >
             <CurrentUserProvider

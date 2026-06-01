@@ -20,6 +20,23 @@ const NavCountsContext = createContext<NavCountsContextValue>({
   updateCounts: () => {},
 });
 
+async function fetchNavCounts(): Promise<NavCounts | null> {
+  try {
+    const res = await fetch("/api/sync/nav", { cache: "no-store" });
+    if (!res.ok) {
+      return null;
+    }
+    const payload = (await res.json()) as NavCounts;
+    return {
+      pendingInvitations: payload.pendingInvitations ?? 0,
+      unreadMessages: payload.unreadMessages ?? 0,
+      unreadJobs: payload.unreadJobs ?? 0,
+    };
+  } catch {
+    return null;
+  }
+}
+
 type NavCountsProviderProps = {
   pendingInvitations: number;
   unreadMessages: number;
@@ -45,6 +62,22 @@ export function NavCountsProvider({
   useEffect(() => {
     setCounts({ pendingInvitations, unreadMessages, unreadJobs });
   }, [pendingInvitations, unreadMessages, unreadJobs]);
+
+  useEffect(() => {
+    if (!enablePolling) {
+      return;
+    }
+    let cancelled = false;
+    void (async () => {
+      const fresh = await fetchNavCounts();
+      if (!cancelled && fresh) {
+        setCounts(fresh);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [enablePolling]);
 
   return (
     <NavCountsContext.Provider value={{ ...counts, updateCounts: setCounts }}>

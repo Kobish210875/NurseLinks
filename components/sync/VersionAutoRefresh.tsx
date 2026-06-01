@@ -1,8 +1,9 @@
 "use client";
 
 import { useVisiblePolling } from "@/lib/hooks/use-visible-polling";
+import { VERSION_REFRESH_MIN_MS } from "@/lib/sync/poll-intervals";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useTransition } from "react";
 
 type VersionAutoRefreshProps = {
   initialVersion: string;
@@ -16,7 +17,9 @@ export default function VersionAutoRefresh({
   intervalMs,
 }: VersionAutoRefreshProps) {
   const router = useRouter();
+  const [, startTransition] = useTransition();
   const lastVersionRef = useRef(initialVersion);
+  const lastRefreshAtRef = useRef(0);
 
   useEffect(() => {
     lastVersionRef.current = initialVersion;
@@ -33,7 +36,15 @@ export default function VersionAutoRefresh({
         return;
       }
       lastVersionRef.current = payload.version;
-      router.refresh();
+
+      const now = Date.now();
+      if (now - lastRefreshAtRef.current < VERSION_REFRESH_MIN_MS) {
+        return;
+      }
+      lastRefreshAtRef.current = now;
+      startTransition(() => {
+        router.refresh();
+      });
     } catch {
       // Best-effort polling.
     }
