@@ -26,7 +26,16 @@ export function parseJobListFilters(
   return { q, institutionSlug, city, region, page };
 }
 
-export function jobFiltersToSearchParams(filters: JobListFilters): URLSearchParams {
+export function isJobSearchSubmitted(
+  params: Record<string, string | string[] | undefined>,
+): boolean {
+  return params.run === "1";
+}
+
+export function jobFiltersToSearchParams(
+  filters: JobListFilters,
+  options?: { submitted?: boolean },
+): URLSearchParams {
   const sp = new URLSearchParams();
   if (filters.q) {
     sp.set("q", filters.q);
@@ -42,6 +51,9 @@ export function jobFiltersToSearchParams(filters: JobListFilters): URLSearchPara
   }
   if (filters.page > 1) {
     sp.set("page", String(filters.page));
+  }
+  if (options?.submitted) {
+    sp.set("run", "1");
   }
   return sp;
 }

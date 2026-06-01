@@ -46,8 +46,8 @@ export default function JobSearchPanel({
       region: next?.region ?? region,
       page: 1,
     };
-    const sp = jobFiltersToSearchParams(filters);
-    router.push(sp.size ? `/jobs?${sp.toString()}` : "/jobs");
+    const sp = jobFiltersToSearchParams(filters, { submitted: true });
+    router.push(`/jobs?${sp.toString()}`);
   }
 
   function reset() {

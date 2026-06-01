@@ -7,9 +7,15 @@ type JobsPaginationProps = {
   filters: JobListFilters;
   page: number;
   totalPages: number;
+  searchSubmitted?: boolean;
 };
 
-export default async function JobsPagination({ filters, page, totalPages }: JobsPaginationProps) {
+export default async function JobsPagination({
+  filters,
+  page,
+  totalPages,
+  searchSubmitted = false,
+}: JobsPaginationProps) {
   if (totalPages <= 1) {
     return null;
   }
@@ -19,14 +25,11 @@ export default async function JobsPagination({ filters, page, totalPages }: Jobs
 
   const prevFilters = { ...filters, page: page - 1 };
   const nextFilters = { ...filters, page: page + 1 };
-  const prevHref =
-    page > 1
-      ? `/jobs?${jobFiltersToSearchParams(prevFilters).toString()}`
-      : null;
-  const nextHref =
-    page < totalPages
-      ? `/jobs?${jobFiltersToSearchParams(nextFilters).toString()}`
-      : null;
+  const toHref = (f: JobListFilters) =>
+    `/jobs?${jobFiltersToSearchParams(f, { submitted: searchSubmitted }).toString()}`;
+
+  const prevHref = page > 1 ? toHref(prevFilters) : null;
+  const nextHref = page < totalPages ? toHref(nextFilters) : null;
 
   return (
     <nav

@@ -12,9 +12,8 @@ export default function JobsNav({ applicationsUnread = 0 }: JobsNavProps) {
   const t = useT();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const view = searchParams.get("view") ?? "search";
-  const onSearch = pathname === "/jobs" && view !== "all" && view !== "applications";
-  const onAll = pathname === "/jobs" && view === "all";
+  const view = searchParams.get("view");
+  const onSearch = pathname === "/jobs" && view !== "applications";
   const onApplications = pathname === "/jobs" && view === "applications";
   const onPublish = pathname.startsWith("/jobs/new");
 
@@ -27,14 +26,11 @@ export default function JobsNav({ applicationsUnread = 0 }: JobsNavProps) {
 
   return (
     <nav
-      className="feed-card grid min-w-0 grid-cols-2 gap-1 p-1 sm:grid-cols-4"
+      className="feed-card grid min-w-0 grid-cols-2 gap-1 p-1 sm:grid-cols-3"
       aria-label={t("jobs.navAria")}
     >
       <Link href="/jobs" className={tabClass(onSearch)}>
         {t("jobs.tabBrowse")}
-      </Link>
-      <Link href="/jobs?view=all" className={tabClass(onAll)}>
-        {t("jobs.tabAll")}
       </Link>
       <Link href="/jobs?view=applications" className={tabClass(onApplications)}>
         <span className="inline-flex items-center justify-center gap-1">

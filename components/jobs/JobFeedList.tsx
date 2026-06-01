@@ -7,11 +7,13 @@ import { createT, getMessages } from "@/lib/i18n/messages";
 import { getLocale } from "@/lib/i18n/get-locale";
 
 type JobFeedListProps = {
-  feed: JobFeedResult;
+  feed: JobFeedResult | null;
   filters: JobListFilters;
   defaultApplicantName: string;
   hasSearchFilters: boolean;
-  viewMode?: "all" | "search";
+  /** idle = prompt only; results = after user clicked Search */
+  searchPhase?: "idle" | "results";
+  searchSubmitted?: boolean;
 };
 
 /** Inner panel scroll only on WEB (lg+); mobile uses natural page scroll. */
@@ -25,128 +27,98 @@ export default async function JobFeedList({
   filters,
   defaultApplicantName,
   hasSearchFilters,
-  viewMode = "search",
+  searchPhase = "results",
+  searchSubmitted = false,
 }: JobFeedListProps) {
   const locale = await getLocale();
   const t = createT(getMessages(locale));
-  const isEmpty = feed.mine.length === 0 && feed.community.length === 0;
-  const hasUnreadApplications = feed.mine.some((job) => job.hasNewApplications);
-  const showSideBySide =
-    viewMode === "all" && feed.mine.length > 0 && feed.community.length > 0;
-  const isSearchView = viewMode === "search";
 
-  if (isEmpty) {
+  if (searchPhase === "idle") {
     return (
       <div
-        className={`feed-card p-6 text-center text-sm text-muted-foreground ${isSearchView ? `lg:flex lg:min-h-0 lg:flex-1 lg:flex-col lg:justify-center ${jobsBrowseHeightClass}` : ""}`}
+        className={`feed-card flex min-h-[12rem] flex-col items-center justify-center p-6 text-center text-sm leading-relaxed text-muted-foreground lg:min-h-0 lg:flex-1 ${jobsBrowseHeightClass}`}
       >
-        {hasSearchFilters ? t("jobs.emptyFiltered") : t("jobs.empty")}
+        <p className="max-w-sm">{t("jobs.searchPrompt")}</p>
       </div>
     );
   }
 
-  if (isSearchView) {
-    return (
-      <section
-        className={`feed-card flex min-w-0 flex-col p-3 sm:p-4 lg:min-h-0 lg:flex-1 ${jobsBrowseHeightClass}`}
-        aria-label={t("jobs.feedAria")}
-      >
-        <div className={panelScrollClass}>
-          <div className="space-y-4" dir="rtl">
-            {feed.mine.length > 0 ? (
-              <div>
-                <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-                  <h2 className="text-start text-sm font-semibold text-foreground">
-                    {t("jobs.sectionMyPublished")}
-                  </h2>
-                  <MarkAllApplicationsRead visible={hasUnreadApplications} />
-                </div>
-                <div className="space-y-1.5">
-                  {feed.mine.map((job) => (
-                    <JobCard
-                      key={job.id}
-                      job={job}
-                      defaultApplicantName={defaultApplicantName}
-                      compact
-                    />
-                  ))}
-                </div>
-              </div>
-            ) : null}
+  if (!feed) {
+    return null;
+  }
 
-            {feed.community.length > 0 ? (
-              <div>
-                <h2 className="mb-1.5 text-start text-sm font-semibold text-foreground">
-                  {hasSearchFilters ? t("jobs.sectionSearchResults") : t("jobs.sectionCommunity")}
-                </h2>
-                <div className="space-y-1.5">
-                  {feed.community.map((job) => (
-                    <JobCard
-                      key={job.id}
-                      job={job}
-                      defaultApplicantName={defaultApplicantName}
-                      compact
-                    />
-                  ))}
-                </div>
-              </div>
-            ) : null}
-          </div>
-        </div>
-        <div className="shrink-0 border-t border-border/60 pt-2">
-          <JobsPagination filters={filters} page={feed.page} totalPages={feed.totalPages} />
-        </div>
-      </section>
+  const isEmpty = feed.mine.length === 0 && feed.community.length === 0;
+  const hasUnreadApplications = feed.mine.some((job) => job.hasNewApplications);
+
+  if (isEmpty) {
+    return (
+      <div
+        className={`feed-card flex min-h-0 flex-1 flex-col justify-center p-6 text-center text-sm text-muted-foreground ${jobsBrowseHeightClass}`}
+      >
+        {searchSubmitted && hasSearchFilters
+          ? t("jobs.emptyFiltered")
+          : t("jobs.empty")}
+      </div>
     );
   }
 
-  const listLayoutClass = showSideBySide
-    ? `lg:grid lg:grid-cols-2 lg:grid-rows-1 lg:items-stretch lg:gap-4 ${jobsBrowseHeightClass}`
-    : jobsBrowseHeightClass;
-
-  const sectionClass =
-    "feed-card flex min-w-0 flex-col p-3 sm:p-4 lg:flex-1 lg:min-h-[12rem] lg:max-h-full";
-
   return (
-    <div
-      className={`flex flex-col gap-4 lg:min-h-0 lg:flex-1 ${listLayoutClass}`}
+    <section
+      className={`feed-card flex min-w-0 flex-col p-3 sm:p-4 lg:min-h-0 lg:flex-1 ${jobsBrowseHeightClass}`}
       aria-label={t("jobs.feedAria")}
     >
-      {feed.mine.length > 0 ? (
-        <section className={sectionClass}>
-          <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2">
-            <h2 className="text-start text-sm font-semibold text-foreground">
-              {t("jobs.sectionMyPublished")}
-            </h2>
-            <MarkAllApplicationsRead visible={hasUnreadApplications} />
-          </div>
-          <div className={panelScrollClass}>
-            <div className="space-y-2" dir="rtl">
-              {feed.mine.map((job) => (
-                <JobCard key={job.id} job={job} defaultApplicantName={defaultApplicantName} />
-              ))}
+      <div className={panelScrollClass}>
+        <div className="space-y-4" dir="rtl">
+          {feed.mine.length > 0 ? (
+            <div className="rounded-xl border border-primary/25 bg-primary/[0.06] p-3 sm:p-3.5">
+              <div className="mb-2 flex flex-wrap items-center justify-between gap-2 border-b border-primary/15 pb-2">
+                <h2 className="text-start text-sm font-semibold text-primary">
+                  {t("jobs.sectionMyPublished")}
+                </h2>
+                <MarkAllApplicationsRead visible={hasUnreadApplications} />
+              </div>
+              <div className="space-y-1.5">
+                {feed.mine.map((job) => (
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    defaultApplicantName={defaultApplicantName}
+                    compact
+                    variant="mine"
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        </section>
-      ) : null}
+          ) : null}
 
-      {feed.community.length > 0 ? (
-        <section className={sectionClass}>
-          <h2 className="mb-2 shrink-0 text-start text-sm font-semibold text-foreground">
-            {t("jobs.sectionCommunity")}
-          </h2>
-          <div className={panelScrollClass}>
-            <div className="space-y-2" dir="rtl">
-              {feed.community.map((job) => (
-                <JobCard key={job.id} job={job} defaultApplicantName={defaultApplicantName} />
-              ))}
+          {feed.community.length > 0 ? (
+            <div className="rounded-xl border border-sky-200/90 bg-sky-50/80 p-3 sm:p-3.5">
+              <h2 className="mb-2 border-b border-sky-200/80 pb-2 text-start text-sm font-semibold text-sky-900">
+                {t("jobs.sectionCommunity")}
+              </h2>
+              <div className="space-y-1.5">
+                {feed.community.map((job) => (
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    defaultApplicantName={defaultApplicantName}
+                    compact
+                    variant="community"
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="shrink-0 pt-2">
-            <JobsPagination filters={filters} page={feed.page} totalPages={feed.totalPages} />
-          </div>
-        </section>
-      ) : null}
-    </div>
+          ) : null}
+        </div>
+      </div>
+      <div className="shrink-0 border-t border-border/60 pt-2">
+        <JobsPagination
+          filters={filters}
+          page={feed.page}
+          totalPages={feed.totalPages}
+          searchSubmitted={searchSubmitted}
+        />
+      </div>
+    </section>
   );
 }

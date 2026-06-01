@@ -14,9 +14,15 @@ type JobCardProps = {
   job: JobListing;
   defaultApplicantName: string;
   compact?: boolean;
+  variant?: "mine" | "community";
 };
 
-export default function JobCard({ job, defaultApplicantName, compact = false }: JobCardProps) {
+export default function JobCard({
+  job,
+  defaultApplicantName,
+  compact = false,
+  variant,
+}: JobCardProps) {
   const t = useT();
   const { locale } = useLocale();
   const router = useRouter();
@@ -47,7 +53,15 @@ export default function JobCard({ job, defaultApplicantName, compact = false }: 
 
   return (
     <>
-      <article className="feed-card overflow-hidden transition hover:border-primary/25">
+      <article
+        className={`overflow-hidden rounded-lg border transition hover:border-primary/25 ${
+          variant === "mine"
+            ? "border-primary/20 bg-white shadow-sm"
+            : variant === "community"
+              ? "border-sky-200/70 bg-white shadow-sm"
+              : "feed-card"
+        }`}
+      >
         <button
           type="button"
           onClick={() => setDetailOpen(true)}

@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import JobFeedList from "@/components/jobs/JobFeedList";
 import JobSearchPanel from "@/components/jobs/JobSearchPanel";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
@@ -7,7 +8,10 @@ import { getJobApplicationsInbox, getJobFeed } from "@/lib/data/jobs";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
 import { institutionCityLabel } from "@/lib/profile/display-professional";
-import { parseJobListFilters } from "@/lib/jobs/search-params";
+import {
+  isJobSearchSubmitted,
+  parseJobListFilters,
+} from "@/lib/jobs/search-params";
 import { createClient } from "@/lib/supabase/server";
 
 type JobsPageProps = {
@@ -23,10 +27,14 @@ export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
   const locale = await getLocale();
   const t = createT(getMessages(locale));
   const sp = await searchParams;
-  const view =
-    sp.view === "all" ? "all" : sp.view === "applications" ? "applications" : "search";
+  if (sp.view === "all") {
+    redirect("/jobs?run=1");
+  }
+
+  const view = sp.view === "applications" ? "applications" : "search";
   const filters = parseJobListFilters(sp);
   const published = sp.published === "1";
+  const searchSubmitted = isJobSearchSubmitted(sp);
 
   const supabase = await createClient();
 
@@ -35,9 +43,14 @@ export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
     return <JobApplicationsInbox items={inbox} />;
   }
 
-  const effectiveFilters =
-    view === "all" ? { q: "", institutionSlug: "", city: "", region: "", page: 1 } : filters;
-  const feed = await getJobFeed(supabase, user.id, locale, effectiveFilters);
+  const hasSearchFilters = Boolean(
+    filters.institutionSlug || filters.city || filters.region,
+  );
+
+  const feed =
+    view === "search" && searchSubmitted
+      ? await getJobFeed(supabase, user.id, locale, filters)
+      : null;
 
   const institutions = MEDICAL_INSTITUTIONS.map((inst) => ({
     slug: inst.slug,
@@ -53,12 +66,8 @@ export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
     { value: "south", label: t("hospitals.regionSouth") },
   ];
 
-  const hasSearchFilters = Boolean(
-    effectiveFilters.q ||
-      effectiveFilters.institutionSlug ||
-      effectiveFilters.city ||
-      effectiveFilters.region,
-  );
+  const searchGridClass =
+    "lg:grid lg:grid-cols-2 lg:grid-rows-1 lg:items-stretch lg:gap-4 lg:overflow-hidden lg:max-h-[calc(100dvh-11rem)]";
 
   return (
     <>
@@ -69,20 +78,21 @@ export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
       ) : null}
       <div
         className={`jobs-browse-grid flex min-h-0 min-w-0 flex-1 flex-col gap-4 ${
-          view === "search"
-            ? "lg:grid lg:grid-cols-2 lg:grid-rows-1 lg:items-stretch lg:gap-4 lg:overflow-hidden lg:max-h-[calc(100dvh-11rem)]"
-            : ""
+          view === "search" ? searchGridClass : ""
         }`}
       >
-        <div className="jobs-browse-feed order-2 flex min-w-0 flex-col max-md:overflow-visible lg:order-1 lg:min-h-0 lg:overflow-hidden">
-          <JobFeedList
-            feed={feed}
-            filters={effectiveFilters}
-            defaultApplicantName={user.fullName}
-            hasSearchFilters={hasSearchFilters}
-            viewMode={view === "all" ? "all" : "search"}
-          />
-        </div>
+        {view === "search" ? (
+          <div className="jobs-browse-feed order-2 flex min-w-0 flex-col max-md:overflow-visible lg:order-1 lg:min-h-0 lg:overflow-hidden">
+            <JobFeedList
+              feed={feed}
+              filters={filters}
+              defaultApplicantName={user.fullName}
+              hasSearchFilters={hasSearchFilters}
+              searchPhase={searchSubmitted ? "results" : "idle"}
+              searchSubmitted={searchSubmitted}
+            />
+          </div>
+        ) : null}
         {view === "search" ? (
           <aside className="jobs-browse-search order-1 flex min-h-0 min-w-0 flex-col lg:order-2 lg:min-h-0">
             <JobSearchPanel
