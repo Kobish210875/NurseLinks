@@ -10,6 +10,9 @@ export default function NavCountsPoller() {
   useVisiblePolling(async () => {
     try {
       const res = await fetch("/api/sync/nav", { cache: "no-store" });
+      if (res.status === 401) {
+        return false;
+      }
       if (!res.ok) {
         return;
       }

@@ -94,6 +94,7 @@ export default async function RootLayout({
             pendingInvitations={pendingInvitations}
             unreadMessages={unreadMessages}
             unreadJobs={unreadJobs}
+            enablePolling={Boolean(user)}
           >
             <CurrentUserProvider
               user={

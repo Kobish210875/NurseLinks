@@ -24,6 +24,8 @@ type NavCountsProviderProps = {
   pendingInvitations: number;
   unreadMessages: number;
   unreadJobs: number;
+  /** When false, skip client polling (logged-out pages). */
+  enablePolling?: boolean;
   children: React.ReactNode;
 };
 
@@ -31,6 +33,7 @@ export function NavCountsProvider({
   pendingInvitations,
   unreadMessages,
   unreadJobs,
+  enablePolling = true,
   children,
 }: NavCountsProviderProps) {
   const [counts, setCounts] = useState({
@@ -45,7 +48,7 @@ export function NavCountsProvider({
 
   return (
     <NavCountsContext.Provider value={{ ...counts, updateCounts: setCounts }}>
-      <NavCountsPoller />
+      {enablePolling ? <NavCountsPoller /> : null}
       {children}
     </NavCountsContext.Provider>
   );
