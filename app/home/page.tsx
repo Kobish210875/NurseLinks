@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import Footer from "@/components/Footer";
 import HomeFeed from "@/components/HomeFeed";
+
+export const revalidate = 60;
 import Navbar from "@/components/Navbar";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getInstitutionActivityForUser } from "@/lib/data/institution-activity";
