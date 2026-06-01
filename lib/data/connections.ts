@@ -259,6 +259,24 @@ export async function searchPeople(
     .map((p) => toMember(p, resolveConnectionStatus(userId, p.id, rows)));
 }
 
+async function loadDismissedRecommendationIds(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+): Promise<Set<string>> {
+  const { data, error } = await supabase
+    .from("connection_recommendation_dismissals")
+    .select("dismissed_user_id")
+    .eq("user_id", userId);
+
+  if (error) {
+    return new Set();
+  }
+
+  return new Set(
+    (data ?? []).map((row) => (row as { dismissed_user_id: string }).dismissed_user_id),
+  );
+}
+
 export async function getConnectionRecommendations(
   supabase: SupabaseClient<Database>,
   userId: string,
@@ -266,6 +284,7 @@ export async function getConnectionRecommendations(
   connectionRows?: ConnectionRow[],
 ): Promise<NetworkRecommendation[]> {
   const rows = connectionRows ?? (await loadConnectionRows(supabase, userId));
+  const dismissedIds = await loadDismissedRecommendationIds(supabase, userId);
   let data: RecommendationRpcRow[] = [];
 
   let snapshotResult = await supabase
@@ -298,6 +317,10 @@ export async function getConnectionRecommendations(
       ...row,
       source: parseRecommendationSource(row.source),
     }));
+  }
+
+  if (dismissedIds.size > 0) {
+    data = data.filter((row) => !dismissedIds.has(row.profile_id));
   }
 
   const ids = [...new Set(data.flatMap((row) => [row.profile_id, ...(row.mutual_ids ?? [])]))];

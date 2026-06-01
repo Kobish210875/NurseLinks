@@ -4,6 +4,7 @@ import Link from "next/link";
 import {
   acceptConnectionRequest,
   cancelConnectionRequest,
+  dismissConnectionRecommendation,
   rejectConnectionRequest,
   removeConnection,
   sendConnectionRequest,
@@ -29,6 +30,7 @@ type MemberRowProps = {
     institutionSlug?: string | null;
   };
   variant?: "connection" | "search" | "invitation" | "recommendation";
+  onDismissRecommendation?: (memberId: string) => void;
 };
 
 const actionBtn =
@@ -37,7 +39,14 @@ const actionBtn =
 const msgBtn =
   "shrink-0 rounded-full border border-primary px-2 py-0.5 text-[11px] font-medium leading-tight text-primary transition hover:bg-primary/5 sm:text-xs";
 
-export default function MemberRow({ member, variant = "connection" }: MemberRowProps) {
+const dismissBtn =
+  "shrink-0 rounded-full border border-red-200 px-2 py-0.5 text-[11px] font-medium leading-tight text-red-600 transition hover:bg-red-50 disabled:opacity-60 sm:text-xs";
+
+export default function MemberRow({
+  member,
+  variant = "connection",
+  onDismissRecommendation,
+}: MemberRowProps) {
   const t = useT();
   const [pending, startTransition] = useTransition();
   const [optimisticStatus, setOptimisticStatus] = useState<ConnectionStatus>(member.connectionStatus);
@@ -164,7 +173,69 @@ export default function MemberRow({ member, variant = "connection" }: MemberRowP
               </>
             ) : null}
 
-            {variant === "search" || variant === "recommendation" ? (
+            {variant === "recommendation" ? (
+              <>
+                <button
+                  type="button"
+                  disabled={pending}
+                  onClick={() => {
+                    if (onDismissRecommendation) {
+                      onDismissRecommendation(member.id);
+                      return;
+                    }
+                    run(() => dismissConnectionRecommendation(member.id), optimisticStatus);
+                  }}
+                  className={dismissBtn}
+                >
+                  {t("network.dismissRecommendation")}
+                </button>
+                {optimisticStatus === "none" ? (
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => run(() => sendConnectionRequest(member.id), "pending_out")}
+                    className={`${actionBtn} border-primary text-primary hover:bg-primary/5`}
+                  >
+                    {t("network.connect")}
+                  </button>
+                ) : null}
+                {optimisticStatus === "pending_out" ? (
+                  <button
+                    type="button"
+                    disabled={pending}
+                    onClick={() => run(() => cancelConnectionRequest(member.id), "none")}
+                    className={`${actionBtn} border-border text-muted-foreground`}
+                  >
+                    {t("network.pending")}
+                  </button>
+                ) : null}
+                {optimisticStatus === "pending_in" ? (
+                  <>
+                    <button
+                      type="button"
+                      disabled={pending}
+                      onClick={() => run(() => acceptConnectionRequest(member.id), "connected")}
+                      className={`${actionBtn} border-primary bg-primary text-primary-foreground`}
+                    >
+                      {t("network.accept")}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={pending}
+                      onClick={() => run(() => rejectConnectionRequest(member.id), "none")}
+                      className={`${actionBtn} border-border text-muted-foreground`}
+                    >
+                      {t("network.ignore")}
+                    </button>
+                  </>
+                ) : null}
+                <Link href={messageHref} className={msgBtn}>
+                  {t("network.message")}
+                </Link>
+              </>
+            ) : null}
+
+            {variant === "search" ? (
               <>
                 {optimisticStatus === "none" ? (
                   <button

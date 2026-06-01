@@ -203,3 +203,37 @@ export async function removeConnection(peerId: string) {
   revalidatePath(`/messages/${peerId}`);
   return { success: true as const };
 }
+
+export async function dismissConnectionRecommendation(dismissedUserId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect("/");
+  }
+
+  if (dismissedUserId === user.id) {
+    return { error: "self" as const };
+  }
+
+  const { error } = await supabase.from("connection_recommendation_dismissals").upsert(
+    {
+      user_id: user.id,
+      dismissed_user_id: dismissedUserId,
+    } as never,
+    { onConflict: "user_id,dismissed_user_id" },
+  );
+
+  if (error) {
+    const msg = error.message?.toLowerCase() ?? "";
+    if (msg.includes("does not exist") || msg.includes("schema cache")) {
+      return { error: "not-configured" as const };
+    }
+    return { error: "dismiss-failed" as const };
+  }
+
+  revalidateNetworkList();
+  return { success: true as const };
+}
