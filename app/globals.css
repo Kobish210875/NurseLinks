@@ -429,3 +429,45 @@ body.composer-open .mobile-bottom-nav {
   }
 }
 
+/*
+ * Tab panels — always mounted in the React tree; toggled with opacity +
+ * transform instead of display:none so the transition plays both ways.
+ *
+ * .tab-panels  — positioning context (position:relative) for the group.
+ * .tab-panel   — inactive: absolutely positioned (out of flow, no layout
+ *                space) + invisible + non-interactive.
+ * .tab-panel-active — active: in-flow (sizes the container) + fully visible.
+ *
+ * Because `position` is not transitionable, the layout reflow is instant while
+ * opacity + transform animate over 0.18 s — the entering panel fades/slides in
+ * and the exiting panel fades/slides out simultaneously.
+ */
+.tab-panels {
+  position: relative;
+}
+
+.tab-panel {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  opacity: 0;
+  transform: translateY(-4px);
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.tab-panel-active {
+  position: relative;
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tab-panel,
+  .tab-panel-active {
+    transition: none;
+  }
+}
+

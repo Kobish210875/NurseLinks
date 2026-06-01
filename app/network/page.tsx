@@ -1,16 +1,42 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import NetworkPanel from "@/components/network/NetworkPanel";
+import NetworkSkeleton from "@/components/network/NetworkSkeleton";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getNetworkPageData } from "@/lib/data/connections";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
 import { createClient } from "@/lib/supabase/server";
 
+// Cache the segment for 60 s so repeated navigations use the router cache
+// instead of re-fetching from the server every time.
+export const revalidate = 60;
+
 type NetworkPageProps = {
   searchParams: Promise<{ q?: string }>;
 };
+
+// Isolated async component: suspends while fetching data so the page shell
+// (Navbar + heading) streams to the client immediately.
+async function NetworkContent({ userId, query }: { userId: string; query: string }) {
+  const supabase = await createClient();
+  const { connections, invitations, searchResults, recommendations } = await getNetworkPageData(
+    supabase,
+    userId,
+    query,
+  );
+  return (
+    <NetworkPanel
+      connections={connections}
+      invitations={invitations}
+      initialQuery={query}
+      recommendations={recommendations}
+      searchResults={searchResults}
+    />
+  );
+}
 
 export default async function NetworkPage({ searchParams }: NetworkPageProps) {
   const user = await getCurrentUser();
@@ -22,13 +48,6 @@ export default async function NetworkPage({ searchParams }: NetworkPageProps) {
   const t = createT(getMessages(locale));
   const params = await searchParams;
   const query = typeof params.q === "string" ? params.q.trim() : "";
-  const supabase = await createClient();
-
-  const { connections, invitations, searchResults, recommendations } = await getNetworkPageData(
-    supabase,
-    user.id,
-    query,
-  );
 
   return (
     <>
@@ -40,13 +59,9 @@ export default async function NetworkPage({ searchParams }: NetworkPageProps) {
               {t("network.title")}
             </h1>
           </header>
-          <NetworkPanel
-            connections={connections}
-            invitations={invitations}
-            initialQuery={query}
-            recommendations={recommendations}
-            searchResults={searchResults}
-          />
+          <Suspense fallback={<NetworkSkeleton />}>
+            <NetworkContent userId={user.id} query={query} />
+          </Suspense>
         </div>
       </main>
       <Footer />

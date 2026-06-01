@@ -151,9 +151,19 @@ export async function getAcceptedConnections(
   supabase: SupabaseClient<Database>,
   userId: string,
   connectionRows?: ConnectionRow[],
+  limit?: number,
 ): Promise<NetworkMember[]> {
   const rows = connectionRows ?? (await loadConnectionRows(supabase, userId));
-  const accepted = rows.filter((r) => r.status === "accepted");
+  let accepted = rows.filter((r) => r.status === "accepted");
+
+  // When a display limit is requested, keep only the most-recently-connected
+  // entries so we avoid fetching and serializing an unbounded profile set.
+  if (limit !== undefined) {
+    accepted = accepted
+      .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+      .slice(0, limit);
+  }
+
   const peerIds = accepted.map((r) =>
     r.requester_id === userId ? r.addressee_id : r.requester_id,
   );
@@ -380,7 +390,7 @@ export async function getNetworkPageData(
   const showSearch = trimmed.length >= 2;
 
   const [connections, invitations, searchResults, recommendations] = await Promise.all([
-    getAcceptedConnections(supabase, userId, connectionRows),
+    getAcceptedConnections(supabase, userId, connectionRows, 100),
     getPendingInvitations(supabase, userId, connectionRows),
     showSearch ? searchPeople(supabase, userId, trimmed, 20, connectionRows) : Promise.resolve([]),
     showSearch
