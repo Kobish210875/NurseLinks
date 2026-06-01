@@ -2,7 +2,7 @@
 
 import { dismissConnectionRecommendation } from "@/app/actions/connections";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useId, useMemo, useState, useTransition } from "react";
 import { useT } from "@/components/i18n/LocaleProvider";
 import NavUnreadDot from "@/components/nav/NavUnreadDot";
 import {
@@ -59,6 +59,8 @@ export default function NetworkPanel({
 }: NetworkPanelProps) {
   const t = useT();
   const router = useRouter();
+  const networkSearchId = useId();
+  const connectionsFilterId = useId();
   const [, startTransition] = useTransition();
   const [query, setQuery] = useState(initialQuery);
   const [friendsFilter, setFriendsFilter] = useState("");
@@ -133,11 +135,11 @@ export default function NetworkPanel({
           <h2 className="text-sm font-semibold text-foreground">{t("network.searchTitle")}</h2>
           <p className="mt-0.5 text-xs text-muted-foreground">{t("network.searchHint")}</p>
         </div>
-        <label className="sr-only" htmlFor="network-search">
+        <label className="sr-only" htmlFor={networkSearchId}>
           {t("network.searchLabel")}
         </label>
         <input
-          id="network-search"
+          id={networkSearchId}
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
@@ -226,11 +228,11 @@ export default function NetworkPanel({
         </div>
         {tab === "connections" ? (
           <div className="mb-3">
-            <label className="sr-only" htmlFor="connections-filter">
+            <label className="sr-only" htmlFor={connectionsFilterId}>
               {t("network.connectionsFilterLabel")}
             </label>
             <input
-              id="connections-filter"
+              id={connectionsFilterId}
               type="search"
               value={friendsFilter}
               onChange={(e) => setFriendsFilter(e.target.value)}

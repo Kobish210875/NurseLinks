@@ -4,7 +4,7 @@ import { useT } from "@/components/i18n/LocaleProvider";
 import type { JobListFilters } from "@/lib/jobs/search-params";
 import { jobFiltersToSearchParams } from "@/lib/jobs/search-params";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useId, useState } from "react";
 
 export type JobInstitutionFilterOption = {
   slug: string;
@@ -30,6 +30,9 @@ export default function JobSearchPanel({
 }: JobSearchPanelProps) {
   const t = useT();
   const router = useRouter();
+  const regionId = useId();
+  const cityId = useId();
+  const institutionId = useId();
   const [institution, setInstitution] = useState(initialInstitution);
   const [city, setCity] = useState(initialCity);
   const [region, setRegion] = useState(initialRegion);
@@ -73,13 +76,13 @@ export default function JobSearchPanel({
       >
         <div className="grid gap-1.5 lg:gap-1">
           <label
-            htmlFor="job-search-region"
+            htmlFor={regionId}
             className="text-sm font-medium text-foreground lg:text-xs"
           >
             {t("jobs.searchRegion")}
           </label>
           <select
-            id="job-search-region"
+            id={regionId}
             value={region}
             disabled={hasCity || hasInstitution}
             onChange={(event) => {
@@ -102,13 +105,13 @@ export default function JobSearchPanel({
 
         <div className="grid gap-1.5 lg:gap-1">
           <label
-            htmlFor="job-search-city"
+            htmlFor={cityId}
             className="text-sm font-medium text-foreground lg:text-xs"
           >
             {t("jobs.searchCity")}
           </label>
           <select
-            id="job-search-city"
+            id={cityId}
             value={city}
             disabled={hasRegion || hasInstitution}
             onChange={(event) => {
@@ -131,13 +134,13 @@ export default function JobSearchPanel({
 
         <div className="grid gap-1.5 lg:gap-1">
           <label
-            htmlFor="job-search-institution"
+            htmlFor={institutionId}
             className="text-sm font-medium text-foreground lg:text-xs"
           >
             {t("jobs.searchInstitution")}
           </label>
           <select
-            id="job-search-institution"
+            id={institutionId}
             value={institution}
             disabled={hasRegion || hasCity}
             onChange={(event) => {

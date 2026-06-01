@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { requestPasswordReset } from "@/app/login/actions";
 import { useT } from "@/components/i18n/LocaleProvider";
+import { useId } from "react";
 import RequiredLabel from "@/components/register/RequiredLabel";
 
 const inputClassName =
@@ -15,6 +16,7 @@ type ForgotPasswordFormProps = {
 
 export default function ForgotPasswordForm({ errorMessage, sent }: ForgotPasswordFormProps) {
   const t = useT();
+  const emailId = useId();
 
   return (
     <form action={requestPasswordReset} className="feed-card w-full max-w-md p-6 text-start">
@@ -34,9 +36,10 @@ export default function ForgotPasswordForm({ errorMessage, sent }: ForgotPasswor
         </p>
       ) : null}
 
-      <label className="grid gap-1.5">
+      <label className="grid gap-1.5" htmlFor={emailId}>
         <RequiredLabel>{t("register.email")}</RequiredLabel>
         <input
+          id={emailId}
           name="email"
           type="email"
           required

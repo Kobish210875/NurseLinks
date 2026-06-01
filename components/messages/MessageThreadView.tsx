@@ -11,7 +11,7 @@ import { formatFeedTimestamp } from "@/lib/i18n/format-feed-time";
 import type { DirectMessage, NetworkMember } from "@/lib/network/types";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
 
 type MessageThreadViewProps = {
   peer: NetworkMember;
@@ -23,6 +23,7 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
   const t = useT();
   const { locale } = useLocale();
   const router = useRouter();
+  const messageBodyId = useId();
   const { unreadMessages, updateCounts } = useNavCounts();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -212,11 +213,11 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
             )}
           </ul>
           <form onSubmit={submit} className="message-thread-compose shrink-0 border-t border-border p-4">
-            <label className="sr-only" htmlFor="message-body">
+            <label className="sr-only" htmlFor={messageBodyId}>
               {t("messages.inputLabel")}
             </label>
             <textarea
-              id="message-body"
+              id={messageBodyId}
               name="body"
               rows={3}
               maxLength={4000}

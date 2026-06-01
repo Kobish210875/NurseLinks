@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { signIn } from "@/app/login/actions";
+import { useId } from "react";
 import PasswordInput from "@/components/register/PasswordInput";
 import RequiredLabel from "@/components/register/RequiredLabel";
 
@@ -16,6 +17,8 @@ type LoginFormProps = {
 
 export default function LoginForm({ errorMessage, successMessage }: LoginFormProps) {
   const t = useT();
+  const emailId = useId();
+  const passwordId = useId();
 
   return (
     <form action={signIn} className="feed-card w-full max-w-md p-6 text-start">
@@ -34,9 +37,10 @@ export default function LoginForm({ errorMessage, successMessage }: LoginFormPro
       ) : null}
 
       <div className="grid gap-4">
-        <label className="grid gap-1.5">
+        <label className="grid gap-1.5" htmlFor={emailId}>
           <RequiredLabel>{t("register.email")}</RequiredLabel>
           <input
+            id={emailId}
             name="email"
             type="email"
             required
@@ -47,11 +51,12 @@ export default function LoginForm({ errorMessage, successMessage }: LoginFormPro
           />
         </label>
 
-        <label className="grid gap-1.5">
+        <label className="grid gap-1.5" htmlFor={passwordId}>
           <RequiredLabel>{t("register.password")}</RequiredLabel>
           <PasswordInput
-            id="login-password"
+            id={passwordId}
             name="password"
+            autoComplete="current-password"
             onValueChange={() => {}}
           />
         </label>

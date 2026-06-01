@@ -6,11 +6,14 @@ import InstitutionSelect from "@/components/profile/InstitutionSelect";
 import { INSTITUTION_OTHER_SLUG } from "@/lib/data/medical-institutions";
 import { JOB_BODY_MAX_LENGTH, JOB_TITLE_MAX_LENGTH } from "@/lib/jobs/field-limits";
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 
 export default function JobComposer() {
   const t = useT();
   const router = useRouter();
+  const jobTitleId = useId();
+  const jobBodyId = useId();
+  const institutionId = useId();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [institutionSlug, setInstitutionSlug] = useState("");
@@ -36,11 +39,11 @@ export default function JobComposer() {
   return (
     <form action={submit} className="feed-card space-y-4 p-4">
       <div className="grid gap-1.5">
-        <label htmlFor="job-title" className="text-sm font-medium text-foreground">
+        <label htmlFor={jobTitleId} className="text-sm font-medium text-foreground">
           {t("jobs.fieldTitle")}
         </label>
         <input
-          id="job-title"
+          id={jobTitleId}
           name="title"
           type="text"
           required
@@ -56,17 +59,18 @@ export default function JobComposer() {
         placeholderKey="profile.institutionPlaceholder"
         showCity
         disabled={pending}
+        triggerId={institutionId}
         onSlugChange={setInstitutionSlug}
       />
       {isOtherInstitution ? (
         <p className="text-xs text-muted-foreground">{t("jobs.institutionOtherHint")}</p>
       ) : null}
       <div className="grid gap-1.5">
-        <label htmlFor="job-body" className="text-sm font-medium text-foreground">
+        <label htmlFor={jobBodyId} className="text-sm font-medium text-foreground">
           {t("jobs.fieldDescription")}
         </label>
         <textarea
-          id="job-body"
+          id={jobBodyId}
           name="body"
           rows={4}
           required

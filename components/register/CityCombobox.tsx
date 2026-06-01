@@ -31,13 +31,15 @@ export default function CityCombobox({
   name = "city",
   labelKey = "register.city",
   placeholderKey = "register.cityPlaceholder",
-  inputId = "city-input",
+  inputId: inputIdProp,
   disabled = false,
   onChange,
 }: CityComboboxProps) {
   const { locale } = useLocale();
   const t = useT();
   const listId = useId();
+  const defaultInputId = useId();
+  const inputId = inputIdProp ?? defaultInputId;
   const containerRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const [selectedCityHe, setSelectedCityHe] = useState(defaultCityHe);

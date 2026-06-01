@@ -59,7 +59,16 @@ export default function FeedComposer({ user }: FeedComposerProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [open, setOpen] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const composerViewport = useComposerViewport(open);
+
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px)");
+    const update = () => setIsDesktop(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
 
   useEffect(() => {
     if (searchParams.get("compose") === "1") {
@@ -106,16 +115,16 @@ export default function FeedComposer({ user }: FeedComposerProps) {
 
   return (
     <>
-      {open ? (
+      {open && !isDesktop ? (
         <>
           <button
             type="button"
             aria-label={t("profile.cancel")}
-            className="composer-backdrop fixed inset-0 z-[100] bg-black/55 md:hidden"
+            className="composer-backdrop fixed inset-0 z-[100] bg-black/55"
             onClick={closeComposer}
           />
           <div
-            className="composer-fullscreen fixed inset-0 z-[101] flex w-full max-w-[100vw] flex-col overflow-hidden bg-white md:hidden"
+            className="composer-fullscreen fixed inset-0 z-[101] flex w-full max-w-[100vw] flex-col overflow-hidden bg-white"
             style={mobileSheetStyle}
             role="presentation"
           >
@@ -125,11 +134,11 @@ export default function FeedComposer({ user }: FeedComposerProps) {
       ) : null}
 
       <div
-        className={`feed-card p-3 md:p-4 ${open ? "relative z-50 max-md:hidden shadow-lg ring-1 ring-primary/15 md:block" : ""}`}
+        className={`feed-card p-3 md:p-4 ${open && isDesktop ? "relative z-50 shadow-lg ring-1 ring-primary/15" : ""}`}
       >
-        {open ? (
+        {open && isDesktop ? (
           <PostComposerPanel user={user} onClose={closeComposer} />
-        ) : (
+        ) : !open ? (
           <div className="flex items-center gap-3">
             <span className="relative hidden size-10 shrink-0 overflow-hidden rounded-full border-2 border-border bg-primary/10 md:flex md:size-12">
               {user.avatarUrl ? (
@@ -149,7 +158,7 @@ export default function FeedComposer({ user }: FeedComposerProps) {
               {t("feed.composerPlaceholder")}
             </button>
           </div>
-        )}
+        ) : null}
       </div>
     </>
   );

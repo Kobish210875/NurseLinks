@@ -4,7 +4,7 @@ import { listConnectionsForShare, sharePostWithConnection } from "@/app/actions/
 import { useT } from "@/components/i18n/LocaleProvider";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useId, useState, useTransition } from "react";
 import { createPortal } from "react-dom";
 
 type ShareConnection = {
@@ -29,6 +29,7 @@ export default function PostShareDialog({
 }: PostShareDialogProps) {
   const t = useT();
   const router = useRouter();
+  const titleId = useId();
   const [pending, startTransition] = useTransition();
   const [loading, setLoading] = useState(false);
   const [connections, setConnections] = useState<ShareConnection[]>([]);
@@ -129,10 +130,10 @@ export default function PostShareDialog({
         className="flex max-h-[min(85dvh,32rem)] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-xl max-sm:max-w-none max-sm:rounded-b-none max-sm:rounded-t-2xl"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="post-share-title"
+        aria-labelledby={titleId}
       >
         <header className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 py-3">
-          <h2 id="post-share-title" className="text-base font-semibold text-foreground">
+          <h2 id={titleId} className="text-base font-semibold text-foreground">
             {t("post.shareDialogTitle")}
           </h2>
           <button

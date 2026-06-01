@@ -7,7 +7,7 @@ import type { JobListing } from "@/lib/data/jobs";
 import { formatJobLocation } from "@/lib/jobs/format-location";
 import { truncateJobBody, truncateJobTitle } from "@/lib/jobs/field-limits";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 
 type JobDetailDialogProps = {
   job: JobListing;
@@ -31,6 +31,7 @@ export default function JobDetailDialog({
   const t = useT();
   const { locale } = useLocale();
   const router = useRouter();
+  const titleId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const markedReadRef = useRef(false);
   const scrollLockYRef = useRef(0);
@@ -93,7 +94,7 @@ export default function JobDetailDialog({
       className="job-detail-overlay fixed inset-0 z-[70] flex items-center justify-center bg-black/45 p-3 max-md:px-4 sm:p-4"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="job-detail-title"
+      aria-labelledby={titleId}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !markFilledPending) {
           onClose();
@@ -118,7 +119,7 @@ export default function JobDetailDialog({
           </div>
           <div className="mt-2 min-w-0">
             <h2
-              id="job-detail-title"
+              id={titleId}
               className="job-detail-title text-base font-semibold text-foreground sm:text-lg"
             >
               {displayTitle}

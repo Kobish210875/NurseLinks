@@ -8,7 +8,7 @@ import {
   getAvatarCoverScale,
 } from "@/lib/images/crop-avatar";
 import { useMounted } from "@/lib/ui/use-mounted";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
 export const AVATAR_CROP_VIEWPORT = 300;
@@ -33,6 +33,8 @@ export default function AvatarCropModal({
 }: AvatarCropModalProps) {
   const t = useT();
   const mounted = useMounted();
+  const titleId = useId();
+  const zoomId = useId();
   const [imageSize, setImageSize] = useState<{ w: number; h: number } | null>(null);
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -184,7 +186,7 @@ export default function AvatarCropModal({
       className="avatar-crop-overlay fixed inset-0 z-[200] flex items-center justify-center bg-black/45 p-4"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="avatar-crop-title"
+      aria-labelledby={titleId}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !saving) {
           onCancel();
@@ -192,7 +194,7 @@ export default function AvatarCropModal({
       }}
     >
       <div className="feed-card w-full max-w-sm p-5 shadow-lg">
-        <h2 id="avatar-crop-title" className="text-center text-base font-semibold text-foreground">
+        <h2 id={titleId} className="text-center text-base font-semibold text-foreground">
           {t("profile.cropTitle")}
         </h2>
         <p className="mt-1 text-center text-sm text-muted-foreground">{t("profile.cropHint")}</p>
@@ -249,11 +251,11 @@ export default function AvatarCropModal({
           />
         </div>
 
-        <label className="mt-4 block text-sm font-medium text-foreground" htmlFor="avatar-zoom">
+        <label className="mt-4 block text-sm font-medium text-foreground" htmlFor={zoomId}>
           {t("profile.cropZoom")}
         </label>
         <input
-          id="avatar-zoom"
+          id={zoomId}
           type="range"
           min={MIN_ZOOM}
           max={MAX_ZOOM}

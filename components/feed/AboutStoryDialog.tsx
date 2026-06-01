@@ -2,7 +2,7 @@
 
 import NurseLinkWordmark from "@/components/NurseLinkWordmark";
 import { useT } from "@/components/i18n/LocaleProvider";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 
 type AboutStoryDialogProps = {
@@ -18,6 +18,7 @@ const STORY_KEYS = [
 
 export default function AboutStoryDialog({ open, onClose }: AboutStoryDialogProps) {
   const t = useT();
+  const titleId = useId();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -51,7 +52,7 @@ export default function AboutStoryDialog({ open, onClose }: AboutStoryDialogProp
       className="about-story-overlay fixed inset-0 z-[200] flex items-start justify-center overflow-y-auto p-4 pt-12 sm:items-start sm:pt-16"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="about-story-title"
+      aria-labelledby={titleId}
     >
       <button
         type="button"
@@ -63,7 +64,7 @@ export default function AboutStoryDialog({ open, onClose }: AboutStoryDialogProp
       <article className="relative z-10 w-full max-w-xl overflow-hidden rounded-xl border border-border bg-card shadow-xl">
         <header className="flex items-start justify-between gap-4 border-b border-border px-5 py-4 text-start sm:px-6 sm:py-5">
           <h2
-            id="about-story-title"
+            id={titleId}
             className="flex flex-wrap items-baseline gap-x-2 text-lg font-semibold text-foreground sm:text-xl"
           >
             <span>{t("feed.aboutStoryTitle")}</span>

@@ -21,6 +21,8 @@ type InstitutionSelectProps = {
   /** Show hospital with city (e.g. אסותא, תל אביב). */
   showCity?: boolean;
   disabled?: boolean;
+  /** Unique id for the listbox trigger (avoids duplicate ids when multiple selects mount). */
+  triggerId?: string;
   onChange?: () => void;
   onSlugChange?: (slug: string) => void;
 };
@@ -33,11 +35,14 @@ export default function InstitutionSelect({
   showOther = true,
   showCity = false,
   disabled = false,
+  triggerId: triggerIdProp,
   onChange,
   onSlugChange,
 }: InstitutionSelectProps) {
   const t = useT();
   const listId = useId();
+  const defaultTriggerId = useId();
+  const triggerId = triggerIdProp ?? defaultTriggerId;
   const containerRef = useRef<HTMLDivElement>(null);
   const options = getProfileInstitutionOptions();
   const [slug, setSlug] = useState(defaultSlug ?? "");
@@ -76,7 +81,7 @@ export default function InstitutionSelect({
 
       <button
         type="button"
-        id="workplaceInstitution"
+        id={triggerId}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
         aria-labelledby={`${listId}-label`}

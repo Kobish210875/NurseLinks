@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useT } from "@/components/i18n/LocaleProvider";
 import {
   institutionHasActivity,
@@ -38,6 +38,8 @@ export default function InstitutionsPicker({
   className = "",
 }: InstitutionsPickerProps) {
   const t = useT();
+  const regionLabelId = useId();
+  const institutionListId = useId();
   const activeInstitution = activeSlug ? getInstitutionBySlug(activeSlug) : undefined;
   const [region, setRegion] = useState<InstitutionRegion>(
     activeInstitution?.region ?? "center",
@@ -73,7 +75,7 @@ export default function InstitutionsPicker({
               aria-selected={selected}
               aria-controls="hospitals-institution-list"
               onClick={() => setRegion(r.id)}
-              className={`rounded-lg border px-2 py-2 text-[11px] font-semibold leading-tight transition-all ${
+              className={`rounded-lg border px-2 py-2 text-[11px] font-semibold leading-tight transition-colors ${
                 selected
                   ? "border-primary bg-primary text-primary-foreground shadow-sm"
                   : "border-primary/15 bg-primary/5 text-primary hover:border-primary/30 hover:bg-primary/10"
@@ -86,7 +88,7 @@ export default function InstitutionsPicker({
       </div>
 
       <div className="mt-4 flex min-h-0 flex-1 flex-col border-t border-border pt-3">
-        <p className="mb-2 text-[11px] font-medium text-muted-foreground" id="hospitals-region-label">
+        <p className="mb-2 text-[11px] font-medium text-muted-foreground" id={regionLabelId}>
           {activeRegion ? t(activeRegion.labelKey) : ""}
           <span className="mx-1 text-border">·</span>
           <span className="font-normal">
@@ -95,9 +97,9 @@ export default function InstitutionsPicker({
         </p>
 
         <ul
-          id="hospitals-institution-list"
+          id={institutionListId}
           role="tabpanel"
-          aria-labelledby="hospitals-region-label"
+          aria-labelledby={regionLabelId}
           className="flex min-h-0 flex-1 flex-wrap content-start gap-2 overflow-y-auto pe-0.5"
         >
           {institutions.map((inst) => {

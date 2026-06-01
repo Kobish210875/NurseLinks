@@ -10,6 +10,7 @@ type PasswordInputProps = {
   id: string;
   name: string;
   invalid?: boolean;
+  autoComplete?: "current-password" | "new-password";
   onValueChange: (value: string) => void;
 };
 
@@ -55,7 +56,13 @@ function EyeOffIcon() {
   );
 }
 
-export default function PasswordInput({ id, name, invalid, onValueChange }: PasswordInputProps) {
+export default function PasswordInput({
+  id,
+  name,
+  invalid,
+  autoComplete = "new-password",
+  onValueChange,
+}: PasswordInputProps) {
   const t = useT();
   const [showPassword, setShowPassword] = useState(false);
 
@@ -69,7 +76,7 @@ export default function PasswordInput({ id, name, invalid, onValueChange }: Pass
         className={inputClassName}
         placeholder={t("register.passwordPlaceholder")}
         dir="ltr"
-        autoComplete="new-password"
+        autoComplete={autoComplete}
         spellCheck={false}
         aria-invalid={invalid}
         onChange={(event) => onValueChange(event.target.value)}

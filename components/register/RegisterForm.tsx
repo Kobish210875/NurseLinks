@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
 import { signUp } from "@/app/register/actions";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { validateHebrewNamePart } from "@/lib/validation/hebrew-name";
@@ -29,6 +29,12 @@ export default function RegisterForm({
 }: RegisterFormProps) {
   const t = useT();
   const searchParams = useSearchParams();
+  const firstNameId = useId();
+  const firstNameHintId = useId();
+  const lastNameId = useId();
+  const lastNameHintId = useId();
+  const emailId = useId();
+  const passwordId = useId();
   const registrationSubmitted =
     requireEmailVerification && searchParams.get("success") === "check-email";
   const successHint = searchParams.get("hint");
@@ -142,13 +148,13 @@ export default function RegisterForm({
         ) : null}
 
         <fieldset disabled={formLocked} className="grid gap-4 sm:grid-cols-2 disabled:opacity-70">
-          <label className="grid gap-1.5 sm:col-span-1">
+          <label className="grid gap-1.5 sm:col-span-1" htmlFor={firstNameId}>
             <RequiredLabel>{t("register.firstName")}</RequiredLabel>
-            <span id="firstName-hint" className={hebrewOnlyHintClassName}>
+            <span id={firstNameHintId} className={hebrewOnlyHintClassName}>
               {t("register.firstNameHint")}
             </span>
             <input
-              id="firstName"
+              id={firstNameId}
               name="firstName"
               required
               autoComplete="given-name"
@@ -157,20 +163,20 @@ export default function RegisterForm({
               placeholder={t("register.firstNamePlaceholder")}
               onInput={sanitizeHebrewNameInput}
               aria-invalid={Boolean(fieldErrors.firstName)}
-              aria-describedby="firstName-hint"
+              aria-describedby={firstNameHintId}
             />
             {fieldErrors.firstName ? (
               <span className="text-sm text-red-600">{fieldErrors.firstName}</span>
             ) : null}
           </label>
 
-          <label className="grid gap-1.5 sm:col-span-1">
+          <label className="grid gap-1.5 sm:col-span-1" htmlFor={lastNameId}>
             <RequiredLabel>{t("register.lastName")}</RequiredLabel>
-            <span id="lastName-hint" className={hebrewOnlyHintClassName}>
+            <span id={lastNameHintId} className={hebrewOnlyHintClassName}>
               {t("register.lastNameHint")}
             </span>
             <input
-              id="lastName"
+              id={lastNameId}
               name="lastName"
               required
               autoComplete="family-name"
@@ -179,17 +185,17 @@ export default function RegisterForm({
               placeholder={t("register.lastNamePlaceholder")}
               onInput={sanitizeHebrewNameInput}
               aria-invalid={Boolean(fieldErrors.lastName)}
-              aria-describedby="lastName-hint"
+              aria-describedby={lastNameHintId}
             />
             {fieldErrors.lastName ? (
               <span className="text-sm text-red-600">{fieldErrors.lastName}</span>
             ) : null}
           </label>
 
-          <label className="grid gap-1.5 sm:col-span-2">
+          <label className="grid gap-1.5 sm:col-span-2" htmlFor={emailId}>
             <RequiredLabel>{t("register.email")}</RequiredLabel>
             <input
-              id="email"
+              id={emailId}
               name="email"
               type="email"
               required
@@ -203,10 +209,10 @@ export default function RegisterForm({
             ) : null}
           </label>
 
-          <label className="grid gap-1.5 sm:col-span-2">
+          <label className="grid gap-1.5 sm:col-span-2" htmlFor={passwordId}>
             <RequiredLabel>{t("register.password")}</RequiredLabel>
             <PasswordInput
-              id="password"
+              id={passwordId}
               name="password"
               invalid={Boolean(fieldErrors.password)}
               onValueChange={(value) => {

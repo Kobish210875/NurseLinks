@@ -204,9 +204,10 @@ body {
   transform: translateY(-1px);
 }
 
+/* Inset shadow avoids layout recalc when the active link changes (border-bottom would). */
 .nav-link-active {
   color: var(--primary);
-  border-bottom: 2px solid var(--primary);
+  box-shadow: inset 0 -2px 0 var(--primary);
 }
 
 @media (max-width: 767px) {
@@ -258,14 +259,6 @@ body {
 
   body.has-mobile-app-shell .site-footer {
     display: none;
-  }
-
-  #nav-search[dir="rtl"] {
-    text-align: right;
-  }
-
-  #nav-search[dir="rtl"]::placeholder {
-    text-align: right;
   }
 
   /*

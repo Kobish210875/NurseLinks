@@ -66,7 +66,11 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
         ) : null}
 
         <form className="feed-card shrink-0 flex flex-col gap-3 p-4 sm:flex-row">
+          <label className="sr-only" htmlFor="admin-users-search">
+            {t("admin.searchUsers")}
+          </label>
           <input
+            id="admin-users-search"
             name="q"
             defaultValue={query}
             className="min-w-0 flex-1 rounded-lg border border-border px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm"

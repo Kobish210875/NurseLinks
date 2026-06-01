@@ -63,6 +63,8 @@ export default function PostComposerPanel({
   const t = useT();
   const router = useRouter();
   const fileInputId = useId();
+  const titleId = useId();
+  const bodyId = useId();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [body, setBody] = useState("");
@@ -281,7 +283,7 @@ export default function PostComposerPanel({
         className="flex h-full min-h-0 flex-1 flex-col bg-white"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="post-composer-title"
+        aria-labelledby={titleId}
       >
         <header className="composer-mobile-header flex shrink-0 items-center gap-2 border-b border-border px-2 py-2">
           <button
@@ -294,7 +296,7 @@ export default function PostComposerPanel({
             <CloseIcon />
           </button>
           <h2
-            id="post-composer-title"
+            id={titleId}
             className="min-w-0 flex-1 truncate text-center text-base font-semibold text-foreground"
           >
             {t("feed.composerTitle")}
@@ -308,12 +310,12 @@ export default function PostComposerPanel({
         </div>
 
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-          <label className="sr-only" htmlFor="post-composer-body">
+          <label className="sr-only" htmlFor={bodyId}>
             {t("feed.composerLabel")}
           </label>
           <textarea
             ref={textareaRef}
-            id="post-composer-body"
+            id={bodyId}
             value={body}
             onChange={(event) => setBody(event.target.value)}
             maxLength={4000}
@@ -366,12 +368,12 @@ export default function PostComposerPanel({
       className="flex max-h-[min(85vh,28rem)] flex-col"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="post-composer-title"
+      aria-labelledby={titleId}
     >
       <header className="flex items-center justify-between gap-3 border-b border-border pb-3">
         <div className="flex min-w-0 items-center gap-2">
           {userAvatar}
-          <p id="post-composer-title" className="truncate text-sm font-semibold text-foreground">
+          <p id={titleId} className="truncate text-sm font-semibold text-foreground">
             {user.fullName}
           </p>
         </div>
@@ -387,12 +389,12 @@ export default function PostComposerPanel({
       </header>
 
       <div className="flex-1 overflow-y-auto py-3">
-        <label className="sr-only" htmlFor="post-composer-body">
+        <label className="sr-only" htmlFor={bodyId}>
           {t("feed.composerLabel")}
         </label>
         <textarea
           ref={textareaRef}
-          id="post-composer-body"
+          id={bodyId}
           value={body}
           onChange={(event) => setBody(event.target.value)}
           rows={2}

@@ -22,6 +22,8 @@ export default function ReportContentButton({
   className = "",
 }: ReportContentButtonProps) {
   const t = useT();
+  const reportTitleId = `report-content-title-${contentId}`;
+  const reportNoteId = `report-note-${contentId}`;
   const [open, setOpen] = useState(false);
   const [note, setNote] = useState("");
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -108,10 +110,10 @@ export default function ReportContentButton({
                 className="flex w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-xl max-sm:rounded-b-none max-sm:rounded-t-2xl"
                 role="dialog"
                 aria-modal="true"
-                aria-labelledby="report-content-title"
+                aria-labelledby={reportTitleId}
               >
                 <header className="flex items-center justify-between gap-2 border-b border-border px-4 py-3">
-                  <h2 id="report-content-title" className="text-base font-semibold text-foreground">
+                  <h2 id={reportTitleId} className="text-base font-semibold text-foreground">
                     {t("moderation.reportTitle")}
                   </h2>
                   <button
@@ -125,11 +127,11 @@ export default function ReportContentButton({
                 </header>
                 <div className="space-y-3 px-4 py-4 text-start">
                   <p className="text-sm text-muted-foreground">{t("moderation.reportHint")}</p>
-                  <label className="block text-xs font-medium text-foreground" htmlFor="report-note">
+                  <label className="block text-xs font-medium text-foreground" htmlFor={reportNoteId}>
                     {t("moderation.reportNoteLabel")}
                   </label>
                   <textarea
-                    id="report-note"
+                    id={reportNoteId}
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
                     rows={3}

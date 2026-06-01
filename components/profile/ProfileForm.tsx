@@ -11,7 +11,7 @@ import {
   truncateHeadline,
 } from "@/lib/profile/field-limits";
 import { sanitizeLicenseNumber } from "@/lib/validation/license-number";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import InstitutionSelect from "./InstitutionSelect";
 import ProfileAvatar from "./ProfileAvatar";
 
@@ -26,6 +26,14 @@ type ProfileFormProps = {
 
 export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
   const t = useT();
+  const professionId = useId();
+  const licenseNumberId = useId();
+  const cityId = useId();
+  const institutionId = useId();
+  const bioId = useId();
+  const experienceId = useId();
+  const educationId = useId();
+  const certificationsId = useId();
   const { cvDraft } = user;
   const [formKey, setFormKey] = useState(0);
   const [isDirty, setIsDirty] = useState(false);
@@ -101,11 +109,11 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
         <h2 className="text-sm font-semibold text-foreground">{t("profile.sectionBasic")}</h2>
 
         <div className="grid gap-1.5">
-          <label htmlFor="profession" className="text-sm font-medium text-foreground">
+          <label htmlFor={professionId} className="text-sm font-medium text-foreground">
             {t("profile.profession")}
           </label>
           <input
-            id="profession"
+            id={professionId}
             name="profession"
             type="text"
             maxLength={PROFILE_HEADLINE_MAX_LENGTH}
@@ -117,15 +125,16 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
 
         <InstitutionSelect
           defaultSlug={user.workplaceInstitutionSlug}
+          triggerId={institutionId}
           onChange={markDirty}
         />
 
         <div className="grid gap-1.5">
-          <label htmlFor="licenseNumber" className="text-sm font-medium text-foreground">
+          <label htmlFor={licenseNumberId} className="text-sm font-medium text-foreground">
             {t("profile.licenseNumber")}
           </label>
           <input
-            id="licenseNumber"
+            id={licenseNumberId}
             name="licenseNumber"
             type="text"
             inputMode="numeric"
@@ -146,23 +155,24 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
           defaultCityHe={user.city ?? ""}
           required={false}
           labelKey="profile.residenceCity"
+          inputId={cityId}
           onChange={markDirty}
         />
 
         {(
           [
-            ["bio", "profile.bio", cvDraft.bio],
-            ["experience", "profile.experience", cvDraft.experience],
-            ["education", "profile.education", cvDraft.education],
-            ["certifications", "profile.certifications", cvDraft.certifications],
+            ["bio", bioId, "profile.bio", cvDraft.bio],
+            ["experience", experienceId, "profile.experience", cvDraft.experience],
+            ["education", educationId, "profile.education", cvDraft.education],
+            ["certifications", certificationsId, "profile.certifications", cvDraft.certifications],
           ] as const
-        ).map(([name, labelKey, defaultValue]) => (
+        ).map(([name, inputId, labelKey, defaultValue]) => (
           <div key={name} className="grid gap-1.5">
-            <label htmlFor={name} className="text-sm font-medium text-foreground">
+            <label htmlFor={inputId} className="text-sm font-medium text-foreground">
               {t(labelKey)}
             </label>
             <textarea
-              id={name}
+              id={inputId}
               name={name}
               rows={4}
               maxLength={PROFILE_CV_TEXT_MAX_LENGTH}

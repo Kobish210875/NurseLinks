@@ -156,6 +156,7 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
   const actionBtn =
     "post-engagement-action inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-semibold text-muted-foreground transition hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:gap-2 md:py-2.5 md:text-[15px]";
 
+  const commentBodyId = `comment-input-${post.id}`;
   const hasEngagementStats = likeCount > 0 || commentCount > 0 || shareCount > 0;
 
   return (
@@ -330,12 +331,12 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
         action={submitComment}
         className={`post-comment-form order-2 mt-2 flex flex-col gap-2 md:order-none md:mt-4 md:border-t md:border-border md:pt-4 ${commentOpen ? "flex" : "hidden md:flex"}`}
       >
-        <label className="sr-only" htmlFor={`comment-input-${post.id}`}>
+        <label className="sr-only" htmlFor={commentBodyId}>
           {t("post.commentLabel")}
         </label>
         <textarea
           ref={commentInputRef}
-          id={`comment-input-${post.id}`}
+          id={commentBodyId}
           name="body"
           rows={2}
           maxLength={2000}

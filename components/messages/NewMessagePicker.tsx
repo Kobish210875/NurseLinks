@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { createPortal } from "react-dom";
 import { useT } from "@/components/i18n/LocaleProvider";
 
@@ -20,6 +20,7 @@ type NewMessagePickerProps = {
 export default function NewMessagePicker({ connections }: NewMessagePickerProps) {
   const t = useT();
   const router = useRouter();
+  const titleId = useId();
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
@@ -75,10 +76,10 @@ export default function NewMessagePicker({ connections }: NewMessagePickerProps)
                 className="flex max-h-[min(85dvh,32rem)] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-xl max-sm:max-w-none max-sm:rounded-b-none max-sm:rounded-t-2xl"
                 role="dialog"
                 aria-modal="true"
-                aria-labelledby="new-message-title"
+                aria-labelledby={titleId}
               >
                 <header className="flex shrink-0 items-center justify-between gap-2 border-b border-border px-4 py-3">
-                  <h2 id="new-message-title" className="text-base font-semibold text-foreground">
+                  <h2 id={titleId} className="text-base font-semibold text-foreground">
                     {t("messages.newMessageTitle")}
                   </h2>
                   <button

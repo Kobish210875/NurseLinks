@@ -166,7 +166,7 @@ export default async function Hero() {
             </Link>
             <Link
               href="#about"
-              className="w-full rounded-xl border border-border bg-white px-8 py-3.5 text-base font-semibold text-foreground shadow-sm transition-all hover:border-primary/30 hover:shadow-md sm:w-auto"
+              className="w-full rounded-xl border border-border bg-white px-8 py-3.5 text-base font-semibold text-foreground shadow-sm transition hover:border-primary/30 hover:shadow-md sm:w-auto"
             >
               {t("hero.ctaLearn")}
             </Link>

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import LanguageToggle from "@/components/i18n/LanguageToggle";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { useCurrentUser } from "@/components/nav/CurrentUserProvider";
@@ -28,7 +28,16 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
   const mobileUser = useCurrentUser();
   const { pendingInvitations, unreadMessages, unreadJobs } = useNavCounts();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isMobileHeader, setIsMobileHeader] = useState(false);
   const isAdminRoute = pathname.startsWith("/admin");
+
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 767px)");
+    const update = () => setIsMobileHeader(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
 
   const navItems: NavItem[] = [
     { href: "/home", label: t("nav.home") },
@@ -138,7 +147,7 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
             />
           </Link>
 
-          {!isAdminRoute ? (
+          {!isAdminRoute && isMobileHeader ? (
             <div className="min-w-0 overflow-visible ps-1">
               <NavPeopleSearch compact />
             </div>
@@ -198,13 +207,11 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
 
             <div className="col-start-1 flex min-w-0 items-center justify-end gap-2 sm:gap-3 lg:col-start-2 lg:justify-start">
               {renderDesktopNavLinks()}
-              <div
-                className={`w-full min-w-0 max-w-[14rem] sm:max-w-xs md:max-w-sm lg:max-w-md ${
-                  isAdminRoute ? "lg:me-10" : ""
-                }`}
-              >
-                <NavPeopleSearch />
-              </div>
+              {!isAdminRoute && !isMobileHeader ? (
+                <div className="w-full min-w-0 max-w-[14rem] sm:max-w-xs md:max-w-sm lg:max-w-md">
+                  <NavPeopleSearch />
+                </div>
+              ) : null}
             </div>
 
             <Link

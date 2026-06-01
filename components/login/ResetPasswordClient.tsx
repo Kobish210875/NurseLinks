@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { useT } from "@/components/i18n/LocaleProvider";
 import PasswordInput from "@/components/register/PasswordInput";
 import RequiredLabel from "@/components/register/RequiredLabel";
@@ -28,6 +28,8 @@ type Phase = "loading" | "form" | "expired";
 export default function ResetPasswordClient({ serverError }: ResetPasswordClientProps) {
   const t = useT();
   const router = useRouter();
+  const passwordId = useId();
+  const passwordConfirmId = useId();
   const [phase, setPhase] = useState<Phase>("loading");
   const [email, setEmail] = useState<string | null>(null);
   const [clientError, setClientError] = useState<string | null>(null);
@@ -212,15 +214,23 @@ export default function ResetPasswordClient({ serverError }: ResetPasswordClient
         </p>
       ) : null}
 
-      <label className="grid gap-1.5">
+      <label className="grid gap-1.5" htmlFor={passwordId}>
         <RequiredLabel>{t("login.newPassword")}</RequiredLabel>
-        <PasswordInput id="new-password" name="password" onValueChange={() => {}} />
+        <PasswordInput
+          id={passwordId}
+          name="password"
+          onValueChange={() => {}}
+        />
       </label>
       <span className="mt-2 block text-xs text-muted-foreground">{t("register.passwordHint")}</span>
 
-      <label className="mt-4 grid gap-1.5">
+      <label className="mt-4 grid gap-1.5" htmlFor={passwordConfirmId}>
         <RequiredLabel>{t("login.confirmNewPassword")}</RequiredLabel>
-        <PasswordInput id="confirm-password" name="passwordConfirm" onValueChange={() => {}} />
+        <PasswordInput
+          id={passwordConfirmId}
+          name="passwordConfirm"
+          onValueChange={() => {}}
+        />
       </label>
 
       <button

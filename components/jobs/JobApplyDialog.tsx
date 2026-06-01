@@ -5,7 +5,7 @@ import { useT } from "@/components/i18n/LocaleProvider";
 import { truncateJobTitle } from "@/lib/jobs/field-limits";
 import { isHebrewDisplayName } from "@/lib/validation/hebrew-name";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useId, useRef, useState, useTransition } from "react";
 
 type JobApplyDialogProps = {
   jobId: string;
@@ -44,6 +44,12 @@ export default function JobApplyDialog({
 }: JobApplyDialogProps) {
   const t = useT();
   const router = useRouter();
+  const titleId = useId();
+  const fullNameId = useId();
+  const phoneId = useId();
+  const cvId = useId();
+  const cvLabelId = useId();
+  const noteId = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
   const cvInputRef = useRef<HTMLInputElement>(null);
   const [pending, startTransition] = useTransition();
@@ -134,7 +140,7 @@ export default function JobApplyDialog({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4"
       role="dialog"
       aria-modal="true"
-      aria-labelledby="job-apply-title"
+      aria-labelledby={titleId}
       onMouseDown={(event) => {
         if (event.target === event.currentTarget && !pending) {
           onClose();
@@ -142,7 +148,7 @@ export default function JobApplyDialog({
       }}
     >
       <div ref={dialogRef} className="feed-card w-full max-w-md p-5 shadow-lg">
-        <h2 id="job-apply-title" className="text-base font-semibold text-foreground">
+        <h2 id={titleId} className="text-base font-semibold text-foreground">
           {t("jobs.applyTitle")}
         </h2>
         <p className="job-detail-title mt-1 text-sm text-muted-foreground">{truncateJobTitle(jobTitle)}</p>
@@ -155,11 +161,11 @@ export default function JobApplyDialog({
         ) : (
           <form action={submit} className="mt-4 space-y-3">
             <div className="grid gap-1.5">
-              <label htmlFor="apply-full-name" className="text-sm font-medium text-foreground">
+              <label htmlFor={fullNameId} className="text-sm font-medium text-foreground">
                 {t("jobs.applyName")}
               </label>
               <input
-                id="apply-full-name"
+                id={fullNameId}
                 name="fullName"
                 type="text"
                 required
@@ -171,11 +177,11 @@ export default function JobApplyDialog({
               />
             </div>
             <div className="grid gap-1.5">
-              <label htmlFor="apply-phone" className="text-sm font-medium text-foreground">
+              <label htmlFor={phoneId} className="text-sm font-medium text-foreground">
                 {t("jobs.applyPhone")}
               </label>
               <input
-                id="apply-phone"
+                id={phoneId}
                 name="phone"
                 type="tel"
                 required
@@ -188,18 +194,18 @@ export default function JobApplyDialog({
               />
             </div>
             <div className="grid gap-1.5">
-              <span id="apply-cv-label" className="text-sm font-medium text-foreground">
+              <span id={cvLabelId} className="text-sm font-medium text-foreground">
                 {t("jobs.applyCv")}
               </span>
               <input
                 ref={cvInputRef}
-                id="apply-cv"
+                id={cvId}
                 name="cvFile"
                 type="file"
                 disabled={pending}
                 accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
                 className="sr-only"
-                aria-labelledby="apply-cv-label"
+                aria-labelledby={cvLabelId}
                 onChange={(event) => {
                   const file = event.target.files?.[0];
                   setCvFileName(file?.name ?? null);
@@ -223,11 +229,11 @@ export default function JobApplyDialog({
               ) : null}
             </div>
             <div className="grid gap-1.5">
-              <label htmlFor="apply-note" className="text-sm font-medium text-foreground">
+              <label htmlFor={noteId} className="text-sm font-medium text-foreground">
                 {t("jobs.applyNote")}
               </label>
               <textarea
-                id="apply-note"
+                id={noteId}
                 name="note"
                 rows={3}
                 maxLength={500}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useT } from "@/components/i18n/LocaleProvider";
 import PasswordInput from "@/components/register/PasswordInput";
 import RequiredLabel from "@/components/register/RequiredLabel";
@@ -12,6 +12,8 @@ import { validatePassword } from "@/lib/validation/password";
 export default function ProfileChangePasswordSection() {
   const t = useT();
   const router = useRouter();
+  const passwordId = useId();
+  const passwordConfirmId = useId();
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -90,15 +92,23 @@ export default function ProfileChangePasswordSection() {
       ) : null}
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <label className="grid gap-1.5">
+        <label className="grid gap-1.5" htmlFor={passwordId}>
           <RequiredLabel>{t("login.newPassword")}</RequiredLabel>
-          <PasswordInput id="profile-new-password" name="password" onValueChange={() => {}} />
+          <PasswordInput
+            id={passwordId}
+            name="password"
+            onValueChange={() => {}}
+          />
         </label>
         <span className="block text-xs text-muted-foreground">{t("register.passwordHint")}</span>
 
-        <label className="grid gap-1.5">
+        <label className="grid gap-1.5" htmlFor={passwordConfirmId}>
           <RequiredLabel>{t("login.confirmNewPassword")}</RequiredLabel>
-          <PasswordInput id="profile-confirm-password" name="passwordConfirm" onValueChange={() => {}} />
+          <PasswordInput
+            id={passwordConfirmId}
+            name="passwordConfirm"
+            onValueChange={() => {}}
+          />
         </label>
 
         <button

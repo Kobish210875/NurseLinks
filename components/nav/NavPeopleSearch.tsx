@@ -21,6 +21,7 @@ export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProp
   const { locale } = useLocale();
   const router = useRouter();
   const listId = useId();
+  const searchInputId = useId();
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
@@ -222,7 +223,7 @@ export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProp
       dir={isRtl ? "rtl" : "ltr"}
       className={`relative z-[1] min-w-0 w-full ${compact ? "" : "flex-1"}`}
     >
-      <label className="sr-only" htmlFor="nav-search">
+      <label className="sr-only" htmlFor={searchInputId}>
         {t("nav.search")}
       </label>
       <svg
@@ -243,7 +244,7 @@ export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProp
       </svg>
       <input
         ref={inputRef}
-        id="nav-search"
+        id={searchInputId}
         type="search"
         enterKeyHint="search"
         value={query}

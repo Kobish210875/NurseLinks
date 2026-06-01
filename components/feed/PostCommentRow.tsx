@@ -44,6 +44,7 @@ export default function PostCommentRow({
   const isAuthor = comment.authorId === currentUserId;
   const canDelete = isAuthor || isAdmin;
   const canReply = depth === 0;
+  const replyBodyId = `reply-input-${comment.id}`;
 
   useEffect(() => {
     setLiked(comment.likedByMe);
@@ -220,12 +221,12 @@ export default function PostCommentRow({
           {replyOpen && canReply ? (
             <form action={submitReply} className="mt-2 flex flex-col gap-2 px-1">
               <input type="hidden" name="parentCommentId" value={comment.id} />
-              <label className="sr-only" htmlFor={`reply-${comment.id}`}>
+              <label className="sr-only" htmlFor={replyBodyId}>
                 {t("post.replyToAuthor").replace("{name}", comment.authorName)}
               </label>
               <textarea
                 ref={replyInputRef}
-                id={`reply-${comment.id}`}
+                id={replyBodyId}
                 name="body"
                 rows={2}
                 maxLength={2000}
