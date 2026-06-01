@@ -5,7 +5,7 @@ import { useNavCounts } from "@/components/nav/NavCountsProvider";
 import { useEffect, useRef } from "react";
 
 export default function MarkApplicationsInboxSeen() {
-  const { updateCounts, unreadJobs, pendingInvitations, unreadMessages } = useNavCounts();
+  const { updateCounts, unreadJobs } = useNavCounts();
   const markedRef = useRef(false);
 
   useEffect(() => {
@@ -16,11 +16,7 @@ export default function MarkApplicationsInboxSeen() {
     void (async () => {
       await markAllJobApplicationsSeen();
       if (unreadJobs > 0) {
-        updateCounts({
-          pendingInvitations,
-          unreadMessages,
-          unreadJobs: 0,
-        });
+        updateCounts({ unreadJobs: 0 });
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- once per mount

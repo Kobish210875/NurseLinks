@@ -1,7 +1,7 @@
 "use client";
 
 import NavCountsPoller from "@/components/nav/NavCountsPoller";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useState } from "react";
 
 type NavCounts = {
   pendingInvitations: number;
@@ -10,7 +10,7 @@ type NavCounts = {
 };
 
 type NavCountsContextValue = NavCounts & {
-  updateCounts: (counts: NavCounts) => void;
+  updateCounts: (patch: Partial<NavCounts>) => void;
 };
 
 const NavCountsContext = createContext<NavCountsContextValue>({
@@ -19,23 +19,6 @@ const NavCountsContext = createContext<NavCountsContextValue>({
   unreadJobs: 0,
   updateCounts: () => {},
 });
-
-async function fetchNavCounts(): Promise<NavCounts | null> {
-  try {
-    const res = await fetch("/api/sync/nav", { cache: "no-store" });
-    if (!res.ok) {
-      return null;
-    }
-    const payload = (await res.json()) as NavCounts;
-    return {
-      pendingInvitations: payload.pendingInvitations ?? 0,
-      unreadMessages: payload.unreadMessages ?? 0,
-      unreadJobs: payload.unreadJobs ?? 0,
-    };
-  } catch {
-    return null;
-  }
-}
 
 type NavCountsProviderProps = {
   pendingInvitations: number;
@@ -63,24 +46,13 @@ export function NavCountsProvider({
     setCounts({ pendingInvitations, unreadMessages, unreadJobs });
   }, [pendingInvitations, unreadMessages, unreadJobs]);
 
-  useEffect(() => {
-    if (!enablePolling) {
-      return;
-    }
-    let cancelled = false;
-    void (async () => {
-      const fresh = await fetchNavCounts();
-      if (!cancelled && fresh) {
-        setCounts(fresh);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [enablePolling]);
+  // Merge-patch so callers only need to specify the keys they're changing.
+  const updateCounts = useCallback((patch: Partial<NavCounts>) => {
+    setCounts((prev) => ({ ...prev, ...patch }));
+  }, []);
 
   return (
-    <NavCountsContext.Provider value={{ ...counts, updateCounts: setCounts }}>
+    <NavCountsContext.Provider value={{ ...counts, updateCounts }}>
       {enablePolling ? <NavCountsPoller /> : null}
       {children}
     </NavCountsContext.Provider>

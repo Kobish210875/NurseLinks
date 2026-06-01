@@ -2,6 +2,7 @@
 -- Deleting a post still removes all likes/comments via ON DELETE CASCADE.
 
 drop policy if exists "Users can delete their own comments" on public.post_comments;
+drop policy if exists "Post authors can delete comments on their posts" on public.post_comments;
 
 create policy "Post authors can delete comments on their posts"
   on public.post_comments for delete

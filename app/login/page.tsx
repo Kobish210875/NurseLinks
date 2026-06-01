@@ -13,12 +13,17 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const locale = await getLocale();
   const t = createT(getMessages(locale));
   const params = await searchParams;
+  const isLocalDev =
+    process.env.NEXT_PUBLIC_APP_ENV === "development" ||
+    process.env.NEXT_PUBLIC_APP_ENV === "dev";
 
   const errorMessage = params.error
     ? params.error === "login-missing-fields"
       ? t("login.missing-fields")
       : params.error === "account-not-found"
-        ? t("login.accountNotFound")
+        ? isLocalDev
+          ? t("login.accountNotFoundDev")
+          : t("login.accountNotFound")
         : params.error === "wrong-password"
           ? t("login.wrongPassword")
           : params.error === "email-not-confirmed"

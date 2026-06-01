@@ -213,6 +213,7 @@
     "backToLogin": "Back to sign in",
     "backToLanding": "Back to welcome",
     "accountNotFound": "This user does not exist or was deleted. Please register to the system.",
+    "accountNotFoundDev": "This account does not exist in the DEV environment. Production users (nurselinks.net) are not copied automatically — register here or create a user in the nurselinks-dev Supabase project.",
     "wrongPassword": "Incorrect password. Try again or use Forgot password.",
     "emailNotConfirmed": "Your email is not verified yet. Open the verification link from your inbox. After verification, you will be redirected and signed in automatically.",
     "emailVerifiedSuccess": "Your email was verified successfully. Sign in with your email and password.",

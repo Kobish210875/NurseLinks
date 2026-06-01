@@ -9,29 +9,27 @@ export async function getMessagesVersion(
   userId: string,
   peerId?: string,
 ): Promise<string> {
-  let query = supabase
+  const baseQuery = supabase
     .from("direct_messages")
     .select("id, created_at")
     .order("created_at", { ascending: false })
     .limit(1);
 
   if (peerId) {
-    query = query.or(
+    const { data } = await baseQuery.or(
       `and(sender_id.eq.${userId},recipient_id.eq.${peerId}),and(sender_id.eq.${peerId},recipient_id.eq.${userId})`,
     );
-  } else {
-    query = query.or(`sender_id.eq.${userId},recipient_id.eq.${userId}`);
+    const latest = (data?.[0] as LatestMessageRow | undefined) ?? null;
+    return `${latest?.created_at ?? "empty"}:${latest?.id ?? ""}`;
   }
 
-  const { data } = await query;
+  // No peerId: run message query and unread count in parallel.
+  const [{ data }, unread] = await Promise.all([
+    baseQuery.or(`sender_id.eq.${userId},recipient_id.eq.${userId}`),
+    getUnreadMessageCount(supabase, userId),
+  ]);
   const latest = (data?.[0] as LatestMessageRow | undefined) ?? null;
-
-  if (!peerId) {
-    const unread = await getUnreadMessageCount(supabase, userId);
-    return `${latest?.created_at ?? "empty"}:${latest?.id ?? ""}:u${unread}`;
-  }
-
-  return `${latest?.created_at ?? "empty"}:${latest?.id ?? ""}`;
+  return `${latest?.created_at ?? "empty"}:${latest?.id ?? ""}:u${unread}`;
 }
 
 export async function getJobsVersion(

@@ -58,7 +58,7 @@ export async function markJobsSeen() {
   }
 
   await markJobsListSeen(supabase, user.id);
-  revalidateJobsAll();
+  revalidateJobsList();
   return { success: true as const };
 }
 

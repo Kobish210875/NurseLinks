@@ -8,15 +8,13 @@ import type { Database } from "@/lib/supabase/database.types";
 
 type ConnectionInsert = Database["public"]["Tables"]["connections"]["Insert"];
 
-/** Network list pages only. */
 function revalidateNetworkList() {
   revalidatePath("/network");
 }
 
-/** Pending-invitation badge lives in the root layout. */
+/** Revalidates network list. Nav badge counts are refreshed by client polling. */
 function revalidateNetworkNav() {
   revalidateNetworkList();
-  revalidatePath("/", "layout");
 }
 
 export async function sendConnectionRequest(addresseeId: string) {
@@ -234,6 +232,5 @@ export async function dismissConnectionRecommendation(dismissedUserId: string) {
     return { error: "dismiss-failed" as const };
   }
 
-  revalidateNetworkList();
   return { success: true as const };
 }

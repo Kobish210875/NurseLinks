@@ -23,12 +23,7 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
   const t = useT();
   const { locale } = useLocale();
   const router = useRouter();
-  const {
-    pendingInvitations,
-    unreadMessages,
-    unreadJobs,
-    updateCounts,
-  } = useNavCounts();
+  const { unreadMessages, updateCounts } = useNavCounts();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [body, setBody] = useState("");
@@ -58,11 +53,7 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
     setDisplayMessages((prev) =>
       prev.map((m) => (!m.isMine && m.isUnread ? { ...m, isUnread: false } : m)),
     );
-    updateCounts({
-      pendingInvitations,
-      unreadJobs,
-      unreadMessages: Math.max(0, unreadMessages - unreadInThread),
-    });
+    updateCounts({ unreadMessages: Math.max(0, unreadMessages - unreadInThread) });
     void markThreadAsRead(peer.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run once per thread open
   }, [messages, peer.id]);

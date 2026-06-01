@@ -1,11 +1,11 @@
 "use client";
 
 import { markJobsSeen } from "@/app/actions/jobs";
-import { useRouter } from "next/navigation";
+import { useNavCounts } from "@/components/nav/NavCountsProvider";
 import { useEffect, useRef } from "react";
 
 export default function MarkJobsSeenOnOpen() {
-  const router = useRouter();
+  const { updateCounts } = useNavCounts();
   const doneRef = useRef(false);
 
   useEffect(() => {
@@ -15,9 +15,10 @@ export default function MarkJobsSeenOnOpen() {
     doneRef.current = true;
     void (async () => {
       await markJobsSeen();
-      router.refresh();
+      updateCounts({ unreadJobs: 0 });
     })();
-  }, [router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per mount
+  }, []);
 
   return null;
 }

@@ -284,15 +284,20 @@ export async function getConnectionRecommendations(
   connectionRows?: ConnectionRow[],
 ): Promise<NetworkRecommendation[]> {
   const rows = connectionRows ?? (await loadConnectionRows(supabase, userId));
-  const dismissedIds = await loadDismissedRecommendationIds(supabase, userId);
-  let data: RecommendationRpcRow[] = [];
 
-  let snapshotResult = await supabase
-    .from("connection_recommendation_snapshots")
-    .select("user_id, candidate_id, mutual_count, mutual_ids, source, institution_slug, rank")
-    .eq("user_id", userId)
-    .order("rank", { ascending: true })
-    .limit(limit);
+  // Run dismissals fetch and snapshot query in parallel — they are independent.
+  const [dismissedIds, initialSnapshotResult] = await Promise.all([
+    loadDismissedRecommendationIds(supabase, userId),
+    supabase
+      .from("connection_recommendation_snapshots")
+      .select("user_id, candidate_id, mutual_count, mutual_ids, source, institution_slug, rank")
+      .eq("user_id", userId)
+      .order("rank", { ascending: true })
+      .limit(limit),
+  ]);
+
+  let data: RecommendationRpcRow[] = [];
+  let snapshotResult = initialSnapshotResult;
 
   if (snapshotResult.error?.message?.toLowerCase().includes("source")) {
     snapshotResult = await supabase

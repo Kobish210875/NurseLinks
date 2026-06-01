@@ -1,5 +1,4 @@
 import type { CvDraft } from "@/app/profile/actions";
-import { isCurrentUserAdmin } from "@/lib/auth/admin";
 import { resolveWorkplaceSlug } from "@/lib/profile/workplace";
 import { truncateHeadline, truncateProfileText } from "@/lib/profile/field-limits";
 import { sanitizeLicenseNumber } from "@/lib/validation/license-number";
@@ -98,16 +97,45 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
     cvDraft.education?.trim() ||
     cvDraft.certifications?.trim();
 
+  // Start admin check now — it's independent of the RPC below.
+  // Reuse the existing client to avoid a second auth.getUser() round-trip.
+  const adminCheckPromise = supabase
+    .from("admin_users")
+    .select("user_id")
+    .eq("user_id", user.id)
+    .maybeSingle<{ user_id: string }>();
+
   if (!hasCv) {
-    const { data: rpcCv } = await supabase.rpc(
-      "get_profile_cv_draft",
-      { target_id: user.id } as never,
-    );
-    if (rpcCv && typeof rpcCv === "object") {
-      cvDraft = rpcCv as CurrentUser["cvDraft"];
+    const [rpcResult, adminResult] = await Promise.all([
+      supabase.rpc("get_profile_cv_draft", { target_id: user.id } as never),
+      adminCheckPromise,
+    ]);
+    if (rpcResult.data && typeof rpcResult.data === "object") {
+      cvDraft = rpcResult.data as CurrentUser["cvDraft"];
     }
+    const isAdmin = Boolean(adminResult.data?.user_id);
+    return buildUser(user, profile, fullName, cvDraft, metadata, isAdmin);
   }
 
+  const adminResult = await adminCheckPromise;
+  const isAdmin = Boolean(adminResult.data?.user_id);
+  return buildUser(user, profile, fullName, cvDraft, metadata, isAdmin);
+});
+
+function buildUser(
+  user: { id: string; email?: string },
+  profile: {
+    headline?: string | null;
+    workplace_institution_slug?: string | null;
+    city?: string | null;
+    license_number?: string | null;
+    avatar_url?: string | null;
+  } | null,
+  fullName: string,
+  cvDraft: CurrentUser["cvDraft"],
+  metadata: { headline?: string; city?: string },
+  isAdmin: boolean,
+): CurrentUser {
   return {
     id: user.id,
     email: user.email ?? "",
@@ -121,7 +149,7 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
     licenseNumber: sanitizeLicenseNumber(profile?.license_number ?? "") || null,
     avatarUrl: profile?.avatar_url ?? null,
     initials: getInitials(fullName),
-    isAdmin: await isCurrentUserAdmin(),
+    isAdmin,
     cvDraft: {
       bio: cvDraft.bio ? truncateProfileText(cvDraft.bio) : undefined,
       experience: cvDraft.experience ? truncateProfileText(cvDraft.experience) : undefined,
@@ -131,4 +159,4 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
         : undefined,
     },
   };
-});
+}

@@ -9,6 +9,7 @@ import { ensureAuthUserProfile } from "@/lib/auth/ensure-auth-user-profile";
 import { revokeOtherAuthSessions } from "@/lib/auth/single-session";
 import { normalizeSupabaseAuthError } from "@/lib/auth/supabase-auth-errors";
 import { validatePassword } from "@/lib/validation/password";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
 function getRequiredString(formData: FormData, key: string) {
@@ -49,6 +50,15 @@ export async function signIn(formData: FormData) {
 
     const message = error.message.toLowerCase();
     if (message.includes("invalid login credentials")) {
+      // findAuthUserByEmail requires the service-role admin client.
+      // If it is not configured (e.g. missing SUPABASE_SERVICE_ROLE_KEY in dev),
+      // we cannot distinguish "user not found" from "wrong password", so fall
+      // back to the generic wrong-password message rather than misleading the user.
+      const admin = createAdminClient();
+      if (!admin) {
+        redirect("/login?error=wrong-password");
+      }
+
       const existingUser = await findAuthUserByEmail(email);
       if (!existingUser) {
         redirect("/login?error=account-not-found");
