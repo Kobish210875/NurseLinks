@@ -226,11 +226,8 @@ export default function NetworkPanel({
               : t("network.count").replace("{count}", String(connections.length))}
           </span>
         </div>
-        <div className="tab-panels">
-          <div
-            aria-hidden={tab !== "connections"}
-            className={tab !== "connections" ? "tab-panel" : "mb-3 tab-panel-active"}
-          >
+        {tab === "connections" ? (
+          <div className="mb-3">
             <label className="sr-only" htmlFor={connectionsFilterId}>
               {t("network.connectionsFilterLabel")}
             </label>
@@ -243,30 +240,25 @@ export default function NetworkPanel({
               className="network-search-input w-full max-w-full rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm"
             />
           </div>
-        </div>
-        <div className="tab-panels network-members-scroll max-h-[min(22rem,calc(100vh-18rem))] overflow-y-auto overscroll-contain pe-0.5">
-          <div
-            role="tabpanel"
-            aria-hidden={tab !== "invitations"}
-            className={tab !== "invitations" ? "tab-panel" : "tab-panel-active"}
-          >
-            <MemberList
-              members={invitations}
-              variant="invitation"
-              emptyText={t("network.noInvitations")}
-            />
-          </div>
-          <div
-            role="tabpanel"
-            aria-hidden={tab !== "connections"}
-            className={tab !== "connections" ? "tab-panel" : "tab-panel-active"}
-          >
-            <MemberList
-              members={filteredConnections}
-              variant="connection"
-              emptyText={connectionsEmptyText}
-            />
-          </div>
+        ) : null}
+        <div className="network-members-scroll max-h-[min(22rem,calc(100vh-18rem))] overflow-y-auto overscroll-contain pe-0.5">
+          {tab === "invitations" ? (
+            <div key="tab-invitations" className="panel-enter" role="tabpanel">
+              <MemberList
+                members={invitations}
+                variant="invitation"
+                emptyText={t("network.noInvitations")}
+              />
+            </div>
+          ) : (
+            <div key="tab-connections" className="panel-enter" role="tabpanel">
+              <MemberList
+                members={filteredConnections}
+                variant="connection"
+                emptyText={connectionsEmptyText}
+              />
+            </div>
+          )}
         </div>
       </section>
     </div>
