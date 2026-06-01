@@ -106,13 +106,14 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
     .maybeSingle<{ user_id: string }>();
 
   if (!hasCv) {
-    const [rpcResult, adminResult] = await Promise.all([
-      supabase.rpc("get_profile_cv_draft", { target_id: user.id } as never),
-      adminCheckPromise,
-    ]);
-    if (rpcResult.data && typeof rpcResult.data === "object") {
-      cvDraft = rpcResult.data as CurrentUser["cvDraft"];
+    const { data: rpcCv } = await supabase.rpc(
+      "get_profile_cv_draft",
+      { target_id: user.id } as never,
+    );
+    if (rpcCv && typeof rpcCv === "object" && !Array.isArray(rpcCv)) {
+      cvDraft = rpcCv as CurrentUser["cvDraft"];
     }
+    const adminResult = await adminCheckPromise;
     const isAdmin = Boolean(adminResult.data?.user_id);
     return buildUser(user, profile, fullName, cvDraft, metadata, isAdmin);
   }
