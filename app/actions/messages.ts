@@ -43,7 +43,8 @@ export async function markThreadAsRead(peerId: string) {
   }
 
   await markThreadRead(supabase, user.id, peerId);
-  revalidateMessaging(peerId);
+  // No revalidatePath here — opening a thread already updates UI + nav counts client-side.
+  // revalidatePath caused multiple "Rendering" passes and slow thread open in dev.
   return { success: true as const };
 }
 

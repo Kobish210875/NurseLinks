@@ -36,7 +36,7 @@ export default async function JobFeedList({
   if (searchPhase === "idle") {
     return (
       <div
-        className={`feed-card flex min-h-[12rem] flex-col items-center justify-center p-6 text-center text-sm leading-relaxed text-muted-foreground lg:min-h-0 lg:flex-1 ${jobsBrowseHeightClass}`}
+        className={`feed-card hidden min-h-[12rem] flex-col items-center justify-center p-6 text-center text-sm leading-relaxed text-muted-foreground lg:flex lg:min-h-0 lg:flex-1 ${jobsBrowseHeightClass}`}
       >
         <p className="max-w-sm">{t("jobs.searchPrompt")}</p>
       </div>

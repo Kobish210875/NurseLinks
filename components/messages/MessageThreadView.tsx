@@ -64,14 +64,8 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
       unreadMessages: Math.max(0, unreadMessages - unreadInThread),
     });
     void markThreadAsRead(peer.id);
-  }, [
-    messages,
-    peer.id,
-    pendingInvitations,
-    unreadJobs,
-    unreadMessages,
-    updateCounts,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- run once per thread open
+  }, [messages, peer.id]);
 
   useEffect(() => {
     if (displayMessages.length === 0) {

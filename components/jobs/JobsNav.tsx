@@ -18,7 +18,7 @@ export default function JobsNav({ applicationsUnread = 0 }: JobsNavProps) {
   const onPublish = pathname.startsWith("/jobs/new");
 
   const tabClass = (active: boolean) =>
-    `relative min-w-0 rounded-lg px-2 py-2 text-center text-[13px] font-semibold leading-snug transition sm:px-2.5 sm:text-sm ${
+    `relative flex min-h-[2.25rem] min-w-0 items-center justify-center rounded-lg px-1 py-1.5 text-center text-[11px] font-semibold leading-tight transition sm:min-h-0 sm:px-2.5 sm:py-2 sm:text-sm sm:leading-snug ${
       active
         ? "bg-primary text-primary-foreground shadow-sm"
         : "text-muted-foreground hover:bg-muted/60 hover:text-foreground"
@@ -26,18 +26,18 @@ export default function JobsNav({ applicationsUnread = 0 }: JobsNavProps) {
 
   return (
     <nav
-      className="feed-card grid min-w-0 grid-cols-2 gap-1 p-1 sm:grid-cols-3"
+      className="feed-card grid min-w-0 grid-cols-3 gap-0.5 p-0.5 sm:gap-1 sm:p-1"
       aria-label={t("jobs.navAria")}
     >
       <Link href="/jobs" className={tabClass(onSearch)}>
         {t("jobs.tabBrowse")}
       </Link>
       <Link href="/jobs?view=applications" className={tabClass(onApplications)}>
-        <span className="inline-flex items-center justify-center gap-1">
-          {t("jobs.tabApplications")}
+        <span className="inline-flex max-w-full flex-wrap items-center justify-center gap-0.5">
+          <span className="truncate">{t("jobs.tabApplications")}</span>
           {applicationsUnread > 0 ? (
             <span
-              className={`inline-flex min-w-[1.125rem] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ${
+              className={`inline-flex min-w-[1rem] shrink-0 items-center justify-center rounded-full px-0.5 text-[9px] font-bold leading-none sm:min-w-[1.125rem] sm:px-1 sm:text-[10px] ${
                 onApplications ? "bg-white/20 text-primary-foreground" : "bg-primary text-primary-foreground"
               }`}
             >

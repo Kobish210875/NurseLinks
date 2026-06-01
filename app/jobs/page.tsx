@@ -82,7 +82,11 @@ export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
         }`}
       >
         {view === "search" ? (
-          <div className="jobs-browse-feed order-2 flex min-w-0 flex-col max-md:overflow-visible lg:order-1 lg:min-h-0 lg:overflow-hidden">
+          <div
+            className={`jobs-browse-feed order-2 flex min-w-0 flex-col max-md:overflow-visible lg:order-1 lg:min-h-0 lg:overflow-hidden ${
+              searchSubmitted ? "" : "max-md:hidden"
+            }`}
+          >
             <JobFeedList
               feed={feed}
               filters={filters}
