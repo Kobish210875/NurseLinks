@@ -7,6 +7,12 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "6mb",
     },
   },
+  // Keep dynamic-page RSC payloads in the client router cache for 30s.
+  // Without this, navigating back to /network re-fetches from the server every time.
+  staleTimes: {
+    dynamic: 30,
+    static: 180,
+  },
 };
 
 export default nextConfig;
