@@ -10,10 +10,6 @@ import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
 import { createClient } from "@/lib/supabase/server";
 
-// Cache the segment for 60 s so repeated navigations use the router cache
-// instead of re-fetching from the server every time.
-export const revalidate = 60;
-
 type NetworkPageProps = {
   searchParams: Promise<{ q?: string }>;
 };

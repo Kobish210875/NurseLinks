@@ -1,7 +1,5 @@
 import { redirect } from "next/navigation";
 import JobFeedList from "@/components/jobs/JobFeedList";
-
-export const revalidate = 60;
 import JobSearchPanel from "@/components/jobs/JobSearchPanel";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { MEDICAL_INSTITUTIONS } from "@/lib/data/medical-institutions";
