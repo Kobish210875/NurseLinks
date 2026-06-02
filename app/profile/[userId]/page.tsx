@@ -1,8 +1,10 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import ProfileViewCard from "@/components/profile/ProfileViewCard";
+import ProfilePageSkeleton from "@/components/profile/ProfilePageSkeleton";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getProfileView } from "@/lib/data/profile-view";
 import { getLocale } from "@/lib/i18n/get-locale";
@@ -13,7 +15,7 @@ type PublicProfilePageProps = {
   params: Promise<{ userId: string }>;
 };
 
-export default async function PublicProfilePage({ params }: PublicProfilePageProps) {
+async function PublicProfileContent({ params }: PublicProfilePageProps) {
   const viewer = await getCurrentUser();
   if (!viewer) {
     redirect("/");
@@ -46,16 +48,24 @@ export default async function PublicProfilePage({ params }: PublicProfilePagePro
   }
 
   return (
+    <main className="mx-auto max-w-[1128px] px-4 py-8">
+      <div className="mx-auto mb-4 max-w-xl text-start">
+        <Link href="/network" className="text-sm font-medium text-primary hover:underline">
+          {t("network.backToNetwork")}
+        </Link>
+      </div>
+      <ProfileViewCard profile={profile} isOwnProfile={false} />
+    </main>
+  );
+}
+
+export default function PublicProfilePage({ params }: PublicProfilePageProps) {
+  return (
     <>
       <Navbar authenticated />
-      <main className="mx-auto max-w-[1128px] px-4 py-8">
-        <div className="mx-auto mb-4 max-w-xl text-start">
-          <Link href="/network" className="text-sm font-medium text-primary hover:underline">
-            {t("network.backToNetwork")}
-          </Link>
-        </div>
-        <ProfileViewCard profile={profile} isOwnProfile={false} />
-      </main>
+      <Suspense fallback={<ProfilePageSkeleton />}>
+        <PublicProfileContent params={params} />
+      </Suspense>
       <Footer />
     </>
   );

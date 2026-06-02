@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import JobFeedList from "@/components/jobs/JobFeedList";
 import JobSearchPanel from "@/components/jobs/JobSearchPanel";
+import JobsBrowseSkeleton from "@/components/jobs/JobsBrowseSkeleton";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { MEDICAL_INSTITUTIONS } from "@/lib/data/medical-institutions";
 import JobApplicationsInbox from "@/components/jobs/JobApplicationsInbox";
@@ -18,15 +20,18 @@ type JobsPageProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
-export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
-  const user = await getCurrentUser();
+async function JobsBrowseContent({ searchParams }: JobsPageProps) {
+  const [user, locale, sp, supabase] = await Promise.all([
+    getCurrentUser(),
+    getLocale(),
+    searchParams,
+    createClient(),
+  ]);
   if (!user) {
     return null;
   }
 
-  const locale = await getLocale();
   const t = createT(getMessages(locale));
-  const sp = await searchParams;
   if (sp.view === "all") {
     redirect("/jobs?run=1");
   }
@@ -35,8 +40,6 @@ export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
   const filters = parseJobListFilters(sp);
   const published = sp.published === "1";
   const searchSubmitted = isJobSearchSubmitted(sp);
-
-  const supabase = await createClient();
 
   if (view === "applications") {
     const inbox = await getJobApplicationsInbox(supabase, user.id, locale);
@@ -111,5 +114,13 @@ export default async function JobsBrowsePage({ searchParams }: JobsPageProps) {
         ) : null}
       </div>
     </>
+  );
+}
+
+export default function JobsBrowsePage({ searchParams }: JobsPageProps) {
+  return (
+    <Suspense fallback={<JobsBrowseSkeleton />}>
+      <JobsBrowseContent searchParams={searchParams} />
+    </Suspense>
   );
 }

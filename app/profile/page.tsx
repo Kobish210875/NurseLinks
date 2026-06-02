@@ -1,9 +1,11 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import Footer from "@/components/Footer";
 import DeleteAccountSection from "@/components/profile/DeleteAccountSection";
 import Navbar from "@/components/Navbar";
 import ProfileChangePasswordSection from "@/components/profile/ProfileChangePasswordSection";
 import ProfileForm from "@/components/profile/ProfileForm";
+import ProfilePageSkeleton from "@/components/profile/ProfilePageSkeleton";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
@@ -15,7 +17,7 @@ type ProfilePageProps = {
   }>;
 };
 
-export default async function ProfilePage({ searchParams }: ProfilePageProps) {
+async function ProfileContent({ searchParams }: ProfilePageProps) {
   const user = await getCurrentUser();
 
   if (!user) {
@@ -40,13 +42,21 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
               : null;
 
   return (
+    <main id="profile-page-top" className="mx-auto max-w-[1128px] space-y-6 px-4 py-8">
+      <ProfileForm user={user} saved={params.saved === "1"} error={errorMessage} />
+      <ProfileChangePasswordSection />
+      <DeleteAccountSection />
+    </main>
+  );
+}
+
+export default function ProfilePage({ searchParams }: ProfilePageProps) {
+  return (
     <>
       <Navbar authenticated />
-      <main id="profile-page-top" className="mx-auto max-w-[1128px] space-y-6 px-4 py-8">
-        <ProfileForm user={user} saved={params.saved === "1"} error={errorMessage} />
-        <ProfileChangePasswordSection />
-        <DeleteAccountSection />
-      </main>
+      <Suspense fallback={<ProfilePageSkeleton />}>
+        <ProfileContent searchParams={searchParams} />
+      </Suspense>
       <Footer />
     </>
   );

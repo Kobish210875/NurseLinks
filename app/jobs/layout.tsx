@@ -1,6 +1,8 @@
+import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import Footer from "@/components/Footer";
 import JobsAutoRefresh from "@/components/jobs/JobsAutoRefresh";
+import JobsBrowseSkeleton from "@/components/jobs/JobsBrowseSkeleton";
 import JobsNav from "@/components/jobs/JobsNav";
 import Navbar from "@/components/Navbar";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
@@ -15,14 +17,12 @@ export default async function JobsLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const user = await getCurrentUser();
+  const [user, locale, supabase] = await Promise.all([getCurrentUser(), getLocale(), createClient()]);
   if (!user) {
     redirect("/");
   }
 
-  const locale = await getLocale();
   const t = createT(getMessages(locale));
-  const supabase = await createClient();
   const [jobsVersion, applicationsUnread] = await Promise.all([
     getJobsVersion(supabase, user.id),
     getUnreadJobApplicationCount(supabase, user.id),
@@ -40,7 +40,11 @@ export default async function JobsLayout({
           </header>
           <JobsAutoRefresh initialVersion={jobsVersion} />
           <JobsNav applicationsUnread={applicationsUnread} />
-          <div className="jobs-browse-shell min-h-0 min-w-0 max-md:overflow-visible lg:flex-1">{children}</div>
+          <Suspense fallback={<JobsBrowseSkeleton />}>
+            <div className="jobs-browse-shell min-h-0 min-w-0 max-md:overflow-visible lg:flex-1">
+              {children}
+            </div>
+          </Suspense>
           <div className="mobile-feed-bottom-spacer md:hidden" aria-hidden="true" />
         </div>
       </main>

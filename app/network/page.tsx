@@ -35,14 +35,12 @@ async function NetworkContent({ userId, query }: { userId: string; query: string
 }
 
 export default async function NetworkPage({ searchParams }: NetworkPageProps) {
-  const user = await getCurrentUser();
+  const [user, locale, params] = await Promise.all([getCurrentUser(), getLocale(), searchParams]);
   if (!user) {
     redirect("/");
   }
 
-  const locale = await getLocale();
   const t = createT(getMessages(locale));
-  const params = await searchParams;
   const query = typeof params.q === "string" ? params.q.trim() : "";
 
   return (
