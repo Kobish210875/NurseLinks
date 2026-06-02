@@ -232,7 +232,7 @@ export default function MemberRow({
             ) : null}
 
             {variant === "recommendation" ? (
-              <div className="flex w-full items-center justify-between gap-2">
+              <div className="flex w-full items-center justify-between gap-3 [direction:ltr]">
                 <button
                   type="button"
                   disabled={pending}
@@ -250,7 +250,7 @@ export default function MemberRow({
                   <IconX />
                   <span className="sr-only">{t("network.dismissRecommendation")}</span>
                 </button>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1.5 ps-2">
                   {optimisticStatus === "none" ? (
                     <button
                       type="button"
