@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useMemo, useRef, useState } from "react";
 import LanguageToggle from "@/components/i18n/LanguageToggle";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { useCurrentUser } from "@/components/nav/CurrentUserProvider";
@@ -25,11 +25,13 @@ type NavItem = {
 export default function Navbar({ authenticated = false }: NavbarProps) {
   const t = useT();
   const pathname = usePathname();
+  const router = useRouter();
   const mobileUser = useCurrentUser();
   const { pendingInvitations, unreadMessages, unreadJobs } = useNavCounts();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobileHeader, setIsMobileHeader] = useState(false);
   const isAdminRoute = pathname.startsWith("/admin");
+  const didWarmRoutesRef = useRef(false);
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 767px)");
@@ -38,6 +40,20 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
     media.addEventListener("change", update);
     return () => media.removeEventListener("change", update);
   }, []);
+
+  const warmRoutes = useMemo(() => ["/home", "/network", "/jobs", "/messages", "/profile"], []);
+
+  useEffect(() => {
+    if (!authenticated || !mobileUser || didWarmRoutesRef.current) {
+      return;
+    }
+    didWarmRoutesRef.current = true;
+    warmRoutes.forEach((href) => router.prefetch(href));
+  }, [authenticated, mobileUser, router, warmRoutes]);
+
+  function prefetchRoute(href: string) {
+    router.prefetch(href);
+  }
 
   const navItems: NavItem[] = [
     { href: "/home", label: t("nav.home") },
@@ -102,6 +118,9 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
                 <Link
                   key={item.href}
                   href={item.href}
+                  onMouseEnter={() => prefetchRoute(item.href)}
+                  onFocus={() => prefetchRoute(item.href)}
+                  onPointerDown={() => prefetchRoute(item.href)}
                   className={`relative flex items-center justify-center whitespace-nowrap px-2.5 py-2 text-xs font-medium transition-colors ${
                     isActive(item.href)
                       ? "nav-link-active"
@@ -137,6 +156,9 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
         >
           <Link
             href="/home"
+            onMouseEnter={() => prefetchRoute("/home")}
+            onFocus={() => prefetchRoute("/home")}
+            onPointerDown={() => prefetchRoute("/home")}
             className="shrink-0 justify-self-start text-base font-bold text-primary"
             aria-label={t("nav.homeAria")}
           >
@@ -157,6 +179,9 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
 
           <Link
             href="/profile"
+            onMouseEnter={() => prefetchRoute("/profile")}
+            onFocus={() => prefetchRoute("/profile")}
+            onPointerDown={() => prefetchRoute("/profile")}
             className="relative flex size-9 shrink-0 justify-self-end overflow-hidden rounded-full border border-border bg-primary/10"
             aria-label={t("nav.myProfile")}
           >
@@ -216,6 +241,9 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
 
             <Link
               href="/home"
+              onMouseEnter={() => prefetchRoute("/home")}
+              onFocus={() => prefetchRoute("/home")}
+              onPointerDown={() => prefetchRoute("/home")}
               className="hidden shrink-0 text-base font-bold text-primary lg:col-start-3 lg:block lg:justify-self-end"
               aria-label={t("nav.homeAria")}
             >

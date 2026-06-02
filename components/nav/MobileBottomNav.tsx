@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useRef } from "react";
 import { useT } from "@/components/i18n/LocaleProvider";
 import NavUnreadDot from "@/components/nav/NavUnreadDot";
 import { useNavCounts } from "@/components/nav/NavCountsProvider";
@@ -17,8 +18,10 @@ type BottomItem = {
 export default function MobileBottomNav() {
   const t = useT();
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const { pendingInvitations, unreadMessages, unreadJobs } = useNavCounts();
+  const didWarmRoutesRef = useRef(false);
 
   const items: BottomItem[] = [
     {
@@ -51,6 +54,20 @@ export default function MobileBottomNav() {
       match: (path) => path === "/messages" || path.startsWith("/messages/"),
     },
   ];
+
+  const warmRoutes = useMemo(() => ["/home", "/network", "/jobs", "/messages", "/profile"], []);
+
+  useEffect(() => {
+    if (didWarmRoutesRef.current) {
+      return;
+    }
+    didWarmRoutesRef.current = true;
+    warmRoutes.forEach((href) => router.prefetch(href));
+  }, [router, warmRoutes]);
+
+  function prefetchRoute(href: string) {
+    router.prefetch(href);
+  }
 
   function badgeCount(kind: BottomItem["badge"]) {
     if (kind === "network") {
@@ -93,6 +110,9 @@ export default function MobileBottomNav() {
             <li key={item.href}>
               <Link
                 href={item.href}
+                onMouseEnter={() => prefetchRoute(item.href)}
+                onFocus={() => prefetchRoute(item.href)}
+                onPointerDown={() => prefetchRoute(item.href)}
                 className={`relative flex h-full flex-col items-center justify-center gap-0.5 px-1 text-center text-[13px] font-semibold leading-snug transition ${
                   active
                     ? "text-foreground after:absolute after:inset-x-2 after:top-0 after:h-0.5 after:rounded-full after:bg-foreground"
