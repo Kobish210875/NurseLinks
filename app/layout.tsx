@@ -56,6 +56,45 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/**
+ * Async shell that resolves the current user and provides it to client
+ * context. Isolated here so the outer RootLayout can return the HTML
+ * skeleton (html/body/LocaleProvider/NavCountsProvider) without waiting
+ * for the Supabase auth call.
+ *
+ * Auth protection: every protected page still calls getCurrentUser() itself
+ * and redirects to "/" when null. Moving the call here does not change that.
+ * React's `cache()` deduplicates the Supabase round-trip within the same
+ * render, so whichever component calls it first "wins" and the rest pay 0ms.
+ */
+async function RootUserShell({ children }: { children: React.ReactNode }) {
+  const user = await getCurrentUser();
+
+  return (
+    <CurrentUserProvider
+      user={
+        user
+          ? {
+              id: user.id,
+              avatarUrl: user.avatarUrl,
+              initials: user.initials,
+              fullName: user.fullName,
+              isAdmin: user.isAdmin,
+            }
+          : null
+      }
+    >
+      <MobileShellEffects />
+      {children}
+      {user ? (
+        <Suspense fallback={null}>
+          <MobileBottomNav />
+        </Suspense>
+      ) : null}
+    </CurrentUserProvider>
+  );
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
@@ -66,39 +105,29 @@ export default async function RootLayout({
   const dir = getDirection(locale);
   const appEnv = getAppEnvironment();
 
-  const user = await getCurrentUser();
-
   return (
     <html lang={locale} dir={dir} data-app-env={appEnv} className={`${rubik.variable} scroll-smooth`}>
       <body className="min-h-screen overflow-x-clip antialiased">
         <LocaleProvider locale={locale} messages={messages}>
+          {/*
+           * enablePolling is always true; NavCountsPoller calls /api/sync/nav
+           * and stops itself permanently on 401 (logged-out). No server-side
+           * user check needed here.
+           */}
           <NavCountsProvider
             pendingInvitations={0}
             unreadMessages={0}
             unreadJobs={0}
-            enablePolling={Boolean(user)}
+            enablePolling={true}
           >
-            <CurrentUserProvider
-              user={
-                user
-                  ? {
-                      id: user.id,
-                      avatarUrl: user.avatarUrl,
-                      initials: user.initials,
-                      fullName: user.fullName,
-                      isAdmin: user.isAdmin,
-                    }
-                  : null
-              }
-            >
-              <MobileShellEffects />
-              {children}
-              {user ? (
-                <Suspense fallback={null}>
-                  <MobileBottomNav />
-                </Suspense>
-              ) : null}
-            </CurrentUserProvider>
+            {/*
+             * RootUserShell is the only async boundary in this layout.
+             * Wrapping it in Suspense lets the html/body/providers above
+             * stream to the browser before the Supabase auth call completes.
+             */}
+            <Suspense fallback={null}>
+              <RootUserShell>{children}</RootUserShell>
+            </Suspense>
           </NavCountsProvider>
         </LocaleProvider>
       </body>
