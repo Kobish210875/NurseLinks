@@ -5,6 +5,8 @@
   "scripts": {
     "dev": "next dev",
     "check:env": "node scripts/check-env.mjs",
+    "clone:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/clone-prod-to-dev.ps1",
+    "storage:dev": "node scripts/copy-storage-prod-to-dev.mjs",
     "sql:list": "node scripts/list-supabase-sql.mjs",
     "sql:bundle": "node scripts/build-combined-sql.mjs",
     "build": "next build",

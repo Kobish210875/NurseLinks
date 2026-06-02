@@ -27,6 +27,26 @@
   --like-heart: var(--primary);
 }
 
+/* Localhost dev: gold/yellow palette (production stays blue above) */
+html[data-app-env="development"] {
+  --background: #fffbeb;
+  --foreground: #713f12;
+  --primary: #ca8a04;
+  --primary-dark: #a16207;
+  --primary-foreground: #ffffff;
+  --accent: #d97706;
+  --accent-light: #fef3c7;
+  --card: #ffffff;
+  --card-foreground: #713f12;
+  --muted: #fef3c7;
+  --muted-foreground: #92400e;
+  --border: #fde68a;
+  --secondary: #fef9c3;
+  --secondary-foreground: #a16207;
+  --nav-bg: #fffbeb;
+  --like-heart: var(--primary);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

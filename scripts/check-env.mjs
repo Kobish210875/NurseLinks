@@ -5,6 +5,10 @@
  */
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
+import {
+  PRODUCTION_SUPABASE_PROJECT_REF,
+  supabaseRefFromUrl,
+} from "../lib/env/supabase-projects.ts";
 
 const root = resolve(process.cwd(), ".env.local");
 
@@ -53,6 +57,14 @@ if (!env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
 
 if (!supabaseUrl.includes("supabase.co")) {
   errors.push("NEXT_PUBLIC_SUPABASE_URL must be a Supabase project URL");
+}
+
+const supabaseRef = supabaseRefFromUrl(supabaseUrl);
+if (supabaseRef === PRODUCTION_SUPABASE_PROJECT_REF) {
+  errors.push(
+    `.env.local points at PRODUCTION Supabase (${PRODUCTION_SUPABASE_PROJECT_REF}). ` +
+      "Use your nurselinks-dev project keys, or run: .\\scripts\\clone-prod-to-dev.ps1",
+  );
 }
 
 if (appUrl && !appUrl.includes("localhost")) {
