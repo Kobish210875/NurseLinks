@@ -41,6 +41,10 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
   }, [messages]);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [peer.id]);
+
+  useEffect(() => {
     if (markedReadRef.current) {
       return;
     }

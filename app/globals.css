@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
 :root {
+  --mobile-header-height: 3.5rem;
+  --mobile-header-offset: calc(
+    var(--mobile-header-height) + env(safe-area-inset-top, 0px)
+  );
   --mobile-bottom-nav-height: 3.5rem;
   --mobile-bottom-nav-offset: calc(
     var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px)
@@ -224,6 +228,7 @@ body {
 
   html.has-mobile-app-shell,
   body.has-mobile-app-shell {
+    scroll-padding-top: var(--mobile-header-offset);
     scroll-padding-bottom: var(--mobile-bottom-nav-offset);
   }
 
@@ -297,24 +302,67 @@ body {
     font-size: 1rem;
   }
 
-  .message-thread-shell {
-    margin-bottom: 0;
-    overflow: visible;
+  /*
+   * Thread page: column fills viewport between site header and bottom tabs;
+   * only the messages list scrolls so peer header/back stay visible on new chats.
+   */
+  body.has-mobile-app-shell .message-thread-page {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(
+      100dvh - var(--mobile-header-offset) - var(--mobile-bottom-nav-offset)
+    );
+    overflow: hidden;
+    padding-top: 0.75rem;
+    padding-bottom: calc(var(--mobile-bottom-nav-offset) + 0.5rem);
   }
 
-  .message-thread-messages {
-    flex: none !important;
-    overflow: visible !important;
+  body.has-mobile-app-shell .message-thread-page > div {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  body.has-mobile-app-shell .message-thread-page .message-thread-shell {
+    margin-bottom: 0;
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  body.has-mobile-app-shell .message-thread-page .message-thread-shell > header {
+    position: sticky;
+    top: var(--mobile-header-offset);
+    z-index: 40;
+    flex-shrink: 0;
+    background: var(--card);
+    scroll-margin-top: var(--mobile-header-offset);
+  }
+
+  body.has-mobile-app-shell .message-thread-page .message-thread-messages {
+    flex: 1 1 auto !important;
+    min-height: 0;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     padding-bottom: 0.5rem;
   }
 
-  .message-thread-end-anchor {
+  body.has-mobile-app-shell .message-thread-page .message-thread-end-anchor {
     scroll-margin-bottom: calc(var(--mobile-bottom-nav-offset) + 1rem);
   }
 
-  .message-thread-compose {
+  body.has-mobile-app-shell .message-thread-page .message-thread-compose {
     position: static;
+    flex-shrink: 0;
     background: var(--card);
+  }
+
+  body.has-mobile-app-shell .message-thread-page .message-thread-input {
+    scroll-margin-bottom: calc(var(--mobile-bottom-nav-offset) + 5rem);
   }
 
   body.job-detail-open .mobile-bottom-nav {
