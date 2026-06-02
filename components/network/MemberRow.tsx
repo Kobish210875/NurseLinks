@@ -36,11 +36,60 @@ type MemberRowProps = {
 const actionBtn =
   "shrink-0 rounded-full border px-2 py-0.5 text-[11px] font-medium leading-tight transition disabled:opacity-60 sm:text-xs";
 
-const msgBtn =
-  "shrink-0 rounded-full border border-primary px-2 py-0.5 text-[11px] font-medium leading-tight text-primary transition hover:bg-primary/5 sm:text-xs";
+const iconActionBtn =
+  "inline-flex size-7 items-center justify-center rounded-full border transition disabled:opacity-60 sm:size-8";
+const primaryIconBtn = `${iconActionBtn} border-primary text-primary hover:bg-primary/5`;
+const dangerIconBtn = `${iconActionBtn} border-red-200 text-red-600 hover:bg-red-50`;
 
-const dismissBtn =
-  "shrink-0 rounded-full border border-red-200 px-2 py-0.5 text-[11px] font-medium leading-tight text-red-600 transition hover:bg-red-50 disabled:opacity-60 sm:text-xs";
+function IconPlus() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className="size-3.5"
+      aria-hidden="true"
+    >
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
+    </svg>
+  );
+}
+
+function IconX() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className="size-3.5"
+      aria-hidden="true"
+    >
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </svg>
+  );
+}
+
+function IconMessage() {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      className="size-3.5"
+      aria-hidden="true"
+    >
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </svg>
+  );
+}
 
 export default function MemberRow({
   member,
@@ -154,8 +203,14 @@ export default function MemberRow({
 
             {variant === "connection" ? (
               <>
-                <Link href={messageHref} className={msgBtn}>
-                  {t("network.message")}
+                <Link
+                  href={messageHref}
+                  className={primaryIconBtn}
+                  aria-label={t("network.message")}
+                  title={t("network.message")}
+                >
+                  <IconMessage />
+                  <span className="sr-only">{t("network.message")}</span>
                 </Link>
                 <button
                   type="button"
@@ -166,9 +221,12 @@ export default function MemberRow({
                     }
                     run(() => removeConnection(member.id), "none");
                   }}
-                  className={`${actionBtn} border-border text-muted-foreground hover:border-red-200 hover:bg-red-50 hover:text-red-700`}
+                  className={dangerIconBtn}
+                  aria-label={t("network.removeFriend")}
+                  title={t("network.removeFriend")}
                 >
-                  {t("network.removeFriend")}
+                  <IconX />
+                  <span className="sr-only">{t("network.removeFriend")}</span>
                 </button>
               </>
             ) : null}
@@ -185,11 +243,12 @@ export default function MemberRow({
                     }
                     run(() => dismissConnectionRecommendation(member.id), optimisticStatus);
                   }}
-                  className={dismissBtn}
+                  className={dangerIconBtn}
                   aria-label={t("network.dismissRecommendation")}
                   title={t("network.dismissRecommendation")}
                 >
-                  X
+                  <IconX />
+                  <span className="sr-only">{t("network.dismissRecommendation")}</span>
                 </button>
                 <div className="flex items-center gap-1">
                   {optimisticStatus === "none" ? (
@@ -197,9 +256,12 @@ export default function MemberRow({
                       type="button"
                       disabled={pending}
                       onClick={() => run(() => sendConnectionRequest(member.id), "pending_out")}
-                      className={`${actionBtn} border-primary text-primary hover:bg-primary/5`}
+                      className={primaryIconBtn}
+                      aria-label={t("network.connect")}
+                      title={t("network.connect")}
                     >
-                      {t("network.connect")}
+                      <IconPlus />
+                      <span className="sr-only">{t("network.connect")}</span>
                     </button>
                   ) : null}
                   {optimisticStatus === "pending_out" ? (
@@ -232,8 +294,14 @@ export default function MemberRow({
                       </button>
                     </>
                   ) : null}
-                  <Link href={messageHref} className={msgBtn}>
-                    {t("network.message")}
+                  <Link
+                    href={messageHref}
+                    className={primaryIconBtn}
+                    aria-label={t("network.message")}
+                    title={t("network.message")}
+                  >
+                    <IconMessage />
+                    <span className="sr-only">{t("network.message")}</span>
                   </Link>
                 </div>
               </div>
@@ -246,9 +314,12 @@ export default function MemberRow({
                     type="button"
                     disabled={pending}
                     onClick={() => run(() => sendConnectionRequest(member.id), "pending_out")}
-                    className={`${actionBtn} border-primary text-primary hover:bg-primary/5`}
+                    className={primaryIconBtn}
+                    aria-label={t("network.connect")}
+                    title={t("network.connect")}
                   >
-                    {t("network.connect")}
+                    <IconPlus />
+                    <span className="sr-only">{t("network.connect")}</span>
                   </button>
                 ) : null}
                 {optimisticStatus === "pending_out" ? (
@@ -281,8 +352,14 @@ export default function MemberRow({
                     </button>
                   </>
                 ) : null}
-                <Link href={messageHref} className={msgBtn}>
-                  {t("network.message")}
+                <Link
+                  href={messageHref}
+                  className={primaryIconBtn}
+                  aria-label={t("network.message")}
+                  title={t("network.message")}
+                >
+                  <IconMessage />
+                  <span className="sr-only">{t("network.message")}</span>
                 </Link>
               </>
             ) : null}
