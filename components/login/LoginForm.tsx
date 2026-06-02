@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { signIn } from "@/app/login/actions";
 import { useId } from "react";
+import { useFormStatus } from "react-dom";
 import PasswordInput from "@/components/register/PasswordInput";
 import RequiredLabel from "@/components/register/RequiredLabel";
 
@@ -14,6 +15,21 @@ type LoginFormProps = {
   errorMessage?: string | null;
   successMessage?: string | null;
 };
+
+function LoginSubmitButton() {
+  const t = useT();
+  const { pending } = useFormStatus();
+
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className="btn-primary mt-6 w-full rounded-lg px-4 py-3 text-sm font-semibold text-primary-foreground disabled:cursor-wait disabled:opacity-70"
+    >
+      {pending ? t("login.submitting") : t("login.submit")}
+    </button>
+  );
+}
 
 export default function LoginForm({ errorMessage, successMessage }: LoginFormProps) {
   const t = useT();
@@ -68,12 +84,7 @@ export default function LoginForm({ errorMessage, successMessage }: LoginFormPro
         </Link>
       </div>
 
-      <button
-        type="submit"
-        className="btn-primary mt-6 w-full rounded-lg px-4 py-3 text-sm font-semibold text-primary-foreground"
-      >
-        {t("login.submit")}
-      </button>
+      <LoginSubmitButton />
 
       <p className="mt-4 text-center text-sm text-muted-foreground">
         {t("login.noAccount")}{" "}

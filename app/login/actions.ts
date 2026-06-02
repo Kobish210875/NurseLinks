@@ -1,6 +1,8 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { AUTH_SIGN_IN_TIMEOUT_MS } from "@/lib/auth/auth-timeouts";
+import { isTimeoutError, withTimeout } from "@/lib/async/with-timeout";
 import { getSiteUrl } from "@/lib/site-url";
 import { confirmUserEmail } from "@/lib/auth/confirm-user-email";
 import { isEmailVerificationRequired } from "@/lib/auth/email-verification-config";
@@ -26,7 +28,20 @@ export async function signIn(formData: FormData) {
   }
 
   const supabase = await createClient();
-  const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
+
+  let signInData;
+  let error;
+  try {
+    ({ data: signInData, error } = await withTimeout(
+      supabase.auth.signInWithPassword({ email, password }),
+      AUTH_SIGN_IN_TIMEOUT_MS,
+    ));
+  } catch (signInTimeout) {
+    if (isTimeoutError(signInTimeout)) {
+      redirect("/login?error=network-error");
+    }
+    throw signInTimeout;
+  }
 
   if (error) {
     const normalizedError = normalizeSupabaseAuthError(error.message);

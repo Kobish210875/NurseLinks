@@ -1,36 +1,42 @@
-import { createAdminClient } from "@/lib/supabase/admin";
+import { AUTH_LOOKUP_TIMEOUT_MS } from "@/lib/auth/auth-timeouts";
+import { isTimeoutError, withTimeout } from "@/lib/async/with-timeout";
 import type { User } from "@supabase/supabase-js";
 
-const USERS_PAGE_SIZE = 1000;
-const MAX_USER_PAGES = 20;
-
-export async function findAuthUserByEmail(email: string): Promise<User | null> {
-  const admin = createAdminClient();
-  if (!admin) {
+/** GoTrue admin filter by email (single request). */
+async function findAuthUserByEmailViaAdminApi(email: string): Promise<User | null> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.replace(/\/$/, "");
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !serviceRoleKey) {
     return null;
   }
 
-  const normalizedEmail = email.trim().toLowerCase();
+  try {
+    const response = await withTimeout(
+      fetch(`${url}/auth/v1/admin/users?email=${encodeURIComponent(email)}`, {
+        headers: {
+          apikey: serviceRoleKey,
+          Authorization: `Bearer ${serviceRoleKey}`,
+        },
+        cache: "no-store",
+      }),
+      AUTH_LOOKUP_TIMEOUT_MS,
+    );
 
-  for (let page = 1; page <= MAX_USER_PAGES; page += 1) {
-    const { data, error } = await admin.auth.admin.listUsers({
-      page,
-      perPage: USERS_PAGE_SIZE,
-    });
-
-    if (error) {
+    if (!response.ok) {
       return null;
     }
 
-    const match = data.users.find((user) => user.email?.toLowerCase() === normalizedEmail);
-    if (match) {
-      return match;
+    const body = (await response.json()) as { users?: User[] };
+    return body.users?.[0] ?? null;
+  } catch (error) {
+    if (isTimeoutError(error)) {
+      console.warn("[auth] findAuthUserByEmail: admin API timed out");
     }
-
-    if (data.users.length < USERS_PAGE_SIZE) {
-      break;
-    }
+    return null;
   }
+}
 
-  return null;
+export async function findAuthUserByEmail(email: string): Promise<User | null> {
+  const normalizedEmail = email.trim().toLowerCase();
+  return findAuthUserByEmailViaAdminApi(normalizedEmail);
 }

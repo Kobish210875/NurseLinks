@@ -3,7 +3,7 @@
     "description": "הפלטפורמה שמחברת אחים ואחיות לקהילות מקצועיות, ידע ומשאבים, קשר עם קולגות והזדמנויות עבודה בקריירת הסיעוד."
   },
   "dev": {
-    "banner": "מצב פיתוח (עיצוב צהוב) — localhost בלבד. עותק נתונים מפיתוח; האתר החי לא מושפע."
+    "banner": "מצב פיתוח"
   },
   "lang": {
     "switchToEn": "English",
@@ -196,6 +196,7 @@
     "title": "התחברות",
     "subtitle": "התחברו לחשבון NurseLinks שלכם",
     "submit": "התחברות",
+    "submitting": "מתחברים…",
     "noAccount": "אין לכם חשבון?",
     "forgotPassword": "שכחתי סיסמה",
     "forgotTitle": "איפוס סיסמה",
@@ -519,6 +520,7 @@
     "missing-supabase-env": "חסרים משתני הסביבה של Supabase בקובץ .env.local.",
     "invalid-supabase-env": "משתני Supabase עדיין מכילים ערכי דוגמה. יש לעדכן את .env.local בפרטי הפרויקט האמיתיים.",
     "supabase-connection-failed": "לא ניתן להתחבר ל-Supabase. בדקו את NEXT_PUBLIC_SUPABASE_URL ואת NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+    "network-error": "לא ניתן להגיע לשרת. בדקו חיבור לאינטרנט, הפעילו מחדש את npm run dev ונסו שוב. אם פרויקט ה-dev היה במצב מושהה ב-Supabase, פתחו את הדשבורד כדי להעיר אותו.",
     "post-empty": "נא לכתוב תוכן לפוסט.",
     "post-failed": "לא ניתן לפרסם את הפוסט. נסו שוב.",
     "comment-empty": "נא לכתוב תגובה.",

@@ -1,3 +1,5 @@
+import { AUTH_SESSION_TIMEOUT_MS } from "@/lib/auth/auth-timeouts";
+import { isTimeoutError, withTimeout } from "@/lib/async/with-timeout";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
@@ -12,8 +14,37 @@ function isProtectedRoute(pathname: string) {
   return protectedPrefixes.some((prefix) => pathname.startsWith(prefix));
 }
 
+function hasSupabaseAuthCookie(request: NextRequest) {
+  return request.cookies
+    .getAll()
+    .some(({ name }) => name.startsWith("sb-") && name.includes("-auth-token"));
+}
+
 export async function proxy(request: NextRequest) {
-  let response = NextResponse.next({ request });
+  const response = NextResponse.next({ request });
+  const { pathname } = request.nextUrl;
+  const hasAuthCookie = hasSupabaseAuthCookie(request);
+
+  if (isAuthRoute(pathname)) {
+    if (hasAuthCookie) {
+      if (pathname === "/login") {
+        const q = request.nextUrl.searchParams;
+        if (q.has("error") || q.get("reset") === "success") {
+          return response;
+        }
+      }
+      return NextResponse.redirect(new URL("/home", request.url));
+    }
+    return response;
+  }
+
+  if (!isProtectedRoute(pathname)) {
+    return response;
+  }
+
+  if (!hasAuthCookie) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -33,24 +64,20 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-  const user = session?.user ?? null;
-
-  const { pathname } = request.nextUrl;
-
-  if (user && isAuthRoute(pathname)) {
-    if (pathname === "/login") {
-      const q = request.nextUrl.searchParams;
-      if (q.has("error") || q.get("reset") === "success") {
-        return response;
-      }
+  let user: { id: string } | null = null;
+  try {
+    const {
+      data: { session },
+    } = await withTimeout(supabase.auth.getSession(), AUTH_SESSION_TIMEOUT_MS);
+    user = session?.user ?? null;
+  } catch (error) {
+    if (isTimeoutError(error)) {
+      console.warn("[proxy] getSession timed out");
     }
-    return NextResponse.redirect(new URL("/home", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
-  if (!user && isProtectedRoute(pathname)) {
+  if (!user) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 

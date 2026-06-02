@@ -3,7 +3,7 @@
     "description": "The platform connecting nurses to professional communities, knowledge, colleagues, and career opportunities."
   },
   "dev": {
-    "banner": "DEV MODE (yellow theme) — localhost only. Same data as production clone; live site is unaffected."
+    "banner": "DEV MODE"
   },
   "lang": {
     "switchToEn": "English",
@@ -196,6 +196,7 @@
     "title": "Sign in",
     "subtitle": "Sign in to your NurseLinks account",
     "submit": "Sign in",
+    "submitting": "Signing in…",
     "noAccount": "Don't have an account?",
     "forgotPassword": "Forgot password?",
     "forgotTitle": "Reset password",
@@ -519,6 +520,7 @@
     "missing-supabase-env": "Supabase environment variables are missing in .env.local.",
     "invalid-supabase-env": "Supabase environment variables still contain example values. Update .env.local with your project credentials.",
     "supabase-connection-failed": "Could not connect to Supabase. Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY.",
+    "network-error": "Could not reach the server. Check your internet connection, restart npm run dev, and try again. If the dev project was paused in Supabase, open the dashboard to wake it.",
     "post-empty": "Please write something for your post.",
     "post-failed": "Could not publish your post. Please try again.",
     "comment-empty": "Please write a comment.",

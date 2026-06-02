@@ -1,4 +1,7 @@
 import type { CvDraft } from "@/app/profile/actions";
+import { AUTH_SESSION_TIMEOUT_MS } from "@/lib/auth/auth-timeouts";
+import { hasSupabaseAuthCookie } from "@/lib/auth/has-auth-cookie";
+import { isTimeoutError, withTimeout } from "@/lib/async/with-timeout";
 import { resolveWorkplaceSlug } from "@/lib/profile/workplace";
 import { truncateHeadline, truncateProfileText } from "@/lib/profile/field-limits";
 import { sanitizeLicenseNumber } from "@/lib/validation/license-number";
@@ -26,10 +29,24 @@ export type CurrentUser = {
 };
 
 export const getCurrentUser = cache(async function getCurrentUser(): Promise<CurrentUser | null> {
+  if (!(await hasSupabaseAuthCookie())) {
+    return null;
+  }
+
   const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+
+  let session;
+  try {
+    ({
+      data: { session },
+    } = await withTimeout(supabase.auth.getSession(), AUTH_SESSION_TIMEOUT_MS));
+  } catch (error) {
+    if (isTimeoutError(error)) {
+      console.warn("[auth] getCurrentUser: getSession timed out");
+    }
+    return null;
+  }
+
   const user = session?.user ?? null;
 
   if (!user) {
@@ -52,22 +69,31 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
 
   let profile: ProfileRow | null = null;
 
-  const { data: profileFull, error: profileError } = await supabase
-    .from("profiles")
-    .select(fullSelect)
-    .eq("id", user.id)
-    .maybeSingle<ProfileRow>();
+  try {
+    const { data: profileFull, error: profileError } = await withTimeout(
+      supabase.from("profiles").select(fullSelect).eq("id", user.id).maybeSingle<ProfileRow>(),
+      AUTH_SESSION_TIMEOUT_MS,
+    );
 
-  const profileMsg = profileError?.message?.toLowerCase() ?? "";
-  if (profileMsg.includes("workplace_institution_slug") || profileMsg.includes("deleted_at")) {
-    const { data: fallback } = await supabase
-      .from("profiles")
-      .select("full_name, headline, city, license_number, avatar_url, cv_draft")
-      .eq("id", user.id)
-      .maybeSingle<ProfileRow>();
-    profile = fallback ?? null;
-  } else {
-    profile = profileFull ?? null;
+    const profileMsg = profileError?.message?.toLowerCase() ?? "";
+    if (profileMsg.includes("workplace_institution_slug") || profileMsg.includes("deleted_at")) {
+      const { data: fallback } = await withTimeout(
+        supabase
+          .from("profiles")
+          .select("full_name, headline, city, license_number, avatar_url, cv_draft")
+          .eq("id", user.id)
+          .maybeSingle<ProfileRow>(),
+        AUTH_SESSION_TIMEOUT_MS,
+      );
+      profile = fallback ?? null;
+    } else {
+      profile = profileFull ?? null;
+    }
+  } catch (error) {
+    if (isTimeoutError(error)) {
+      console.warn("[auth] getCurrentUser: profile query timed out");
+    }
+    profile = null;
   }
 
   if (profile?.deleted_at) {
@@ -98,21 +124,29 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
     cvDraft.education?.trim() ||
     cvDraft.certifications?.trim();
 
-  // Start admin check now — it's independent of the RPC below.
-  // Reuse the existing client to avoid a second auth.getUser() round-trip.
-  const adminCheckPromise = supabase
-    .from("admin_users")
-    .select("user_id")
-    .eq("user_id", user.id)
-    .maybeSingle<{ user_id: string }>();
+  const adminCheckPromise = withTimeout(
+    supabase.from("admin_users").select("user_id").eq("user_id", user.id).maybeSingle<{ user_id: string }>(),
+    AUTH_SESSION_TIMEOUT_MS,
+  ).catch((error: unknown) => {
+    if (isTimeoutError(error)) {
+      console.warn("[auth] getCurrentUser: admin check timed out");
+    }
+    return { data: null };
+  });
 
   if (!hasCv) {
-    const { data: rpcCv } = await supabase.rpc(
-      "get_profile_cv_draft",
-      { target_id: user.id } as never,
-    );
-    if (rpcCv && typeof rpcCv === "object" && !Array.isArray(rpcCv)) {
-      cvDraft = rpcCv as CurrentUser["cvDraft"];
+    try {
+      const { data: rpcCv } = await withTimeout(
+        supabase.rpc("get_profile_cv_draft", { target_id: user.id } as never),
+        AUTH_SESSION_TIMEOUT_MS,
+      );
+      if (rpcCv && typeof rpcCv === "object" && !Array.isArray(rpcCv)) {
+        cvDraft = rpcCv as CurrentUser["cvDraft"];
+      }
+    } catch (error) {
+      if (isTimeoutError(error)) {
+        console.warn("[auth] getCurrentUser: cv draft RPC timed out");
+      }
     }
     const adminResult = await adminCheckPromise;
     const isAdmin = Boolean(adminResult.data?.user_id);
