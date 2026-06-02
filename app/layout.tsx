@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Rubik } from "next/font/google";
 import { Suspense } from "react";
-import DevEnvironmentBanner from "@/components/dev/DevEnvironmentBanner";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
 import { CurrentUserProvider } from "@/components/nav/CurrentUserProvider";
 import MobileBottomNav from "@/components/nav/MobileBottomNav";
@@ -66,7 +65,6 @@ export default async function RootLayout({
   const messages = getMessages(locale);
   const dir = getDirection(locale);
   const appEnv = getAppEnvironment();
-  const showDevBanner = appEnv === "development";
 
   const user = await getCurrentUser();
 
@@ -74,7 +72,6 @@ export default async function RootLayout({
     <html lang={locale} dir={dir} data-app-env={appEnv} className={`${rubik.variable} scroll-smooth`}>
       <body className="min-h-screen overflow-x-clip antialiased">
         <LocaleProvider locale={locale} messages={messages}>
-          {showDevBanner ? <DevEnvironmentBanner label={messages.dev.banner} /> : null}
           <NavCountsProvider
             pendingInvitations={0}
             unreadMessages={0}
