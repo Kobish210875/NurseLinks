@@ -14,13 +14,19 @@ type NetworkPageProps = {
   searchParams: Promise<{ q?: string }>;
 };
 
-// Isolated async component: suspends while fetching data so the page shell
-// (Navbar + heading) streams to the client immediately.
-async function NetworkContent({ userId, query }: { userId: string; query: string }) {
+/**
+ * Auth check + data fetch live here, inside the Suspense boundary.
+ * NetworkSkeleton is already visible on the client while this awaits.
+ */
+async function NetworkContent({ query }: { query: string }) {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/");
+  }
   const supabase = await createClient();
   const { connections, invitations, searchResults, recommendations } = await getNetworkPageData(
     supabase,
-    userId,
+    user.id,
     query,
   );
   return (
@@ -34,12 +40,13 @@ async function NetworkContent({ userId, query }: { userId: string; query: string
   );
 }
 
+/**
+ * Page shell — only awaits getLocale() and searchParams, both resolve
+ * in <1 ms (cookie read + routing data). The Navbar + heading + skeleton
+ * are sent as the first RSC chunk before any Supabase call starts.
+ */
 export default async function NetworkPage({ searchParams }: NetworkPageProps) {
-  const [user, locale, params] = await Promise.all([getCurrentUser(), getLocale(), searchParams]);
-  if (!user) {
-    redirect("/");
-  }
-
+  const [locale, params] = await Promise.all([getLocale(), searchParams]);
   const t = createT(getMessages(locale));
   const query = typeof params.q === "string" ? params.q.trim() : "";
 
@@ -54,7 +61,7 @@ export default async function NetworkPage({ searchParams }: NetworkPageProps) {
             </h1>
           </header>
           <Suspense fallback={<NetworkSkeleton />}>
-            <NetworkContent userId={user.id} query={query} />
+            <NetworkContent query={query} />
           </Suspense>
         </div>
       </main>

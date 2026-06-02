@@ -12,21 +12,48 @@ import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
 import { createClient } from "@/lib/supabase/server";
 
+/**
+ * Async component for the jobs-specific chrome: the auto-refresh poller
+ * and the Browse / Applications / Publish tab bar.
+ *
+ * Auth + two Supabase queries live here. While this suspends, the layout
+ * shell (Navbar, title) and the {children} browse skeleton are already
+ * visible to the user.
+ *
+ * Because this and the {children} Suspense are siblings (not nested),
+ * their data fetches run in parallel — both start as soon as React
+ * cache() delivers getCurrentUser().
+ */
+async function JobsChrome() {
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/");
+  }
+  const supabase = await createClient();
+  const [jobsVersion, applicationsUnread] = await Promise.all([
+    getJobsVersion(supabase, user.id),
+    getUnreadJobApplicationCount(supabase, user.id),
+  ]);
+  return (
+    <>
+      <JobsAutoRefresh initialVersion={jobsVersion} />
+      <JobsNav applicationsUnread={applicationsUnread} />
+    </>
+  );
+}
+
+/**
+ * Layout shell — only awaits getLocale() which reads a cookie (< 1 ms,
+ * no network). The Navbar + title + both skeletons are sent as the first
+ * RSC chunk before any Supabase work begins.
+ */
 export default async function JobsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [user, locale, supabase] = await Promise.all([getCurrentUser(), getLocale(), createClient()]);
-  if (!user) {
-    redirect("/");
-  }
-
+  const locale = await getLocale();
   const t = createT(getMessages(locale));
-  const [jobsVersion, applicationsUnread] = await Promise.all([
-    getJobsVersion(supabase, user.id),
-    getUnreadJobApplicationCount(supabase, user.id),
-  ]);
 
   return (
     <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
@@ -38,13 +65,28 @@ export default async function JobsLayout({
               {t("jobs.title")}
             </h1>
           </header>
-          <JobsAutoRefresh initialVersion={jobsVersion} />
-          <JobsNav applicationsUnread={applicationsUnread} />
+
+          {/* Jobs tab-bar + auto-refresh — skeleton while auth + queries run */}
+          <Suspense
+            fallback={
+              <div className="h-11 rounded-2xl border bg-card motion-safe:animate-pulse" />
+            }
+          >
+            <JobsChrome />
+          </Suspense>
+
+          {/*
+           * Browse content — sibling of JobsChrome, NOT nested inside it.
+           * Both Suspense boundaries start resolving at the same time:
+           * JobsBrowseSkeleton is visible immediately, replaced by real
+           * content once getCurrentUser + job queries resolve.
+           */}
           <Suspense fallback={<JobsBrowseSkeleton />}>
             <div className="jobs-browse-shell min-h-0 min-w-0 max-md:overflow-visible lg:flex-1">
               {children}
             </div>
           </Suspense>
+
           <div className="mobile-feed-bottom-spacer md:hidden" aria-hidden="true" />
         </div>
       </main>
