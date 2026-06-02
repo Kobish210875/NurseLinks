@@ -220,7 +220,7 @@ export default function MemberRow({
                     }}
                     className={`${actionBtn} border-border text-muted-foreground hover:bg-muted/60`}
                   >
-                    {t("network.dismissRecommendation")}
+                    {t("network.ignore")}
                   </button>
                 ) : null}
               </>
