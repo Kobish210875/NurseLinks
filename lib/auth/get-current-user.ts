@@ -70,21 +70,23 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
   let profile: ProfileRow | null = null;
 
   try {
-    const { data: profileFull, error: profileError } = await withTimeout(
+    const profileResult = (await withTimeout(
       supabase.from("profiles").select(fullSelect).eq("id", user.id).maybeSingle<ProfileRow>(),
       AUTH_SESSION_TIMEOUT_MS,
-    );
+    )) as { data: ProfileRow | null; error: { message?: string } | null };
+    const { data: profileFull, error: profileError } = profileResult;
 
     const profileMsg = profileError?.message?.toLowerCase() ?? "";
     if (profileMsg.includes("workplace_institution_slug") || profileMsg.includes("deleted_at")) {
-      const { data: fallback } = await withTimeout(
+      const fallbackResult = (await withTimeout(
         supabase
           .from("profiles")
           .select("full_name, headline, city, license_number, avatar_url, cv_draft")
           .eq("id", user.id)
           .maybeSingle<ProfileRow>(),
         AUTH_SESSION_TIMEOUT_MS,
-      );
+      )) as { data: ProfileRow | null };
+      const { data: fallback } = fallbackResult;
       profile = fallback ?? null;
     } else {
       profile = profileFull ?? null;
