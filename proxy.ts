@@ -25,25 +25,16 @@ export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const hasAuthCookie = hasSupabaseAuthCookie(request);
 
-  if (isAuthRoute(pathname)) {
-    if (hasAuthCookie) {
-      if (pathname === "/login") {
-        const q = request.nextUrl.searchParams;
-        if (q.has("error") || q.get("reset") === "success") {
-          return response;
-        }
-      }
-      return NextResponse.redirect(new URL("/home", request.url));
-    }
+  if (!isAuthRoute(pathname) && !isProtectedRoute(pathname)) {
     return response;
   }
 
-  if (!isProtectedRoute(pathname)) {
-    return response;
-  }
-
-  if (!hasAuthCookie) {
+  if (isProtectedRoute(pathname) && !hasAuthCookie) {
     return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  if (isAuthRoute(pathname) && !hasAuthCookie) {
+    return response;
   }
 
   const supabase = createServerClient(
@@ -74,10 +65,23 @@ export async function proxy(request: NextRequest) {
     if (isTimeoutError(error)) {
       console.warn("[proxy] getSession timed out");
     }
-    return NextResponse.redirect(new URL("/", request.url));
+    if (isProtectedRoute(pathname)) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+    return response;
   }
 
-  if (!user) {
+  if (user && isAuthRoute(pathname)) {
+    if (pathname === "/login") {
+      const q = request.nextUrl.searchParams;
+      if (q.has("error") || q.get("reset") === "success") {
+        return response;
+      }
+    }
+    return NextResponse.redirect(new URL("/home", request.url));
+  }
+
+  if (!user && isProtectedRoute(pathname)) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
