@@ -54,14 +54,14 @@ export default async function HospitalDetailPage({ params }: HospitalPageProps) 
       <main className="feed-page min-h-[calc(100vh-4rem)] py-4 md:py-6">
         <div className="mx-auto w-full max-w-[1128px] px-3 sm:px-4">
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)] lg:items-start lg:gap-6">
-            <aside className="hidden lg:block">
+            <aside className="hidden lg:col-start-2 lg:block">
               <InstitutionsPicker
                 activity={institutionActivity}
                 activeSlug={slug}
                 showLegend
               />
             </aside>
-            <div className="min-w-0">
+            <div className="min-w-0 lg:col-start-1">
               <InstitutionPage
                 institution={institution}
                 colleagues={colleagues}

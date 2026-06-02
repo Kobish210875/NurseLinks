@@ -174,7 +174,7 @@ export default function MemberRow({
             ) : null}
 
             {variant === "recommendation" ? (
-              <>
+              <div className="flex w-full items-center justify-between gap-2">
                 <button
                   type="button"
                   disabled={pending}
@@ -186,53 +186,57 @@ export default function MemberRow({
                     run(() => dismissConnectionRecommendation(member.id), optimisticStatus);
                   }}
                   className={dismissBtn}
+                  aria-label={t("network.dismissRecommendation")}
+                  title={t("network.dismissRecommendation")}
                 >
-                  {t("network.dismissRecommendation")}
+                  X
                 </button>
-                {optimisticStatus === "none" ? (
-                  <button
-                    type="button"
-                    disabled={pending}
-                    onClick={() => run(() => sendConnectionRequest(member.id), "pending_out")}
-                    className={`${actionBtn} border-primary text-primary hover:bg-primary/5`}
-                  >
-                    {t("network.connect")}
-                  </button>
-                ) : null}
-                {optimisticStatus === "pending_out" ? (
-                  <button
-                    type="button"
-                    disabled={pending}
-                    onClick={() => run(() => cancelConnectionRequest(member.id), "none")}
-                    className={`${actionBtn} border-border text-muted-foreground`}
-                  >
-                    {t("network.pending")}
-                  </button>
-                ) : null}
-                {optimisticStatus === "pending_in" ? (
-                  <>
+                <div className="flex items-center gap-1">
+                  {optimisticStatus === "none" ? (
                     <button
                       type="button"
                       disabled={pending}
-                      onClick={() => run(() => acceptConnectionRequest(member.id), "connected")}
-                      className={`${actionBtn} border-primary bg-primary text-primary-foreground`}
+                      onClick={() => run(() => sendConnectionRequest(member.id), "pending_out")}
+                      className={`${actionBtn} border-primary text-primary hover:bg-primary/5`}
                     >
-                      {t("network.accept")}
+                      {t("network.connect")}
                     </button>
+                  ) : null}
+                  {optimisticStatus === "pending_out" ? (
                     <button
                       type="button"
                       disabled={pending}
-                      onClick={() => run(() => rejectConnectionRequest(member.id), "none")}
+                      onClick={() => run(() => cancelConnectionRequest(member.id), "none")}
                       className={`${actionBtn} border-border text-muted-foreground`}
                     >
-                      {t("network.ignore")}
+                      {t("network.pending")}
                     </button>
-                  </>
-                ) : null}
-                <Link href={messageHref} className={msgBtn}>
-                  {t("network.message")}
-                </Link>
-              </>
+                  ) : null}
+                  {optimisticStatus === "pending_in" ? (
+                    <>
+                      <button
+                        type="button"
+                        disabled={pending}
+                        onClick={() => run(() => acceptConnectionRequest(member.id), "connected")}
+                        className={`${actionBtn} border-primary bg-primary text-primary-foreground`}
+                      >
+                        {t("network.accept")}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={pending}
+                        onClick={() => run(() => rejectConnectionRequest(member.id), "none")}
+                        className={`${actionBtn} border-border text-muted-foreground`}
+                      >
+                        {t("network.ignore")}
+                      </button>
+                    </>
+                  ) : null}
+                  <Link href={messageHref} className={msgBtn}>
+                    {t("network.message")}
+                  </Link>
+                </div>
+              </div>
             ) : null}
 
             {variant === "search" ? (
