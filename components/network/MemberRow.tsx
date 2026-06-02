@@ -179,7 +179,7 @@ export default function MemberRow({
             ) : null}
           </div>
 
-          <div className="flex max-w-[42%] shrink-0 flex-wrap items-center justify-end gap-1">
+          <div className="flex max-w-[42%] shrink-0 flex-wrap items-center justify-end gap-1.5">
             {variant === "invitation" ? (
               <>
                 <button
