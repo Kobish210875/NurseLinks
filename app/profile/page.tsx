@@ -57,7 +57,9 @@ export default function ProfilePage({ searchParams }: ProfilePageProps) {
       <Suspense fallback={<ProfilePageSkeleton />}>
         <ProfileContent searchParams={searchParams} />
       </Suspense>
-      <Footer />
+      <div className="lg:hidden">
+        <Footer />
+      </div>
     </>
   );
 }

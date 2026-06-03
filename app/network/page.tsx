@@ -71,7 +71,9 @@ export default async function NetworkPage({ searchParams }: NetworkPageProps) {
           </div>
         </div>
       </main>
-      <Footer />
+      <div className="lg:hidden">
+        <Footer />
+      </div>
     </>
   );
 }

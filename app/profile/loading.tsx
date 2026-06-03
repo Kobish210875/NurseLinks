@@ -7,7 +7,9 @@ export default function ProfileLoading() {
     <>
       <Navbar authenticated />
       <ProfilePageSkeleton />
-      <Footer />
+      <div className="lg:hidden">
+        <Footer />
+      </div>
     </>
   );
 }

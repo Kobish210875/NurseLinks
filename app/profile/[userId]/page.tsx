@@ -42,7 +42,9 @@ async function PublicProfileContent({ params }: PublicProfilePageProps) {
             {t("network.title")}
           </Link>
         </main>
-        <Footer />
+        <div className="lg:hidden">
+          <Footer />
+        </div>
       </>
     );
   }
@@ -66,7 +68,9 @@ export default function PublicProfilePage({ params }: PublicProfilePageProps) {
       <Suspense fallback={<ProfilePageSkeleton />}>
         <PublicProfileContent params={params} />
       </Suspense>
-      <Footer />
+      <div className="lg:hidden">
+        <Footer />
+      </div>
     </>
   );
 }

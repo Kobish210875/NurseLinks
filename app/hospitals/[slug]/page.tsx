@@ -86,7 +86,9 @@ export default async function HospitalDetailPage({ params }: HospitalPageProps) 
           </div>
         </div>
       </main>
-      <Footer />
+      <div className="lg:hidden">
+        <Footer />
+      </div>
     </>
   );
 }

@@ -22,7 +22,9 @@ export default function NetworkLoading() {
           </div>
         </div>
       </main>
-      <Footer />
+      <div className="lg:hidden">
+        <Footer />
+      </div>
     </>
   );
 }
