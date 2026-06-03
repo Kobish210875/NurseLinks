@@ -226,7 +226,8 @@
     "missing-password": "נא למלא סיסמה חדשה.",
     "resetSessionLoading": "מאמתים את קישור האיפוס…",
     "resetSessionExpired": "קישור האיפוס פג תוקף או שכבר נוצל. בקשו קישור חדש ונסו שוב.",
-    "resetLinkExpired": "קישור האיפוס פג תוקף או שכבר נוצל. שלחו קישור חדש לאימייל שלכם."
+    "resetLinkExpired": "קישור האיפוס פג תוקף או שכבר נוצל. שלחו קישור חדש לאימייל שלכם.",
+    "passwordSameAsOld": "הסיסמה החדשה חייבת להיות שונה מהסיסמה הקודמת."
   },
   "profile": {
     "signOut": "התנתקות",
@@ -433,7 +434,15 @@
     "notConnected": "ניתן לשלוח הודעות רק למשתמשים שמחוברים אליכם.",
     "threadEmpty": "עדיין אין הודעות בשיחה הזו. כתבו את ההודעה הראשונה.",
     "unreadMessage": "הודעה חדשה",
-    "notConfigured": "מערכת ההודעות לא הוגדרה ב-Supabase. הריצו את supabase/connections-messaging.sql (או connections-messaging-fix.sql)."
+    "notConfigured": "מערכת ההודעות לא הוגדרה ב-Supabase. הריצו את supabase/connections-messaging.sql (או connections-messaging-fix.sql).",
+    "dockTitle": "הודעות",
+    "dockSearchLabel": "חיפוש בשיחות",
+    "dockSearchPlaceholder": "חיפוש בשיחות…",
+    "dockMinimize": "מזער חלון הודעות",
+    "dockClose": "סגור חלון הודעות",
+    "dockCloseConversation": "סגור שיחה",
+    "dockListAria": "רשימת שיחות",
+    "dockConversationAria": "שיחה פתוחה"
   },
   "moderation": {
     "report": "דיווח",

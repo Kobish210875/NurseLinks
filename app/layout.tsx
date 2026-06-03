@@ -3,6 +3,7 @@ import { Rubik } from "next/font/google";
 import { Suspense } from "react";
 import { LocaleProvider } from "@/components/i18n/LocaleProvider";
 import { CurrentUserProvider } from "@/components/nav/CurrentUserProvider";
+import MessagingDockShell from "@/components/messages/MessagingDockShell";
 import MobileBottomNav from "@/components/nav/MobileBottomNav";
 import MobileShellEffects from "@/components/nav/MobileShellEffects";
 import { NavCountsProvider } from "@/components/nav/NavCountsProvider";
@@ -84,13 +85,20 @@ async function RootUserShell({ children }: { children: React.ReactNode }) {
           : null
       }
     >
-      <MobileShellEffects />
-      {children}
       {user ? (
-        <Suspense fallback={null}>
-          <MobileBottomNav />
-        </Suspense>
-      ) : null}
+        <MessagingDockShell>
+          <MobileShellEffects />
+          {children}
+          <Suspense fallback={null}>
+            <MobileBottomNav />
+          </Suspense>
+        </MessagingDockShell>
+      ) : (
+        <>
+          <MobileShellEffects />
+          {children}
+        </>
+      )}
     </CurrentUserProvider>
   );
 }

@@ -34,7 +34,9 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
             ? t("login.authProfileFailed")
             : params.error === "email-rate-limit"
               ? t("errors.email-rate-limit")
-              : decodeURIComponent(params.error)
+              : params.error === "network-error"
+                ? t("errors.network-error")
+                : decodeURIComponent(params.error)
     : null;
   const successMessage =
     params.reset === "success"

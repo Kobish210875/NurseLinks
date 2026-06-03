@@ -25,7 +25,9 @@ export default async function ResetPasswordPage({ searchParams }: ResetPasswordP
           ? t(`errors.${params.error}`)
           : params.error === "email-rate-limit"
             ? t("errors.email-rate-limit")
-            : decodeURIComponent(params.error)
+            : params.error === "password-same-as-old"
+              ? t("login.passwordSameAsOld")
+              : decodeURIComponent(params.error)
     : null;
 
   return (

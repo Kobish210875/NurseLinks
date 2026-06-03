@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useState } from "react";
-import { useT } from "@/components/i18n/LocaleProvider";
+import { useLocale, useT } from "@/components/i18n/LocaleProvider";
+import { getDirection } from "@/lib/i18n/config";
 import PasswordInput from "@/components/register/PasswordInput";
 import RequiredLabel from "@/components/register/RequiredLabel";
 import { normalizeSupabaseAuthError } from "@/lib/auth/supabase-auth-errors";
@@ -26,7 +27,9 @@ type ResetPasswordClientProps = {
 type Phase = "loading" | "form" | "expired";
 
 export default function ResetPasswordClient({ serverError }: ResetPasswordClientProps) {
+  const { locale } = useLocale();
   const t = useT();
+  const textDir = getDirection(locale);
   const router = useRouter();
   const passwordId = useId();
   const passwordConfirmId = useId();
@@ -103,6 +106,7 @@ export default function ResetPasswordClient({ serverError }: ResetPasswordClient
     if (code === "missing-password") return t("login.missing-password");
     if (code === "password-mismatch") return t("login.passwordMismatch");
     if (code === "reset-session-expired") return t("login.resetSessionExpired");
+    if (code === "password-same-as-old") return t("login.passwordSameAsOld");
     if (code.startsWith("password-")) return t(`errors.${code}`);
     if (code === "email-rate-limit") return t("errors.email-rate-limit");
     try {
@@ -209,7 +213,11 @@ export default function ResetPasswordClient({ serverError }: ResetPasswordClient
       )}
 
       {displayError ? (
-        <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p
+          className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 text-start"
+          dir={textDir}
+          role="alert"
+        >
           {displayError}
         </p>
       ) : null}

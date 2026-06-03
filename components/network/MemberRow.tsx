@@ -80,8 +80,8 @@ export default function MemberRow({
       : null;
 
   return (
-    <li>
-      <article className="feed-card overflow-hidden transition hover:border-primary/25">
+    <li className="min-w-0">
+      <article className="feed-card min-w-0 overflow-hidden transition hover:border-primary/25">
         <div className="flex items-center gap-2 p-2 sm:gap-2.5 sm:p-2.5">
           <Link
             href={`/profile/${member.id}`}

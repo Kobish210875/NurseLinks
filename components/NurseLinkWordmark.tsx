@@ -3,7 +3,7 @@ import LogoIcon from "@/components/LogoIcon";
 export default function NurseLinkWordmark({
   className = "",
   textClassName = "",
-  iconClassName = "size-[0.9em] shrink-0 text-primary",
+  iconClassName = "shrink-0 text-primary",
 }: {
   className?: string;
   textClassName?: string;
@@ -11,7 +11,7 @@ export default function NurseLinkWordmark({
 }) {
   return (
     <span dir="ltr" lang="en" className={`inline-flex items-center gap-1.5 ${className}`}>
-      <span className={textClassName} aria-hidden="true">
+      <span className={`text-base font-semibold leading-none ${textClassName}`} aria-hidden="true">
         NurseLinks
       </span>
       <LogoIcon className={iconClassName} />

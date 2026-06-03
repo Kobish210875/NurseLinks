@@ -31,7 +31,14 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isMobileHeader, setIsMobileHeader] = useState(false);
   const isAdminRoute = pathname.startsWith("/admin");
+  const isWideShellRoute =
+    pathname === "/home" ||
+    pathname === "/network" ||
+    pathname.startsWith("/network/") ||
+    pathname === "/jobs" ||
+    pathname.startsWith("/jobs/");
   const didWarmRoutesRef = useRef(false);
+  const desktopNavMaxWidth = isWideShellRoute ? "max-w-[1240px]" : "max-w-[1128px]";
 
   useEffect(() => {
     const media = window.matchMedia("(max-width: 767px)");
@@ -59,7 +66,6 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
     { href: "/home", label: t("nav.home") },
     { href: "/network", label: t("nav.network"), badge: "network" },
     { href: "/jobs", label: t("nav.jobs"), badge: "jobs" },
-    { href: "/messages", label: t("nav.messages"), badge: "messages" },
     ...(mobileUser?.isAdmin
       ? [
           { href: "/admin/users", label: t("nav.adminUsers") },
@@ -114,6 +120,22 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
         {authenticated
           ? navItems.map((item) => {
               const count = badgeCount(item.badge);
+              const className = `relative flex items-center justify-center whitespace-nowrap px-2.5 py-2 text-xs font-medium transition-colors ${
+                isActive(item.href)
+                  ? "nav-link-active"
+                  : "text-muted-foreground hover:text-primary"
+              }`;
+              const label = (
+                <span
+                  className={
+                    item.badge ? "inline-flex items-center gap-1.5" : "inline-flex items-center"
+                  }
+                >
+                  {item.label}
+                  {renderNavBadge(item.badge, count)}
+                </span>
+              );
+
               return (
                 <Link
                   key={item.href}
@@ -121,22 +143,9 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
                   onMouseEnter={() => prefetchRoute(item.href)}
                   onFocus={() => prefetchRoute(item.href)}
                   onPointerDown={() => prefetchRoute(item.href)}
-                  className={`relative flex items-center justify-center whitespace-nowrap px-2.5 py-2 text-xs font-medium transition-colors ${
-                    isActive(item.href)
-                      ? "nav-link-active"
-                      : "text-muted-foreground hover:text-primary"
-                  }`}
+                  className={className}
                 >
-                  <span
-                    className={
-                      item.badge
-                        ? "inline-flex items-center gap-1.5"
-                        : "inline-flex items-center"
-                    }
-                  >
-                    {item.label}
-                    {renderNavBadge(item.badge, count)}
-                  </span>
+                  {label}
                 </Link>
               );
             })
@@ -222,7 +231,7 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
 
       {/* Desktop + logged-out mobile */}
       <nav
-        className={`mx-auto h-14 w-full min-w-0 max-w-[1128px] px-3 sm:px-4 ${
+        className={`mx-auto h-14 w-full min-w-0 ${desktopNavMaxWidth} px-3 sm:px-4 ${
           authenticated ? "hidden md:block" : "flex items-center gap-1.5 sm:gap-2"
         }`}
       >
@@ -244,7 +253,8 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
               onMouseEnter={() => prefetchRoute("/home")}
               onFocus={() => prefetchRoute("/home")}
               onPointerDown={() => prefetchRoute("/home")}
-              className="hidden shrink-0 text-base font-bold text-primary lg:col-start-3 lg:block lg:justify-self-end"
+              dir="ltr"
+              className="hidden text-base font-bold text-primary lg:col-start-3 lg:flex lg:w-full lg:justify-start"
               aria-label={t("nav.homeAria")}
             >
               <NurseLinkWordmark textClassName="text-primary text-base sm:text-lg" />

@@ -58,9 +58,9 @@ export default async function JobsLayout({
   return (
     <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
       <Navbar authenticated />
-      <main className="home-main-shell feed-page min-h-0 w-full min-w-0 max-w-[100vw] overflow-hidden py-4 max-md:block max-md:flex-none max-md:overflow-x-clip max-md:pb-[calc(var(--mobile-bottom-nav-offset)+1.75rem)] md:py-6">
-        <div className="mx-auto flex h-full w-full min-w-0 max-w-2xl flex-col space-y-4 overflow-hidden px-3 sm:px-4 max-md:block max-md:h-auto max-md:overflow-x-clip max-md:pb-[calc(var(--mobile-bottom-nav-offset)+1.5rem)] lg:max-w-5xl">
-          <header className="shrink-0 min-w-0 text-start">
+      <main className="home-main-shell feed-page min-h-0 w-full min-w-0 max-w-[100vw] overflow-hidden py-4 max-md:block max-md:flex-none max-md:overflow-x-clip max-md:pb-[calc(var(--mobile-bottom-nav-offset)+1.75rem)] md:pb-6 md:pt-0">
+        <div className="mx-auto flex h-full w-full min-w-0 max-w-2xl flex-col gap-3 overflow-hidden px-3 sm:px-4 max-md:block max-md:h-auto max-md:overflow-x-clip max-md:pb-[calc(var(--mobile-bottom-nav-offset)+1.5rem)] lg:max-w-[1240px] lg:gap-4">
+          <header className="shrink-0 min-w-0 pt-2 text-start md:pt-3">
             <h1 className="break-words text-lg font-bold text-foreground sm:text-xl">
               {t("jobs.title")}
             </h1>

@@ -57,6 +57,13 @@ In Supabase Dashboard → **Authentication** → **URL Configuration**:
 
 Set `NEXT_PUBLIC_APP_URL=https://nurselinks.net` in production so reset emails use the correct domain.
 
+### Email sender name (NurseLinks, not Supabase)
+
+Auth emails (reset password, confirm signup) use Supabase templates — see **`supabase/auth-email-branding.md`**
+for DEV/localhost dashboard steps and suggested Hebrew subjects.
+
+Job/comment notification emails use Resend; set `NOTIFICATIONS_FROM_EMAIL` in `.env.local` (display name `NurseLinks` is added automatically).
+
 ### Post photos on the feed (required for image posts)
 
 If publishing a post with a photo shows **“אחסון תמונות לפוסטים לא הוגדר”**:

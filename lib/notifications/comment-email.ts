@@ -1,3 +1,5 @@
+import { notificationsFromEmail } from "@/lib/notifications/from-email";
+
 type SendCommentEmailArgs = {
   toEmail: string;
   recipientName: string;
@@ -17,7 +19,7 @@ function trimPreview(text: string, max = 160) {
 
 export async function sendCommentNotificationEmail(args: SendCommentEmailArgs) {
   const apiKey = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.NOTIFICATIONS_FROM_EMAIL;
+  const fromEmail = notificationsFromEmail();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   if (!apiKey || !fromEmail) {
@@ -25,7 +27,7 @@ export async function sendCommentNotificationEmail(args: SendCommentEmailArgs) {
   }
 
   const postUrl = `${appUrl.replace(/\/$/, "")}/home#post-${args.postId}`;
-  const subject = "New comment on your post";
+  const subject = "NurseLinks — New comment on your post";
   const html = `
     <div style="font-family:Arial,sans-serif;line-height:1.6">
       <p>Hi ${args.recipientName || "there"},</p>

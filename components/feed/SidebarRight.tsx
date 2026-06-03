@@ -2,8 +2,7 @@
 
 import { useT } from "@/components/i18n/LocaleProvider";
 import type { CurrentUser } from "@/lib/auth/get-current-user";
-import AboutStoryCard from "./AboutStoryCard";
-import ProTipCard from "./ProTipCard";
+import MessagingSidebarPanel from "@/components/messages/MessagingSidebarPanel";
 import UserProfileCard from "./UserProfileCard";
 
 type SidebarRightProps = {
@@ -14,10 +13,9 @@ export default function SidebarRight({ user }: SidebarRightProps) {
   const t = useT();
 
   return (
-    <aside className="flex flex-col gap-4" aria-label={t("feed.joinAria")}>
+    <aside className="flex min-h-0 flex-1 flex-col gap-4" aria-label={t("feed.joinAria")}>
       <UserProfileCard user={user} />
-      <ProTipCard />
-      <AboutStoryCard />
+      <MessagingSidebarPanel />
     </aside>
   );
 }

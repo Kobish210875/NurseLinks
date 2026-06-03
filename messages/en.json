@@ -226,7 +226,8 @@
     "missing-password": "Please enter a new password.",
     "resetSessionLoading": "Verifying your reset link…",
     "resetSessionExpired": "This reset link has expired or was already used. Request a new link and try again.",
-    "resetLinkExpired": "This reset link has expired or was already used. Send a new link to your email."
+    "resetLinkExpired": "This reset link has expired or was already used. Send a new link to your email.",
+    "passwordSameAsOld": "The new password must be different from your current password."
   },
   "profile": {
     "signOut": "Sign out",
@@ -433,7 +434,15 @@
     "notConnected": "You can only message people you are connected with.",
     "threadEmpty": "No messages in this conversation yet. Send the first one.",
     "unreadMessage": "New message",
-    "notConfigured": "Messaging is not set up in Supabase. Run supabase/connections-messaging.sql (or connections-messaging-fix.sql)."
+    "notConfigured": "Messaging is not set up in Supabase. Run supabase/connections-messaging.sql (or connections-messaging-fix.sql).",
+    "dockTitle": "Messages",
+    "dockSearchLabel": "Search conversations",
+    "dockSearchPlaceholder": "Search conversations…",
+    "dockMinimize": "Minimize messages",
+    "dockClose": "Close messages",
+    "dockCloseConversation": "Close conversation",
+    "dockListAria": "Conversation list",
+    "dockConversationAria": "Open conversation"
   },
   "moderation": {
     "report": "Report",

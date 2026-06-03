@@ -17,9 +17,19 @@ type MessageThreadViewProps = {
   peer: NetworkMember;
   messages: DirectMessage[];
   currentUserId: string;
+  dockMode?: boolean;
+  onClose?: () => void;
+  onMessageSent?: () => void;
 };
 
-export default function MessageThreadView({ peer, messages, currentUserId }: MessageThreadViewProps) {
+export default function MessageThreadView({
+  peer,
+  messages,
+  currentUserId,
+  dockMode = false,
+  onClose,
+  onMessageSent,
+}: MessageThreadViewProps) {
   const t = useT();
   const { locale } = useLocale();
   const router = useRouter();
@@ -41,8 +51,11 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
   }, [messages]);
 
   useEffect(() => {
+    if (dockMode) {
+      return;
+    }
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-  }, [peer.id]);
+  }, [dockMode, peer.id]);
 
   useEffect(() => {
     if (markedReadRef.current) {
@@ -118,6 +131,10 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
         return;
       }
       setBody("");
+      if (dockMode) {
+        onMessageSent?.();
+        return;
+      }
       if (closeAfterSend) {
         router.push("/messages");
         return;
@@ -126,30 +143,37 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
     });
   }
 
+  const peerAvatar = (
+    <Link
+      href={`/profile/${peer.id}`}
+      className="flex size-10 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10 transition hover:ring-2 hover:ring-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      aria-label={peer.fullName}
+    >
+      {peer.avatarUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={peer.avatarUrl} alt="" className="size-full object-cover" />
+      ) : (
+        <span className="flex size-full items-center justify-center text-xs font-semibold text-primary">
+          {peer.initials}
+        </span>
+      )}
+    </Link>
+  );
+
   return (
-    <div className="message-thread-shell feed-card flex min-h-[min(480px,70dvh)] flex-col overflow-hidden max-md:min-h-0">
-      <header className="flex items-center gap-3 border-b border-border px-4 py-3">
-        <Link
-          href="/messages"
-          className="text-sm font-medium text-primary hover:underline"
-        >
-          {t("messages.back")}
-        </Link>
-        <Link
-          href={`/profile/${peer.id}`}
-          className="flex size-10 overflow-hidden rounded-full border border-border bg-primary/10 transition hover:ring-2 hover:ring-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
-          aria-label={peer.fullName}
-        >
-          {peer.avatarUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={peer.avatarUrl} alt="" className="size-full object-cover" />
-          ) : (
-            <span className="flex size-full items-center justify-center text-xs font-semibold text-primary">
-              {peer.initials}
-            </span>
-          )}
-        </Link>
-        <div className="min-w-0 text-start">
+    <div
+      className={`message-thread-shell flex flex-col overflow-hidden ${
+        dockMode ? "h-full min-h-0" : "feed-card min-h-[min(480px,70dvh)] max-md:min-h-0"
+      }`}
+    >
+      <header className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2.5">
+        {dockMode ? null : (
+          <Link href="/messages" className="text-sm font-medium text-primary hover:underline">
+            {t("messages.back")}
+          </Link>
+        )}
+        {peerAvatar}
+        <div className="min-w-0 flex-1 text-start">
           <Link
             href={`/profile/${peer.id}`}
             className="font-semibold text-foreground hover:text-primary hover:underline"
@@ -160,15 +184,31 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
             <p className="truncate text-xs text-muted-foreground">{professionalLine}</p>
           ) : null}
         </div>
+        {dockMode && onClose ? (
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md p-1.5 text-muted-foreground hover:bg-muted/60"
+            aria-label={t("messages.dockCloseConversation")}
+          >
+            ×
+          </button>
+        ) : null}
       </header>
 
-      <>
+      <div className={dockMode ? "flex min-h-0 flex-1 flex-col" : "contents"}>
           <ul
             ref={messagesListRef}
-            className="message-thread-messages flex-1 space-y-3 overflow-y-auto overscroll-contain p-4"
+            className={`message-thread-messages space-y-3 p-4 ${
+              dockMode
+                ? `min-h-0 flex-1 overscroll-contain ${
+                    displayMessages.length === 0 ? "overflow-hidden" : "overflow-y-auto"
+                  }`
+                : "flex-1 overflow-y-auto overscroll-contain"
+            }`}
           >
             {displayMessages.length === 0 ? (
-              <li className="text-center text-sm text-muted-foreground">
+              <li className="flex min-h-[8rem] items-center justify-center text-center text-sm text-muted-foreground">
                 {t("messages.threadEmpty")}
               </li>
             ) : (
@@ -246,12 +286,14 @@ export default function MessageThreadView({ peer, messages, currentUserId }: Mes
               </button>
             </div>
           </form>
-          <div
-            ref={messagesEndRef}
-            className="message-thread-end-anchor h-px shrink-0"
-            aria-hidden="true"
-          />
-      </>
+          {displayMessages.length > 0 ? (
+            <div
+              ref={messagesEndRef}
+              className="message-thread-end-anchor h-px shrink-0"
+              aria-hidden="true"
+            />
+          ) : null}
+      </div>
     </div>
   );
 }

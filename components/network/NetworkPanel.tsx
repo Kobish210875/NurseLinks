@@ -37,7 +37,7 @@ function MemberList({
   }
 
   return (
-    <ul className="space-y-2" aria-live="polite">
+    <ul className="min-w-0 space-y-2" aria-live="polite">
       {members.map((member) => (
         <MemberRow
           key={member.id}
@@ -144,7 +144,7 @@ export default function NetworkPanel({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={t("network.searchPlaceholder")}
-          className="network-search-input w-full max-w-full rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm"
+          className="network-search-input box-border w-full min-w-0 rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm"
         />
       </section>
 
@@ -153,7 +153,7 @@ export default function NetworkPanel({
           <h2 className="mb-2 text-start text-sm font-semibold text-foreground">
             {t("network.searchResults")}
           </h2>
-          <div className="network-members-scroll max-h-[min(16rem,calc(100vh-14rem))] overflow-y-auto overscroll-contain pe-0.5">
+          <div className="network-members-scroll max-h-[min(16rem,calc(100vh-14rem))] min-w-0 overflow-y-auto overscroll-contain">
             <MemberList
               members={searchResults}
               variant="search"
@@ -171,7 +171,7 @@ export default function NetworkPanel({
           <p className="mb-2 text-start text-xs text-muted-foreground">
             {t("network.recommendationsHint")}
           </p>
-          <div className="network-members-scroll max-h-[min(16rem,calc(100vh-14rem))] overflow-y-auto overscroll-contain pe-0.5">
+          <div className="network-members-scroll max-h-[min(16rem,calc(100vh-14rem))] min-w-0 overflow-y-auto overscroll-contain">
             <MemberList
               members={visibleRecommendations}
               variant="recommendation"
@@ -226,36 +226,34 @@ export default function NetworkPanel({
               : t("network.count").replace("{count}", String(connections.length))}
           </span>
         </div>
-        {tab === "connections" ? (
-          <div className="mb-3">
-            <label className="sr-only" htmlFor={connectionsFilterId}>
-              {t("network.connectionsFilterLabel")}
-            </label>
-            <input
-              id={connectionsFilterId}
-              type="search"
-              value={friendsFilter}
-              onChange={(e) => setFriendsFilter(e.target.value)}
-              placeholder={t("network.connectionsFilterPlaceholder")}
-              className="network-search-input w-full max-w-full rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm"
-            />
-          </div>
-        ) : null}
-        <div className="network-members-scroll max-h-[min(22rem,calc(100vh-18rem))] overflow-y-auto overscroll-contain pe-0.5">
-          {tab === "invitations" ? (
-            <div key="tab-invitations" className="panel-enter" role="tabpanel">
-              <MemberList
-                members={invitations}
-                variant="invitation"
-                emptyText={t("network.noInvitations")}
-              />
-            </div>
-          ) : (
-            <div key="tab-connections" className="panel-enter" role="tabpanel">
+        <div className="network-members-scroll max-h-[min(22rem,calc(100vh-18rem))] min-w-0 overflow-y-auto overscroll-contain">
+          {tab === "connections" ? (
+            <div key="tab-connections" className="panel-enter min-w-0" role="tabpanel">
+              <div className="sticky top-0 z-10 mb-3 bg-card pb-0.5">
+                <label className="sr-only" htmlFor={connectionsFilterId}>
+                  {t("network.connectionsFilterLabel")}
+                </label>
+                <input
+                  id={connectionsFilterId}
+                  type="search"
+                  value={friendsFilter}
+                  onChange={(e) => setFriendsFilter(e.target.value)}
+                  placeholder={t("network.connectionsFilterPlaceholder")}
+                  className="network-search-input box-border w-full min-w-0 rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm"
+                />
+              </div>
               <MemberList
                 members={filteredConnections}
                 variant="connection"
                 emptyText={connectionsEmptyText}
+              />
+            </div>
+          ) : (
+            <div key="tab-invitations" className="panel-enter min-w-0" role="tabpanel">
+              <MemberList
+                members={invitations}
+                variant="invitation"
+                emptyText={t("network.noInvitations")}
               />
             </div>
           )}

@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/i18n/config";
+import { notificationsFromEmail } from "@/lib/notifications/from-email";
 
 type SendJobApplicationEmailArgs = {
   locale: Locale;
@@ -12,7 +13,7 @@ type SendJobApplicationEmailArgs = {
 
 export async function sendJobApplicationNotificationEmail(args: SendJobApplicationEmailArgs) {
   const apiKey = process.env.RESEND_API_KEY;
-  const fromEmail = process.env.NOTIFICATIONS_FROM_EMAIL;
+  const fromEmail = notificationsFromEmail();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
   if (!apiKey || !fromEmail) {

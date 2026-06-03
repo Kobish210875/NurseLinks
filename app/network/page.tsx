@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import NetworkPanel from "@/components/network/NetworkPanel";
+import NetworkSidebar from "@/components/network/NetworkSidebar";
+import NetworkSidebarSkeleton from "@/components/network/NetworkSidebarSkeleton";
 import NetworkSkeleton from "@/components/network/NetworkSkeleton";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getNetworkPageData } from "@/lib/data/connections";
@@ -14,10 +16,6 @@ type NetworkPageProps = {
   searchParams: Promise<{ q?: string }>;
 };
 
-/**
- * Auth check + data fetch live here, inside the Suspense boundary.
- * NetworkSkeleton is already visible on the client while this awaits.
- */
 async function NetworkContent({ query }: { query: string }) {
   const user = await getCurrentUser();
   if (!user) {
@@ -40,11 +38,6 @@ async function NetworkContent({ query }: { query: string }) {
   );
 }
 
-/**
- * Page shell — only awaits getLocale() and searchParams, both resolve
- * in <1 ms (cookie read + routing data). The Navbar + heading + skeleton
- * are sent as the first RSC chunk before any Supabase call starts.
- */
 export default async function NetworkPage({ searchParams }: NetworkPageProps) {
   const [locale, params] = await Promise.all([getLocale(), searchParams]);
   const t = createT(getMessages(locale));
@@ -53,16 +46,29 @@ export default async function NetworkPage({ searchParams }: NetworkPageProps) {
   return (
     <>
       <Navbar authenticated />
-      <main className="feed-page min-h-0 w-full min-w-0 max-w-[100vw] overflow-x-clip py-4 md:min-h-[calc(100vh-4rem)] md:py-6">
-        <div className="mx-auto w-full min-w-0 max-w-2xl space-y-4 overflow-x-clip px-3 sm:px-4">
-          <header className="min-w-0 text-start">
+      <main className="feed-page home-feed-shell min-h-0 w-full min-w-0 max-w-[100vw] overflow-x-clip py-3 md:min-h-[calc(100vh-4rem)] md:py-6 lg:overflow-hidden lg:py-4">
+        <div className="mx-auto flex h-full w-full min-w-0 max-w-[1240px] flex-col px-3 sm:px-4">
+          <header className="mb-4 shrink-0 min-w-0 text-start">
             <h1 className="break-words text-lg font-bold text-foreground sm:text-xl">
               {t("network.title")}
             </h1>
           </header>
-          <Suspense fallback={<NetworkSkeleton />}>
-            <NetworkContent query={query} />
-          </Suspense>
+          {/*
+           * Same 3-track grid as the navbar (280 | 1fr | 260). Network spans the
+           * left + center tracks so its edge lines up under the logo column.
+           */}
+          <div className="home-feed-grid grid min-h-0 w-full flex-1 grid-cols-1 gap-4 lg:grid-cols-[280px_minmax(0,1fr)_260px] lg:items-start lg:gap-6">
+            <div className="home-feed-sidebar order-1 hidden lg:block">
+              <Suspense fallback={<NetworkSidebarSkeleton />}>
+                <NetworkSidebar />
+              </Suspense>
+            </div>
+            <div className="home-feed-center order-2 flex min-h-0 min-w-0 flex-col lg:col-span-2">
+              <Suspense fallback={<NetworkSkeleton />}>
+                <NetworkContent query={query} />
+              </Suspense>
+            </div>
+          </div>
         </div>
       </main>
       <Footer />

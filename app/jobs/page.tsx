@@ -70,7 +70,7 @@ async function JobsBrowseContent({ searchParams }: JobsPageProps) {
   ];
 
   const searchGridClass =
-    "lg:grid lg:grid-cols-2 lg:grid-rows-1 lg:items-stretch lg:gap-4 lg:overflow-hidden lg:max-h-[calc(100dvh-11rem)]";
+    "lg:grid lg:grid-cols-2 lg:grid-rows-1 lg:items-stretch lg:gap-4 lg:overflow-hidden lg:max-h-[calc(100dvh-var(--desktop-nav-offset)-5.75rem)]";
 
   return (
     <>

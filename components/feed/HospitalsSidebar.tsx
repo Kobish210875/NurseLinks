@@ -1,5 +1,7 @@
 "use client";
 
+import AboutStoryCard from "@/components/feed/AboutStoryCard";
+import ProTipCard from "@/components/feed/ProTipCard";
 import InstitutionsPicker from "@/components/hospitals/InstitutionsPicker";
 import { useT } from "@/components/i18n/LocaleProvider";
 import type { InstitutionActivityMap } from "@/lib/data/institution-activity";
@@ -14,6 +16,8 @@ export default function HospitalsSidebar({ activity }: HospitalsSidebarProps) {
   return (
     <aside className="flex flex-col gap-4" aria-label={t("feed.navAria")}>
       <InstitutionsPicker activity={activity} showLegend />
+      <AboutStoryCard />
+      <ProTipCard />
     </aside>
   );
 }

@@ -5,6 +5,8 @@
   --mobile-header-offset: calc(
     var(--mobile-header-height) + env(safe-area-inset-top, 0px)
   );
+  --desktop-nav-height: 3.5rem;
+  --desktop-nav-offset: calc(var(--desktop-nav-height) + 1px);
   --mobile-bottom-nav-height: 3.5rem;
   --mobile-bottom-nav-offset: calc(
     var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px)
@@ -79,6 +81,15 @@ body {
   max-width: 100%;
 }
 
+/* Fallback if Tailwind utilities fail to load (logo SVG without size blows up). */
+svg.logo-icon {
+  width: 1em;
+  height: 1em;
+  max-width: 2rem;
+  max-height: 2rem;
+  flex-shrink: 0;
+}
+
 .feed-page {
   background: var(--background);
 }
@@ -135,6 +146,13 @@ body {
     overflow-x: hidden;
     overflow-y: auto;
     overscroll-behavior: contain;
+  }
+
+  .home-feed-sidebar-pin--stack {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
   }
 
   .home-feed-center {
