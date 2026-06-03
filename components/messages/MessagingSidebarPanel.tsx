@@ -19,6 +19,25 @@ type InboxPayload = {
   connections: NewMessageFriend[];
 };
 
+const POPOUT_GAP_PX = 12;
+const POPOUT_VIEWPORT_INSET_PX = 16;
+const POPOUT_MIN_WIDTH_PX = 24 * 16;
+const POPOUT_WIDTH_FACTOR = 1.65;
+
+function getConversationPopoutStyle(panelRect: DOMRect) {
+  const listWidth = panelRect.width;
+  const maxWidth = Math.max(listWidth, panelRect.left - POPOUT_GAP_PX - POPOUT_VIEWPORT_INSET_PX);
+  const preferredWidth = Math.max(listWidth * POPOUT_WIDTH_FACTOR, POPOUT_MIN_WIDTH_PX);
+  const width = Math.min(preferredWidth, maxWidth);
+
+  return {
+    width,
+    height: panelRect.height,
+    top: panelRect.top,
+    right: window.innerWidth - panelRect.left + POPOUT_GAP_PX,
+  };
+}
+
 export default function MessagingSidebarPanel() {
   const t = useT();
   const searchId = useId();
@@ -48,6 +67,23 @@ export default function MessagingSidebarPanel() {
   useEffect(() => {
     void loadInbox();
   }, []);
+
+  useEffect(() => {
+    if (!activePeerId) {
+      return;
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape") {
+        return;
+      }
+      event.preventDefault();
+      closeThread();
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [activePeerId, closeThread]);
 
   useVisiblePolling(async () => {
     await loadInbox();
@@ -108,12 +144,7 @@ export default function MessagingSidebarPanel() {
       ? createPortal(
           <section
             className="messages-sidebar-popout feed-card fixed z-[60] flex flex-col overflow-hidden shadow-xl"
-            style={{
-              width: panelRect.width,
-              height: panelRect.height,
-              right: window.innerWidth - panelRect.left + 12,
-              top: panelRect.top,
-            }}
+            style={getConversationPopoutStyle(panelRect)}
             aria-label={t("messages.dockConversationAria")}
           >
             <MessagingDockConversation
