@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useT } from "@/components/i18n/LocaleProvider";
+import { sanitizePasswordInput } from "@/lib/validation/password";
 
 const inputClassName =
   "w-full max-w-full rounded-lg border border-border bg-white py-2.5 pl-3 pr-10 text-base outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm";
@@ -66,6 +67,15 @@ export default function PasswordInput({
   const t = useT();
   const [showPassword, setShowPassword] = useState(false);
 
+  function handleInput(event: React.FormEvent<HTMLInputElement>) {
+    const input = event.currentTarget;
+    const englishOnly = sanitizePasswordInput(input.value);
+    if (input.value !== englishOnly) {
+      input.value = englishOnly;
+    }
+    onValueChange(englishOnly);
+  }
+
   return (
     <div dir="ltr" className="relative">
       <input
@@ -76,10 +86,13 @@ export default function PasswordInput({
         className={inputClassName}
         placeholder={t("register.passwordPlaceholder")}
         dir="ltr"
+        lang="en"
         autoComplete={autoComplete}
+        autoCapitalize="off"
+        autoCorrect="off"
         spellCheck={false}
         aria-invalid={invalid}
-        onChange={(event) => onValueChange(event.target.value)}
+        onInput={handleInput}
         onBlur={() => setShowPassword(false)}
       />
       <button

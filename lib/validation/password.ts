@@ -3,9 +3,15 @@ export type PasswordValidationError =
   | "password-weak";
 
 const ENGLISH_PASSWORD_PATTERN = /^[\x21-\x7E]+$/;
+const NON_ENGLISH_PASSWORD_CHARS = /[^\x21-\x7E]/g;
 const HAS_LETTER = /[a-zA-Z]/;
 const HAS_DIGIT = /\d/;
 const HAS_SPECIAL = /[^a-zA-Z0-9]/;
+
+/** Strip non-English characters as the user types (blocks Hebrew IME input). */
+export function sanitizePasswordInput(value: string): string {
+  return value.replace(NON_ENGLISH_PASSWORD_CHARS, "");
+}
 
 export function validatePassword(password: string): PasswordValidationError | null {
   if (!ENGLISH_PASSWORD_PATTERN.test(password)) {
