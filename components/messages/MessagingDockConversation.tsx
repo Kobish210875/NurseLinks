@@ -21,7 +21,6 @@ export default function MessagingDockConversation({
   peerId,
   onClose,
   onThreadUpdated,
-  onLayoutReady,
 }: MessagingDockConversationProps) {
   const [payload, setPayload] = useState<ThreadPayload | null>(null);
   const [loading, setLoading] = useState(true);
