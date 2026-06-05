@@ -10,7 +10,6 @@ import { useNavCounts } from "@/components/nav/NavCountsProvider";
 import { formatFeedTimestamp } from "@/lib/i18n/format-feed-time";
 import type { DirectMessage, NetworkMember } from "@/lib/network/types";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
-import { scrollAppToTopAfterPaint } from "@/lib/client/scroll-app-to-top";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 
@@ -48,14 +47,8 @@ export default function MessageThreadView({
 
   useEffect(() => {
     setDisplayMessages(messages);
-  }, [messages]);
-
-  useEffect(() => {
-    if (dockMode) {
-      return;
-    }
-    scrollAppToTopAfterPaint();
-  }, [dockMode, peer.id]);
+    markedReadRef.current = false;
+  }, [messages, peer.id]);
 
   useEffect(() => {
     if (displayMessages.length === 0) {
@@ -147,7 +140,7 @@ export default function MessageThreadView({
   const peerAvatar = (
     <Link
       href={`/profile/${peer.id}`}
-      className="flex size-10 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10 transition hover:ring-2 hover:ring-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+      className={`message-thread-peer-avatar flex size-10 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10 transition hover:ring-2 hover:ring-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${dockMode ? "" : "max-md:size-8"}`}
       aria-label={peer.fullName}
     >
       {peer.avatarUrl ? (
@@ -164,12 +157,15 @@ export default function MessageThreadView({
   return (
     <div
       className={`message-thread-shell flex flex-col overflow-hidden ${
-        dockMode ? "h-full min-h-0" : "feed-card min-h-[min(480px,70dvh)] max-md:min-h-0"
+        dockMode ? "h-full min-h-0" : "feed-card min-h-[min(480px,70dvh)] max-md:min-h-0 max-md:border-0 max-md:shadow-none max-md:rounded-none"
       }`}
     >
-      <header className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2.5">
+      <header className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2.5 max-md:gap-1.5 max-md:py-1.5">
         {dockMode ? null : (
-          <Link href="/messages" className="text-sm font-medium text-primary hover:underline">
+          <Link
+            href="/messages"
+            className="shrink-0 text-sm font-medium text-primary hover:underline max-md:text-xs"
+          >
             {t("messages.back")}
           </Link>
         )}
@@ -177,12 +173,14 @@ export default function MessageThreadView({
         <div className="min-w-0 flex-1 text-start">
           <Link
             href={`/profile/${peer.id}`}
-            className="font-semibold text-foreground hover:text-primary hover:underline"
+            className="truncate text-sm font-semibold text-foreground hover:text-primary hover:underline max-md:text-xs"
           >
             {peer.fullName}
           </Link>
           {professionalLine ? (
-            <p className="truncate text-xs text-muted-foreground">{professionalLine}</p>
+            <p className="message-thread-peer-headline truncate text-xs text-muted-foreground">
+              {professionalLine}
+            </p>
           ) : null}
         </div>
         {dockMode && onClose ? (
@@ -264,7 +262,7 @@ export default function MessageThreadView({
             <textarea
               id={messageBodyId}
               name="body"
-              rows={3}
+              rows={dockMode ? 3 : 2}
               maxLength={4000}
               value={body}
               onChange={(event) => setBody(event.target.value)}
