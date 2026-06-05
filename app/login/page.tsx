@@ -6,7 +6,7 @@ import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
 
 type LoginPageProps = {
-  searchParams: Promise<{ error?: string; reset?: string; verified?: string }>;
+  searchParams: Promise<{ error?: string; reset?: string; verified?: string; sent?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -32,6 +32,12 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           ? t("login.authCallbackFailed")
           : params.error === "auth-profile-failed"
             ? t("login.authProfileFailed")
+            : params.error === "magic-link-expired"
+              ? t("login.magicLinkExpired")
+              : params.error === "magic-link-used"
+                ? t("login.magicLinkUsed")
+                : params.error === "magic-link-invalid"
+                  ? t("login.magicLinkInvalid")
             : params.error === "email-rate-limit"
               ? t("errors.email-rate-limit")
               : params.error === "network-error"
@@ -43,6 +49,8 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       ? t("login.resetSuccess")
       : params.verified === "1"
         ? t("login.emailVerifiedSuccess")
+        : params.sent === "magic-link"
+          ? t("login.magicLinkSent")
         : null;
 
   return (

@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AUTH_SIGN_IN_TIMEOUT_MS } from "@/lib/auth/auth-timeouts";
 import { isTimeoutError, withTimeout } from "@/lib/async/with-timeout";
@@ -14,9 +15,108 @@ import { validatePassword } from "@/lib/validation/password";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
+const MAGIC_LINK_WINDOW_MS = 15 * 60 * 1000;
+const MAGIC_LINK_MAX_REQUESTS = 5;
+const MAGIC_LINK_COOLDOWN_MS = 60 * 1000;
+
+type MagicLinkRateBucket = {
+  count: number;
+  firstAttemptAt: number;
+  lastAttemptAt: number;
+};
+
+function getMagicLinkRateStore() {
+  const globalWithStore = globalThis as typeof globalThis & {
+    __magicLinkRateStore?: Map<string, MagicLinkRateBucket>;
+  };
+  if (!globalWithStore.__magicLinkRateStore) {
+    globalWithStore.__magicLinkRateStore = new Map<string, MagicLinkRateBucket>();
+  }
+  return globalWithStore.__magicLinkRateStore;
+}
+
+function getClientIp(rawForwardedFor: string | null, rawRealIp: string | null) {
+  if (rawForwardedFor) {
+    const [first] = rawForwardedFor.split(",");
+    if (first?.trim()) {
+      return first.trim();
+    }
+  }
+  if (rawRealIp?.trim()) {
+    return rawRealIp.trim();
+  }
+  return "unknown";
+}
+
+function isMagicLinkRateLimited(key: string, now = Date.now()) {
+  const store = getMagicLinkRateStore();
+  for (const [storeKey, bucket] of store.entries()) {
+    if (now - bucket.firstAttemptAt > MAGIC_LINK_WINDOW_MS * 2) {
+      store.delete(storeKey);
+    }
+  }
+  const current = store.get(key);
+  if (!current) {
+    store.set(key, { count: 1, firstAttemptAt: now, lastAttemptAt: now });
+    return false;
+  }
+
+  if (now - current.lastAttemptAt < MAGIC_LINK_COOLDOWN_MS) {
+    current.lastAttemptAt = now;
+    store.set(key, current);
+    return true;
+  }
+
+  if (now - current.firstAttemptAt > MAGIC_LINK_WINDOW_MS) {
+    store.set(key, { count: 1, firstAttemptAt: now, lastAttemptAt: now });
+    return false;
+  }
+
+  const nextCount = current.count + 1;
+  store.set(key, {
+    count: nextCount,
+    firstAttemptAt: current.firstAttemptAt,
+    lastAttemptAt: now,
+  });
+  return nextCount > MAGIC_LINK_MAX_REQUESTS;
+}
+
 function getRequiredString(formData: FormData, key: string) {
   const value = formData.get(key);
   return typeof value === "string" ? value.trim() : "";
+}
+
+export async function requestMagicLink(formData: FormData) {
+  const email = getRequiredString(formData, "email").toLowerCase();
+  if (!email) {
+    redirect("/login?error=missing-email");
+  }
+
+  const requestHeaders = await headers();
+  const ip = getClientIp(
+    requestHeaders.get("x-forwarded-for"),
+    requestHeaders.get("x-real-ip"),
+  );
+  const limiterKey = `${ip}:${email}`;
+  if (isMagicLinkRateLimited(limiterKey)) {
+    redirect("/login?error=email-rate-limit");
+  }
+
+  const siteUrl = getSiteUrl();
+  const supabase = await createClient();
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      shouldCreateUser: false,
+      emailRedirectTo: `${siteUrl}/auth/confirm?flow=magic-link&next=/home`,
+    },
+  });
+
+  if (error) {
+    redirect(`/login?error=${normalizeSupabaseAuthError(error.message)}`);
+  }
+
+  redirect("/login?sent=magic-link");
 }
 
 export async function signIn(formData: FormData) {

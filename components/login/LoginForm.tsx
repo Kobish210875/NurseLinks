@@ -2,10 +2,9 @@
 
 import Link from "next/link";
 import { useT } from "@/components/i18n/LocaleProvider";
-import { signIn } from "@/app/login/actions";
+import { requestMagicLink } from "@/app/login/actions";
 import { useId } from "react";
 import { useFormStatus } from "react-dom";
-import PasswordInput from "@/components/register/PasswordInput";
 import RequiredLabel from "@/components/register/RequiredLabel";
 
 const inputClassName =
@@ -34,10 +33,9 @@ function LoginSubmitButton() {
 export default function LoginForm({ errorMessage, successMessage }: LoginFormProps) {
   const t = useT();
   const emailId = useId();
-  const passwordId = useId();
 
   return (
-    <form action={signIn} className="feed-card w-full max-w-md p-6 text-start">
+    <form action={requestMagicLink} className="feed-card w-full max-w-md p-6 text-start">
       <h1 className="mb-1 text-2xl font-bold text-foreground">{t("login.title")}</h1>
       <p className="mb-6 text-sm text-muted-foreground">{t("login.subtitle")}</p>
 
@@ -66,22 +64,6 @@ export default function LoginForm({ errorMessage, successMessage }: LoginFormPro
             autoComplete="email"
           />
         </label>
-
-        <label className="grid gap-1.5" htmlFor={passwordId}>
-          <RequiredLabel>{t("register.password")}</RequiredLabel>
-          <PasswordInput
-            id={passwordId}
-            name="password"
-            autoComplete="current-password"
-            onValueChange={() => {}}
-          />
-        </label>
-        <Link
-          href="/forgot-password"
-          className="-mt-2 w-fit text-sm font-semibold text-primary hover:underline"
-        >
-          {t("login.forgotPassword")}
-        </Link>
       </div>
 
       <LoginSubmitButton />
