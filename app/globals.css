@@ -300,6 +300,35 @@ svg.logo-icon {
     padding-bottom: calc(var(--mobile-bottom-nav-offset) + 1.25rem);
   }
 
+  /* Thread page: fixed viewport column — no document scroll (keeps "back" row visible) */
+  body.has-mobile-app-shell:has(.message-thread-page) {
+    overflow: hidden;
+    height: 100dvh;
+    max-height: 100dvh;
+  }
+
+  body.has-mobile-app-shell .home-page-root:has(.message-thread-page) {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  body.has-mobile-app-shell .message-thread-page {
+    display: flex !important;
+    flex-direction: column;
+    height: calc(
+      100dvh - var(--mobile-header-offset) - var(--mobile-bottom-nav-offset)
+    );
+    min-height: 0;
+    max-height: calc(
+      100dvh - var(--mobile-header-offset) - var(--mobile-bottom-nav-offset)
+    );
+    overflow: hidden;
+    padding-top: 0;
+    padding-bottom: 0 !important;
+  }
+
   body.has-mobile-app-shell .mobile-feed-bottom-spacer {
     height: calc(var(--mobile-bottom-nav-offset) + 1.25rem);
     pointer-events: none;
@@ -354,24 +383,8 @@ svg.logo-icon {
   }
 
   /*
-   * Thread page: column fills viewport between site header and bottom tabs;
-   * only the messages list scrolls so peer header/back stay visible on new chats.
+   * Thread page inner layout — list scrolls; back row stays pinned under site header.
    */
-  body.has-mobile-app-shell .message-thread-page {
-    display: flex !important;
-    flex-direction: column;
-    height: calc(
-      100dvh - var(--mobile-header-offset) - var(--mobile-bottom-nav-offset)
-    );
-    min-height: 0;
-    max-height: calc(
-      100dvh - var(--mobile-header-offset) - var(--mobile-bottom-nav-offset)
-    );
-    overflow: hidden;
-    padding-top: 0;
-    padding-bottom: 0.5rem;
-  }
-
   body.has-mobile-app-shell .message-thread-page > div {
     display: flex;
     min-height: 0;
@@ -389,10 +402,12 @@ svg.logo-icon {
   }
 
   body.has-mobile-app-shell .message-thread-page .message-thread-shell > header {
-    position: relative;
-    z-index: 1;
+    position: sticky;
+    top: var(--mobile-header-offset);
+    z-index: 40;
     flex-shrink: 0;
     background: var(--card);
+    box-shadow: 0 1px 0 var(--border);
   }
 
   body.has-mobile-app-shell .message-thread-page .message-thread-messages {

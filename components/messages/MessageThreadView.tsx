@@ -10,6 +10,7 @@ import { useNavCounts } from "@/components/nav/NavCountsProvider";
 import { formatFeedTimestamp } from "@/lib/i18n/format-feed-time";
 import type { DirectMessage, NetworkMember } from "@/lib/network/types";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
+import { scrollAppToTopAfterPaint } from "@/lib/client/scroll-app-to-top";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 
@@ -50,7 +51,14 @@ export default function MessageThreadView({
   }, [messages]);
 
   useEffect(() => {
-    if (dockMode || displayMessages.length === 0) {
+    if (dockMode) {
+      return;
+    }
+    scrollAppToTopAfterPaint();
+  }, [dockMode, peer.id]);
+
+  useEffect(() => {
+    if (displayMessages.length === 0) {
       return;
     }
 
