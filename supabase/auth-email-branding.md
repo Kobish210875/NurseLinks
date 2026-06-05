@@ -1,42 +1,72 @@
-# Supabase auth emails — NurseLinks branding (localhost / DEV)
+# Supabase auth emails — NurseLinks branding
 
 Password reset and signup emails are sent by **Supabase Auth**, not by the Next.js app.
-The sender name and subject are configured in the Supabase Dashboard for your **DEV** project
-(the one in `.env.local`).
+Configure templates in the Supabase Dashboard for **each project** (DEV and PROD).
 
-## Steps (DEV project only)
+## 1. Email templates (required for password reset)
 
-1. Open [Supabase Dashboard](https://supabase.com/dashboard) → your **nurselinks-dev** project.
-2. Go to **Authentication** → **Email Templates**.
-3. For each template below, set **Subject** and edit the body so it says **NurseLinks** (not Supabase).
+**Authentication → Emails → Reset password**
 
-### Suggested subjects (Hebrew UI)
+Set **Subject**: `NurseLinks — איפוס סיסמה`
+
+Replace the default `{{ .ConfirmationURL }}` link with a **token_hash** link (works when the user opens the email on a phone or another browser):
+
+```html
+<h2>איפוס סיסמה</h2>
+<p>לחצו על הקישור כדי לבחור סיסמה חדשה:</p>
+<p><a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=recovery&next=/reset-password">איפוס סיסמה</a></p>
+<p>אם לא ביקשתם איפוס, אפשר להתעלם מהמייל.</p>
+```
+
+Do **not** use only `{{ .ConfirmationURL }}` — it relies on PKCE cookies and often fails with “link expired” on production.
+
+### Other templates (subjects)
 
 | Template | Subject |
 |--------|---------|
 | Confirm signup | `NurseLinks — אימות כתובת אימייל` |
-| Reset password | `NurseLinks — איפוס סיסמה` |
 | Magic link | `NurseLinks — קישור התחברות` |
 | Change email | `NurseLinks — שינוי אימייל` |
 
-### Sender name (if available)
+## 2. Redirect URLs
 
-Under **Project Settings** → **Authentication** (or custom SMTP):
+**Authentication → URL Configuration**
 
-- Set the sender / from name to **NurseLinks**.
-- On the default Supabase mailer, the visible “from” may still show `noreply@mail.app.supabase.io`;
-  custom SMTP (e.g. Resend) is required for a fully branded `from` address on auth emails.
+### Production (`nurselinks.net`)
 
-### Localhost redirect URLs
+- **Site URL**: `https://nurselinks.net`
+- **Redirect URLs** (add each):
+  - `https://nurselinks.net/auth/confirm`
+  - `https://nurselinks.net/auth/confirm?**`
+  - `https://nurselinks.net/auth/callback`
+  - `https://nurselinks.net/auth/callback?**`
+  - `https://nurselinks.net/reset-password`
 
-**Authentication** → **URL Configuration**:
+Set `NEXT_PUBLIC_APP_URL=https://nurselinks.net` in Vercel Production.
 
-- **Site URL**: `http://localhost:3000`
-- **Redirect URLs**: add `http://localhost:3000/reset-password`, `http://localhost:3000/auth/confirm`, `http://localhost:3000/auth/callback`
+### DEV / localhost
+
+- **Site URL**: `http://localhost:3000` (dev project) or your Preview URL
+- **Redirect URLs**: `http://localhost:3000/auth/confirm`, `http://localhost:3000/auth/callback`, `http://localhost:3000/reset-password`, plus `https://*.vercel.app/auth/**` for Preview
 
 Keep `NEXT_PUBLIC_APP_URL=http://localhost:3000` in `.env.local`.
 
+## 3. Custom SMTP (Resend)
+
+See project docs — required to send more than 2 auth emails/hour and for `noreply@nurselinks.net`.
+
+**Authentication → Emails → SMTP Settings**
+
+| Field | Value |
+|--------|--------|
+| Host | `smtp.resend.com` |
+| Port | `465` |
+| Username | `resend` |
+| Password | Resend API key |
+| Sender email | `noreply@nurselinks.net` |
+| Sender name | `NurseLinks` |
+
 ## App notification emails (jobs, comments)
 
-These use **Resend** when `RESEND_API_KEY` and `NOTIFICATIONS_FROM_EMAIL` are set in `.env.local`.
-The app sends them as **NurseLinks** automatically (see `lib/notifications/from-email.ts`).
+These use **Resend** from the Next.js app when `RESEND_API_KEY` and `NOTIFICATIONS_FROM_EMAIL` are set.
+See `lib/notifications/from-email.ts`.

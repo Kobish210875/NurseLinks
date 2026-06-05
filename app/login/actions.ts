@@ -4,6 +4,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AUTH_SIGN_IN_TIMEOUT_MS } from "@/lib/auth/auth-timeouts";
 import { isTimeoutError, withTimeout } from "@/lib/async/with-timeout";
+import { getPasswordResetCallbackUrl } from "@/lib/auth/reset-password-url";
 import { getSiteUrl } from "@/lib/site-url";
 import { confirmUserEmail } from "@/lib/auth/confirm-user-email";
 import { isEmailVerificationRequired } from "@/lib/auth/email-verification-config";
@@ -225,7 +226,7 @@ export async function requestPasswordReset(formData: FormData) {
   const siteUrl = getSiteUrl();
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${siteUrl}/auth/confirm?next=/reset-password`,
+    redirectTo: getPasswordResetCallbackUrl(siteUrl),
   });
 
   if (error) {
