@@ -274,6 +274,19 @@ svg.logo-icon {
   body.has-mobile-app-shell .home-page-root {
     display: block;
     min-height: 0;
+    /* Fixed mobile header sits out of flow — reserve space so content is not clipped underneath */
+    padding-top: var(--mobile-header-offset);
+  }
+
+  body.has-mobile-app-shell .home-page-root > header.sticky {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    width: 100%;
+    padding-top: env(safe-area-inset-top, 0px);
+    background: var(--nav-bg);
   }
 
   body.has-mobile-app-shell .home-main-shell {
@@ -355,7 +368,7 @@ svg.logo-icon {
       100dvh - var(--mobile-header-offset) - var(--mobile-bottom-nav-offset)
     );
     overflow: hidden;
-    padding-top: 0.75rem;
+    padding-top: 0;
     padding-bottom: 0.5rem;
   }
 
@@ -393,15 +406,6 @@ svg.logo-icon {
 
   body.has-mobile-app-shell .message-thread-page .message-thread-end-anchor {
     scroll-margin-bottom: calc(var(--mobile-bottom-nav-offset) + 1rem);
-  }
-
-  /* Site header: respect iPhone notch / status bar */
-  body.has-mobile-app-shell > header.sticky {
-    padding-top: env(safe-area-inset-top, 0px);
-  }
-
-  body.has-mobile-app-shell > header.sticky nav.md\:hidden {
-    min-height: calc(var(--mobile-header-height) + env(safe-area-inset-top, 0px));
   }
 
   body.has-mobile-app-shell .message-thread-page .message-thread-compose {
