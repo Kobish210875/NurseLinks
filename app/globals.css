@@ -345,14 +345,18 @@ svg.logo-icon {
    * only the messages list scrolls so peer header/back stay visible on new chats.
    */
   body.has-mobile-app-shell .message-thread-page {
-    display: flex;
+    display: flex !important;
     flex-direction: column;
-    min-height: calc(
+    height: calc(
+      100dvh - var(--mobile-header-offset) - var(--mobile-bottom-nav-offset)
+    );
+    min-height: 0;
+    max-height: calc(
       100dvh - var(--mobile-header-offset) - var(--mobile-bottom-nav-offset)
     );
     overflow: hidden;
     padding-top: 0.75rem;
-    padding-bottom: calc(var(--mobile-bottom-nav-offset) + 0.5rem);
+    padding-bottom: 0.5rem;
   }
 
   body.has-mobile-app-shell .message-thread-page > div {
@@ -372,12 +376,10 @@ svg.logo-icon {
   }
 
   body.has-mobile-app-shell .message-thread-page .message-thread-shell > header {
-    position: sticky;
-    top: var(--mobile-header-offset);
-    z-index: 40;
+    position: relative;
+    z-index: 1;
     flex-shrink: 0;
     background: var(--card);
-    scroll-margin-top: var(--mobile-header-offset);
   }
 
   body.has-mobile-app-shell .message-thread-page .message-thread-messages {
@@ -391,6 +393,15 @@ svg.logo-icon {
 
   body.has-mobile-app-shell .message-thread-page .message-thread-end-anchor {
     scroll-margin-bottom: calc(var(--mobile-bottom-nav-offset) + 1rem);
+  }
+
+  /* Site header: respect iPhone notch / status bar */
+  body.has-mobile-app-shell > header.sticky {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  body.has-mobile-app-shell > header.sticky nav.md\:hidden {
+    min-height: calc(var(--mobile-header-height) + env(safe-area-inset-top, 0px));
   }
 
   body.has-mobile-app-shell .message-thread-page .message-thread-compose {

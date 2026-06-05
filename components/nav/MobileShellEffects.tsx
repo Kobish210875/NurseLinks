@@ -60,6 +60,25 @@ export default function MobileShellEffects() {
   }, [pathname, user]);
 
   useEffect(() => {
+    if (!user) {
+      return;
+    }
+
+    function onPageShow(event: PageTransitionEvent) {
+      if (!isAppShellPath(window.location.pathname)) {
+        return;
+      }
+      scrollAppToTopAfterPaint();
+      if (event.persisted) {
+        window.setTimeout(scrollAppToTopAfterPaint, 150);
+      }
+    }
+
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, [user]);
+
+  useEffect(() => {
     const mq = window.matchMedia("(max-width: 767px)");
     if (!mq.matches) {
       return;

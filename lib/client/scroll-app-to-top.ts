@@ -16,5 +16,6 @@ export function scrollAppToTopAfterPaint() {
     scrollAppToTop();
     window.setTimeout(scrollAppToTop, 0);
     window.setTimeout(scrollAppToTop, 100);
+    window.setTimeout(scrollAppToTop, 300);
   });
 }

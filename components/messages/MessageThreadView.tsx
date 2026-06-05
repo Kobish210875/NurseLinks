@@ -40,7 +40,6 @@ export default function MessageThreadView({
   const [body, setBody] = useState("");
   const [displayMessages, setDisplayMessages] = useState(messages);
   const markedReadRef = useRef(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesListRef = useRef<HTMLUListElement>(null);
 
   const canSend = body.trim().length > 0;
@@ -51,11 +50,24 @@ export default function MessageThreadView({
   }, [messages]);
 
   useEffect(() => {
-    if (dockMode) {
+    if (dockMode || displayMessages.length === 0) {
       return;
     }
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-  }, [dockMode, peer.id]);
+
+    function scrollToLatest() {
+      const list = messagesListRef.current;
+      if (!list) {
+        return;
+      }
+      list.scrollTop = list.scrollHeight;
+    }
+
+    const frame = window.requestAnimationFrame(() => {
+      scrollToLatest();
+      window.setTimeout(scrollToLatest, 80);
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [displayMessages, dockMode, peer.id]);
 
   useEffect(() => {
     if (markedReadRef.current) {
@@ -76,25 +88,6 @@ export default function MessageThreadView({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- run once per thread open
   }, [messages, peer.id]);
 
-  useEffect(() => {
-    if (displayMessages.length === 0) {
-      return;
-    }
-
-    function scrollToLatest() {
-      const list = messagesListRef.current;
-      if (list && list.scrollHeight > list.clientHeight) {
-        list.scrollTop = list.scrollHeight;
-      }
-
-      messagesEndRef.current?.scrollIntoView({ block: "end", behavior: "auto" });
-    }
-
-    const frame = window.requestAnimationFrame(() => {
-      window.setTimeout(scrollToLatest, 80);
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [displayMessages, peer.id]);
   const professionalLine = formatProfileHeadline(
     peer.headline,
     peer.workplaceInstitutionSlug,
@@ -196,7 +189,7 @@ export default function MessageThreadView({
         ) : null}
       </header>
 
-      <div className={dockMode ? "flex min-h-0 flex-1 flex-col" : "contents"}>
+      <div className="flex min-h-0 flex-1 flex-col">
           <ul
             ref={messagesListRef}
             className={`message-thread-messages space-y-3 p-4 ${
@@ -204,7 +197,7 @@ export default function MessageThreadView({
                 ? `min-h-0 flex-1 overscroll-contain ${
                     displayMessages.length === 0 ? "overflow-hidden" : "overflow-y-auto"
                   }`
-                : "flex-1 overflow-y-auto overscroll-contain"
+                : "min-h-0 flex-1 overflow-y-auto overscroll-contain"
             }`}
           >
             {displayMessages.length === 0 ? (
@@ -286,13 +279,6 @@ export default function MessageThreadView({
               </button>
             </div>
           </form>
-          {displayMessages.length > 0 ? (
-            <div
-              ref={messagesEndRef}
-              className="message-thread-end-anchor h-px shrink-0"
-              aria-hidden="true"
-            />
-          ) : null}
       </div>
     </div>
   );
