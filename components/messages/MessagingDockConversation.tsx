@@ -8,7 +8,6 @@ type MessagingDockConversationProps = {
   peerId: string;
   onClose: () => void;
   onThreadUpdated: () => void;
-  onLayoutReady?: () => void;
 };
 
 type ThreadPayload = {
@@ -64,12 +63,6 @@ export default function MessagingDockConversation({
       cancelled = true;
     };
   }, [peerId, reloadToken]);
-
-  useEffect(() => {
-    if (!loading && onLayoutReady) {
-      onLayoutReady();
-    }
-  }, [loading, onLayoutReady]);
 
   if (loading) {
     return (

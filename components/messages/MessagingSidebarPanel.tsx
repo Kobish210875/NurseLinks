@@ -152,11 +152,6 @@ export default function MessagingSidebarPanel() {
               peerId={activePeerId}
               onClose={closeThread}
               onThreadUpdated={() => void loadInbox()}
-              onLayoutReady={() => {
-                if (panelRef.current) {
-                  setPanelRect(panelRef.current.getBoundingClientRect());
-                }
-              }}
             />
           </section>,
           document.body,

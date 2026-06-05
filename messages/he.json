@@ -194,9 +194,9 @@
   },
   "login": {
     "title": "התחברות",
-    "subtitle": "הזינו אימייל ונשלח אליכם קישור התחברות מאובטח",
-    "submit": "שליחת קישור התחברות",
-    "submitting": "שולחים קישור…",
+    "subtitle": "התחברו לחשבון NurseLinks שלכם",
+    "submit": "התחברות",
+    "submitting": "מתחברים…",
     "noAccount": "אין לכם חשבון?",
     "forgotPassword": "שכחתי סיסמה",
     "forgotTitle": "איפוס סיסמה",
@@ -278,10 +278,9 @@
     "deleteAccountConfirm": "למחוק את החשבון? הפעולה תסיר את הפרופיל והקשרים ולא ניתן לבטל אותה.",
     "deleteFailed": "לא ניתן למחוק את החשבון כרגע. נסו שוב.",
     "deleteNotConfigured": "מחיקת חשבון לא הוגדרה בשרת. הריצו את supabase/account-deletion-and-recommendations.sql וודאו ש-SUPABASE_SERVICE_ROLE_KEY מוגדר.",
-    "changePasswordTitle": "שינוי סיסמה",
-    "changePasswordDescription": "בחרו סיסמה חדשה ואשרו אותה. לאחר השמירה תועברו להתחברות מחדש עם הסיסמה החדשה.",
-    "changePasswordSubmit": "שמירת סיסמה חדשה",
-    "changePasswordSessionExpired": "פג תוקף ההתחברות. התחברו שוב ונסו לשנות את הסיסמה."
+    "changePasswordTitle": "איפוס סיסמה",
+    "changePasswordDescription": "נשלח אליכם במייל קישור מאובטח לקביעת סיסמה חדשה. לאחר השמירה התחברו שוב עם הסיסמה החדשה.",
+    "changePasswordLink": "שליחת קישור לאיפוס"
   },
   "network": {
     "title": "הרשת שלי",
