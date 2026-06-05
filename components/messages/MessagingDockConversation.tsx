@@ -80,7 +80,8 @@ export default function MessagingDockConversation({
   }
 
   return (
-    <MessageThreadView
+    <div className="flex h-full min-h-0 flex-1 flex-col">
+      <MessageThreadView
       peer={payload.peer}
       messages={payload.messages}
       currentUserId={payload.currentUserId}
@@ -91,5 +92,6 @@ export default function MessagingDockConversation({
         setReloadToken((n) => n + 1);
       }}
     />
+    </div>
   );
 }

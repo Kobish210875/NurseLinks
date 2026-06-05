@@ -30,10 +30,17 @@ function getConversationPopoutStyle(panelRect: DOMRect) {
   const preferredWidth = Math.max(listWidth * POPOUT_WIDTH_FACTOR, POPOUT_MIN_WIDTH_PX);
   const width = Math.min(preferredWidth, maxWidth);
 
+  // Match the inbox panel top edge, but grow down to the viewport — not only list height.
+  const top = Math.max(POPOUT_VIEWPORT_INSET_PX, panelRect.top);
+  const height = Math.max(
+    panelRect.height,
+    window.innerHeight - top - POPOUT_VIEWPORT_INSET_PX,
+  );
+
   return {
     width,
-    height: panelRect.height,
-    top: panelRect.top,
+    height,
+    top,
     right: window.innerWidth - panelRect.left + POPOUT_GAP_PX,
   };
 }
@@ -143,7 +150,7 @@ export default function MessagingSidebarPanel() {
     activePeerId && panelRect && typeof document !== "undefined"
       ? createPortal(
           <section
-            className="messages-sidebar-popout feed-card fixed z-[60] flex flex-col overflow-hidden shadow-xl"
+            className="messages-sidebar-popout feed-card fixed z-[60] flex min-h-0 flex-col overflow-hidden shadow-xl"
             style={getConversationPopoutStyle(panelRect)}
             aria-label={t("messages.dockConversationAria")}
           >

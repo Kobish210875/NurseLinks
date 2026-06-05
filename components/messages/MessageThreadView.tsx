@@ -177,7 +177,7 @@ export default function MessageThreadView({
           >
             {peer.fullName}
           </Link>
-          {professionalLine ? (
+          {professionalLine && !dockMode ? (
             <p className="message-thread-peer-headline truncate text-xs text-muted-foreground">
               {professionalLine}
             </p>
@@ -255,14 +255,19 @@ export default function MessageThreadView({
               ))
             )}
           </ul>
-          <form onSubmit={submit} className="message-thread-compose shrink-0 border-t border-border p-4">
+          <form
+            onSubmit={submit}
+            className={`message-thread-compose shrink-0 border-t border-border ${
+              dockMode ? "p-3" : "p-4"
+            }`}
+          >
             <label className="sr-only" htmlFor={messageBodyId}>
               {t("messages.inputLabel")}
             </label>
             <textarea
               id={messageBodyId}
               name="body"
-              rows={dockMode ? 3 : 2}
+              rows={2}
               maxLength={4000}
               value={body}
               onChange={(event) => setBody(event.target.value)}
