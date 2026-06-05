@@ -315,6 +315,7 @@ svg.logo-icon {
     overflow: hidden;
     box-sizing: border-box;
     padding-top: var(--mobile-header-offset);
+    padding-bottom: var(--mobile-bottom-nav-offset);
   }
 
   body.has-mobile-app-shell .message-thread-page {
@@ -440,7 +441,8 @@ svg.logo-icon {
     position: static;
     flex-shrink: 0;
     background: var(--card);
-    padding: 0.625rem 0.75rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
+    padding: 0.625rem 0.75rem 0.5rem;
+    border-top: 1px solid var(--border);
   }
 
   body.has-mobile-app-shell .message-thread-page .message-thread-input {

@@ -36,12 +36,12 @@ export default async function MessageThreadPage({ params }: ThreadPageProps) {
     <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
       <Navbar authenticated />
       <main className="home-main-shell message-thread-page feed-page min-h-0 flex-1 max-md:py-0 md:min-h-[calc(100vh-4rem)] md:py-6">
-        <div className="mx-auto flex min-h-0 w-full max-w-2xl flex-1 flex-col px-3 sm:px-4 md:block md:flex-none">
+        <div className="mx-auto flex min-h-0 w-full max-w-2xl flex-1 flex-col px-3 sm:px-4 max-md:px-0 md:block md:flex-none">
           <MessagesAutoRefresh initialVersion={messagesVersion} peerId={peerId} />
           <MessageThreadView peer={peer} messages={messages} currentUserId={user.id} />
         </div>
       </main>
-      <div className="lg:hidden">
+      <div className="hidden lg:block">
         <Footer />
       </div>
     </div>
