@@ -4,13 +4,17 @@ import AboutStoryDialog from "@/components/feed/AboutStoryDialog";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { useState } from "react";
 
-export default function AboutStoryCard() {
+type AboutStoryCardProps = {
+  className?: string;
+};
+
+export default function AboutStoryCard({ className = "" }: AboutStoryCardProps) {
   const t = useT();
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <div className="feed-card border-border p-4 text-start">
+      <div className={`feed-card border-border p-4 text-start ${className}`}>
         <p className="text-sm font-semibold text-foreground">{t("feed.aboutCardTitle")}</p>
         <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
           {t("feed.aboutCardTeaser")}

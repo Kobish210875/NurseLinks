@@ -10,6 +10,7 @@ import { formatProfileHeadline } from "@/lib/profile/display-professional";
 
 type UserProfileCardProps = {
   user: CurrentUser;
+  className?: string;
 };
 
 function getProfileCompletionPercent(user: CurrentUser) {
@@ -27,7 +28,7 @@ function getProfileCompletionPercent(user: CurrentUser) {
   return Math.round((filled / fields.length) * 100);
 }
 
-export default function UserProfileCard({ user }: UserProfileCardProps) {
+export default function UserProfileCard({ user, className = "" }: UserProfileCardProps) {
   const t = useT();
   const currentUser = useCurrentUser();
   const avatarUrl =
@@ -40,7 +41,7 @@ export default function UserProfileCard({ user }: UserProfileCardProps) {
   const completionPercent = getProfileCompletionPercent(user);
 
   return (
-    <div className="feed-card overflow-hidden">
+    <div className={`feed-card overflow-hidden ${className}`}>
       <div
         className="h-16 bg-gradient-to-r from-primary-dark/80 via-primary/60 to-accent/40"
         aria-hidden="true"

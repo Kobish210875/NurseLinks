@@ -13,8 +13,8 @@ export default function SidebarRight({ user }: SidebarRightProps) {
   const t = useT();
 
   return (
-    <aside className="flex min-h-0 flex-1 flex-col gap-4" aria-label={t("feed.joinAria")}>
-      <UserProfileCard user={user} />
+    <aside className="flex h-full min-h-0 flex-col gap-4 overflow-hidden" aria-label={t("feed.joinAria")}>
+      <UserProfileCard user={user} className="shrink-0" />
       <MessagingSidebarPanel />
     </aside>
   );

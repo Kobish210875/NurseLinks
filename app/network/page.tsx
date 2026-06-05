@@ -57,8 +57,8 @@ export default async function NetworkPage({ searchParams }: NetworkPageProps) {
            * Same 3-track grid as the navbar (280 | 1fr | 260). Network spans the
            * left + center tracks so its edge lines up under the logo column.
            */}
-          <div className="home-feed-grid grid min-h-0 w-full flex-1 grid-cols-1 gap-4 lg:grid-cols-[280px_minmax(0,1fr)_260px] lg:items-start lg:gap-6">
-            <div className="home-feed-sidebar order-1 hidden lg:block">
+          <div className="home-feed-grid grid min-h-0 w-full flex-1 grid-cols-1 gap-4 lg:grid-cols-[280px_minmax(0,1fr)_260px] lg:items-stretch lg:gap-6">
+            <div className="home-feed-sidebar order-1 hidden h-full min-h-0 lg:block">
               <Suspense fallback={<NetworkSidebarSkeleton />}>
                 <NetworkSidebar />
               </Suspense>

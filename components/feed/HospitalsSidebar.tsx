@@ -14,10 +14,13 @@ export default function HospitalsSidebar({ activity }: HospitalsSidebarProps) {
   const t = useT();
 
   return (
-    <aside className="flex flex-col gap-4" aria-label={t("feed.navAria")}>
-      <InstitutionsPicker activity={activity} showLegend />
-      <AboutStoryCard />
-      <ProTipCard />
+    <aside
+      className="flex h-full min-h-0 flex-col gap-4 overflow-hidden"
+      aria-label={t("feed.navAria")}
+    >
+      <InstitutionsPicker activity={activity} showLegend className="min-h-0 flex-1" />
+      <AboutStoryCard className="shrink-0" />
+      <ProTipCard className="home-feed-pro-tip-card shrink-0" />
     </aside>
   );
 }

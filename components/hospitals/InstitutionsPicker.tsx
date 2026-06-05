@@ -56,7 +56,7 @@ export default function InstitutionsPicker({
 
   return (
     <div
-      className={`feed-card flex min-h-[28rem] flex-col p-4 text-start lg:max-h-[calc(100dvh-5rem)] lg:min-h-0 ${className}`}
+      className={`feed-card flex min-h-[28rem] flex-col p-4 text-start lg:min-h-0 ${className}`}
     >
       <h2 className="mb-3 text-sm font-semibold text-foreground">{t("hospitals.sidebarTitle")}</h2>
 
