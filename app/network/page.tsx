@@ -46,18 +46,15 @@ export default async function NetworkPage({ searchParams }: NetworkPageProps) {
   return (
     <>
       <Navbar authenticated />
-      <main className="feed-page home-feed-shell min-h-0 w-full min-w-0 max-w-[100vw] overflow-x-clip py-3 md:min-h-[calc(100vh-4rem)] md:py-6 lg:overflow-hidden lg:py-4">
+      <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
+      <main className="home-main-shell feed-page home-feed-shell min-h-0 flex-1 w-full min-w-0 max-w-[100vw] overflow-x-clip py-3 md:py-6 lg:overflow-hidden lg:py-4">
         <div className="mx-auto flex h-full w-full min-w-0 max-w-[1240px] flex-col px-3 sm:px-4">
           <header className="mb-4 shrink-0 min-w-0 text-start">
             <h1 className="break-words text-lg font-bold text-foreground sm:text-xl">
               {t("network.title")}
             </h1>
           </header>
-          {/*
-           * Same 3-track grid as the navbar (280 | 1fr | 260). Network spans the
-           * left + center tracks so its edge lines up under the logo column.
-           */}
-          <div className="home-feed-grid grid min-h-0 w-full flex-1 grid-cols-1 gap-4 lg:grid-cols-[280px_minmax(0,1fr)_260px] lg:items-stretch lg:gap-6">
+          <div className="home-feed-grid grid h-full min-h-0 w-full flex-1 grid-cols-1 gap-4 lg:grid-cols-[280px_minmax(0,1fr)_260px] lg:items-stretch lg:gap-6">
             <div className="home-feed-sidebar order-1 hidden h-full min-h-0 lg:block">
               <Suspense fallback={<NetworkSidebarSkeleton />}>
                 <NetworkSidebar />
@@ -73,6 +70,7 @@ export default async function NetworkPage({ searchParams }: NetworkPageProps) {
       </main>
       <div className="lg:hidden">
         <Footer />
+      </div>
       </div>
     </>
   );
