@@ -16,7 +16,7 @@ export default function AboutStoryCard({ className = "" }: AboutStoryCardProps) 
     <>
       <div className={`feed-card border-border p-4 text-start ${className}`}>
         <p className="text-sm font-semibold text-foreground">{t("feed.aboutCardTitle")}</p>
-        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
+        <p className="home-feed-card-body mt-1.5 leading-relaxed text-muted-foreground">
           {t("feed.aboutCardTeaser")}
         </p>
         <button

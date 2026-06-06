@@ -12,7 +12,7 @@ export default function ProTipCard({ className = "" }: ProTipCardProps) {
   return (
     <div className={`feed-card border-accent/20 bg-accent/5 p-4 text-start ${className}`}>
       <p className="text-sm font-medium text-foreground">{t("feed.proTipTitle")}</p>
-      <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t("feed.proTipBody")}</p>
+      <p className="mt-1 home-feed-card-body leading-relaxed text-muted-foreground">{t("feed.proTipBody")}</p>
     </div>
   );
 }

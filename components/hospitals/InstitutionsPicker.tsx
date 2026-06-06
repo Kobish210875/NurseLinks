@@ -100,7 +100,7 @@ export default function InstitutionsPicker({
           id={institutionListId}
           role="tabpanel"
           aria-labelledby={regionLabelId}
-          className="flex min-h-0 flex-1 flex-wrap content-start gap-2 overflow-y-auto pe-0.5"
+          className="grid min-h-0 flex-1 grid-cols-2 content-start gap-2 overflow-y-auto overscroll-contain pe-0.5"
         >
           {institutions.map((inst) => {
             const flags = activity[inst.slug];

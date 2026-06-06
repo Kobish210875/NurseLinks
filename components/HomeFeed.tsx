@@ -22,10 +22,8 @@ export default function HomeFeed({ user, institutionActivity }: HomeFeedProps) {
           <div className="home-feed-center order-2 flex h-full min-h-0 min-w-0 flex-col">
             <FeedColumn user={user} />
           </div>
-          <div className="home-feed-sidebar order-3 hidden h-full min-h-0 lg:block">
-            <div className="home-feed-sidebar-pin home-feed-sidebar-pin--stack">
-              <SidebarLeft institutionActivity={institutionActivity} />
-            </div>
+          <div className="home-feed-sidebar home-feed-sidebar-left-column order-3 hidden h-full min-h-0 lg:flex lg:flex-col lg:gap-3">
+            <SidebarLeft institutionActivity={institutionActivity} />
           </div>
         </div>
       </div>

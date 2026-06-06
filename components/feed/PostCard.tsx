@@ -155,7 +155,7 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
   }
 
   const actionBtn =
-    "post-engagement-action inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-semibold text-muted-foreground transition hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:gap-2 md:py-2.5 md:text-[15px]";
+    "post-engagement-action inline-flex min-w-0 flex-1 items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-semibold text-muted-foreground transition hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:gap-2 md:py-2.5";
 
   const commentBodyId = `comment-input-${post.id}`;
   const hasEngagementStats = likeCount > 0 || commentCount > 0 || shareCount > 0;
@@ -216,7 +216,7 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
         </p>
       ) : null}
       {post.body.trim() ? (
-        <p className="post-body mb-3 whitespace-pre-wrap text-start text-[15px] leading-relaxed text-foreground">
+        <p className="post-body mb-3 whitespace-pre-wrap text-start leading-relaxed text-foreground">
           <LinkifiedText text={post.body} />
         </p>
       ) : null}
@@ -225,7 +225,7 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
 
       <div className="post-engagement-block mt-2 md:mt-3 md:border-t md:border-border">
         {hasEngagementStats ? (
-          <div className="flex items-center justify-between gap-3 py-2.5 text-[13px] text-muted-foreground">
+          <div className="flex items-center justify-between gap-3 py-2.5 text-sm text-muted-foreground">
             <span className="inline-flex min-h-[18px] items-center gap-1.5">
               {likeCount > 0 ? (
                 <>
