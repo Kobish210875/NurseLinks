@@ -157,8 +157,7 @@ svg.logo-icon {
   .home-feed-sidebar-pin.home-feed-sidebar-pin--stack {
     position: relative;
     top: auto;
-    overflow: hidden;
-    overflow-y: hidden;
+    overflow: visible;
   }
 
   .home-feed-sidebar-pin--stack {
@@ -166,7 +165,7 @@ svg.logo-icon {
     flex-direction: column;
     height: 100%;
     min-height: 0;
-    overflow: hidden;
+    overflow: visible;
   }
 
   .home-feed-sidebar-pin--stack > aside {
@@ -175,35 +174,36 @@ svg.logo-icon {
   }
 
   /*
-   * Left:  hospitals (scroll) | tip | about — tip/about always visible.
-   * Right: profile | messages (scroll) — bottoms align on the same row.
+   * Left:  hospitals (flex-1 + internal scroll) → tip → about (always visible).
+   * Right: profile (fixed size) → messages (flex-1 + internal scroll).
    */
   .home-feed-sidebar-left {
-    display: grid;
-    grid-template-rows: minmax(0, 1fr) max-content max-content;
-    gap: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
     height: 100%;
     min-height: 0;
-    overflow: hidden;
   }
 
   .home-feed-sidebar-right {
-    display: grid;
-    grid-template-rows: max-content minmax(0, 1fr);
-    gap: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
     height: 100%;
     min-height: 0;
-    overflow: hidden;
   }
 
+  /* hospitals card: flex-1 so it fills remaining space and scrolls internally */
   .home-feed-sidebar-institutions {
+    flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
   }
 
+  /* tip and about cards: never shrink below their natural size */
   .home-feed-sidebar-tip,
   .home-feed-sidebar-about {
-    min-height: min-content;
+    flex: 0 0 auto;
   }
 
   .home-feed-sidebar-right > .home-messages-dock-shell {
@@ -212,11 +212,13 @@ svg.logo-icon {
   }
 
   .home-messages-dock {
+    flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
   }
 
   .home-messages-dock-shell {
+    flex: 1 1 auto;
     min-height: 0;
     overflow: hidden;
   }

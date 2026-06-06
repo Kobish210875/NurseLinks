@@ -179,7 +179,7 @@ export default function MessagingSidebarPanel() {
       : null;
 
   return (
-    <div className="home-messages-dock-shell hidden min-h-0 flex-col overflow-hidden lg:flex">
+    <div className="home-messages-dock-shell hidden min-h-0 flex-1 flex-col overflow-hidden lg:flex">
       {conversationPopout}
 
       <section
