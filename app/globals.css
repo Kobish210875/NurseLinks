@@ -201,6 +201,17 @@ svg.logo-icon {
     overscroll-behavior-y: contain;
   }
 
+  /*
+   * Clamp post images to a fraction of the viewport so the post header +
+   * engagement bar always fit in the same screen view.
+   * Width breakpoints serve as a reasonable proxy for screen size.
+   */
+  @media (max-height: 820px) {
+    .post-card img {
+      max-height: min(34vh, 17rem) !important;
+    }
+  }
+
   .home-feed-posts-scroll-inner {
     direction: rtl;
     min-height: min-content;

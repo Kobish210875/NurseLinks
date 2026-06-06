@@ -227,7 +227,7 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
             src={post.imageUrl}
             alt=""
             loading="lazy"
-            className="mx-auto max-h-[min(70vh,28rem)] w-full object-contain"
+            className="mx-auto max-h-[min(60vh,28rem)] w-full object-contain lg:max-h-[min(38vh,20rem)] xl:max-h-[min(45vh,24rem)] 2xl:max-h-[min(55vh,28rem)]"
           />
         </div>
       ) : null}
