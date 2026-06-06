@@ -24,24 +24,26 @@ const POPOUT_VIEWPORT_INSET_PX = 16;
 const POPOUT_MIN_WIDTH_PX = 24 * 16;
 const POPOUT_WIDTH_FACTOR = 1.65;
 
-function getConversationPopoutStyle(panelRect: DOMRect) {
-  const listWidth = panelRect.width;
-  const maxWidth = Math.max(listWidth, panelRect.left - POPOUT_GAP_PX - POPOUT_VIEWPORT_INSET_PX);
+type PopoutAnchor = {
+  panel: DOMRect;
+  anchorTop: number;
+};
+
+function getConversationPopoutStyle({ panel, anchorTop }: PopoutAnchor) {
+  const listWidth = panel.width;
+  const maxWidth = Math.max(listWidth, panel.left - POPOUT_GAP_PX - POPOUT_VIEWPORT_INSET_PX);
   const preferredWidth = Math.max(listWidth * POPOUT_WIDTH_FACTOR, POPOUT_MIN_WIDTH_PX);
   const width = Math.min(preferredWidth, maxWidth);
 
-  // Match the inbox panel top edge, but grow down to the viewport — not only list height.
-  const top = Math.max(POPOUT_VIEWPORT_INSET_PX, panelRect.top);
-  const height = Math.max(
-    panelRect.height,
-    window.innerHeight - top - POPOUT_VIEWPORT_INSET_PX,
-  );
+  // Anchor under the site header / profile column — use full height down to viewport bottom.
+  const top = Math.max(POPOUT_VIEWPORT_INSET_PX, anchorTop);
+  const height = window.innerHeight - top - POPOUT_VIEWPORT_INSET_PX;
 
   return {
     width,
     height,
     top,
-    right: window.innerWidth - panelRect.left + POPOUT_GAP_PX,
+    right: window.innerWidth - panel.left + POPOUT_GAP_PX,
   };
 }
 
@@ -51,7 +53,7 @@ export default function MessagingSidebarPanel() {
   const { unreadMessages } = useNavCounts();
   const { activePeerId, openThread, closeThread } = useMessagingDock();
   const panelRef = useRef<HTMLElement>(null);
-  const [panelRect, setPanelRect] = useState<DOMRect | null>(null);
+  const [popoutAnchor, setPopoutAnchor] = useState<PopoutAnchor | null>(null);
 
   const [inbox, setInbox] = useState<InboxPayload | null>(null);
   const [loadingInbox, setLoadingInbox] = useState(true);
@@ -99,14 +101,21 @@ export default function MessagingSidebarPanel() {
   useLayoutEffect(() => {
     const panelEl = panelRef.current;
     if (!activePeerId || !panelEl) {
-      setPanelRect(null);
+      setPopoutAnchor(null);
       return;
     }
 
     function updateRect() {
-      if (panelRef.current) {
-        setPanelRect(panelRef.current.getBoundingClientRect());
+      const panel = panelRef.current;
+      if (!panel) {
+        return;
       }
+      const stackEl = panel.closest(".home-feed-sidebar-pin--stack");
+      const anchorTop = stackEl?.getBoundingClientRect().top ?? panel.getBoundingClientRect().top;
+      setPopoutAnchor({
+        panel: panel.getBoundingClientRect(),
+        anchorTop,
+      });
     }
 
     updateRect();
@@ -119,6 +128,10 @@ export default function MessagingSidebarPanel() {
       updateRect();
     });
     observer.observe(panelEl);
+    const stackEl = panelEl.closest(".home-feed-sidebar-pin--stack");
+    if (stackEl) {
+      observer.observe(stackEl);
+    }
 
     window.addEventListener("resize", updateRect);
     window.addEventListener("scroll", updateRect, true);
@@ -147,11 +160,11 @@ export default function MessagingSidebarPanel() {
   }, [inbox, search]);
 
   const conversationPopout =
-    activePeerId && panelRect && typeof document !== "undefined"
+    activePeerId && popoutAnchor && typeof document !== "undefined"
       ? createPortal(
           <section
             className="messages-sidebar-popout feed-card fixed z-[60] flex min-h-0 flex-col overflow-hidden shadow-xl"
-            style={getConversationPopoutStyle(panelRect)}
+            style={getConversationPopoutStyle(popoutAnchor)}
             aria-label={t("messages.dockConversationAria")}
           >
             <MessagingDockConversation
@@ -174,7 +187,7 @@ export default function MessagingSidebarPanel() {
         className="feed-card flex min-h-0 flex-1 flex-col overflow-hidden"
         aria-label={t("messages.dockListAria")}
       >
-        <header className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2.5">
+        <header className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
           <h2 className="inline-flex min-w-0 flex-1 items-center gap-1.5 truncate text-sm font-semibold text-foreground">
             {t("messages.dockTitle")}
             {unreadMessages > 0 ? (
@@ -194,7 +207,7 @@ export default function MessagingSidebarPanel() {
           </button>
         </header>
 
-        <div className="shrink-0 border-b border-border px-3 py-2">
+        <div className="shrink-0 border-b border-border px-3 py-1.5">
           <label className="sr-only" htmlFor={searchId}>
             {t("messages.dockSearchLabel")}
           </label>

@@ -34,11 +34,11 @@ export default function MessagingDockThreadList({
             <button
               type="button"
               onClick={() => onSelect(thread.peerId)}
-              className={`flex w-full items-center gap-2.5 px-3 py-2.5 text-start transition hover:bg-muted/40 ${
+              className={`flex w-full items-center gap-2 px-3 py-2 text-start transition hover:bg-muted/40 ${
                 active ? "bg-primary/5" : ""
               }`}
             >
-              <span className="flex size-10 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10">
+              <span className="flex size-9 shrink-0 overflow-hidden rounded-full border border-border bg-primary/10">
                 {thread.peerAvatarUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={thread.peerAvatarUrl} alt="" className="size-full object-cover" />
@@ -49,7 +49,7 @@ export default function MessagingDockThreadList({
                 )}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="flex items-baseline justify-between gap-2">
+                <span className="flex items-center justify-between gap-2">
                   <span className="inline-flex min-w-0 items-center gap-1.5 truncate text-sm font-semibold text-foreground">
                     {thread.peerName}
                     {thread.unreadCount > 0 ? (
@@ -64,9 +64,6 @@ export default function MessagingDockThreadList({
                   <time className="shrink-0 text-[10px] text-muted-foreground">
                     {formatFeedTimestamp(thread.lastMessageAt, locale)}
                   </time>
-                </span>
-                <span className="mt-0.5 block truncate text-xs text-muted-foreground">
-                  {thread.lastMessageBody}
                 </span>
               </span>
             </button>

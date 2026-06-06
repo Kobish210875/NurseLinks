@@ -258,7 +258,7 @@ export default function MessageThreadView({
           <form
             onSubmit={submit}
             className={`message-thread-compose shrink-0 border-t border-border ${
-              dockMode ? "p-3" : "p-4"
+              dockMode ? "p-2.5" : "p-4"
             }`}
           >
             <label className="sr-only" htmlFor={messageBodyId}>
@@ -267,7 +267,7 @@ export default function MessageThreadView({
             <textarea
               id={messageBodyId}
               name="body"
-              rows={2}
+              rows={dockMode ? 1 : 2}
               maxLength={4000}
               value={body}
               onChange={(event) => setBody(event.target.value)}
