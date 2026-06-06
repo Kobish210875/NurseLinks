@@ -14,13 +14,14 @@ export default function HospitalsSidebar({ activity }: HospitalsSidebarProps) {
   const t = useT();
 
   return (
-    <aside
-      className="home-feed-sidebar-left flex h-full min-h-0 flex-col gap-3 overflow-hidden"
-      aria-label={t("feed.navAria")}
-    >
-      <InstitutionsPicker activity={activity} showLegend className="min-h-0 flex-1" />
-      <ProTipCard className="home-feed-sidebar-tip shrink-0" />
-      <AboutStoryCard className="home-feed-sidebar-about shrink-0" />
+    <aside className="home-feed-sidebar-left" aria-label={t("feed.navAria")}>
+      <InstitutionsPicker
+        activity={activity}
+        showLegend
+        className="home-feed-sidebar-institutions min-h-0 overflow-hidden"
+      />
+      <ProTipCard className="home-feed-sidebar-tip" />
+      <AboutStoryCard className="home-feed-sidebar-about" />
     </aside>
   );
 }

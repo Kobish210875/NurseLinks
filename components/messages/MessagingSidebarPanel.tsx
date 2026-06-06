@@ -179,15 +179,15 @@ export default function MessagingSidebarPanel() {
       : null;
 
   return (
-    <div className="hidden min-h-0 flex-1 flex-col lg:flex">
+    <div className="home-messages-dock-shell hidden min-h-0 flex-col overflow-hidden lg:flex">
       {conversationPopout}
 
       <section
         ref={panelRef}
-        className="home-messages-dock flex min-h-0 flex-1 flex-col overflow-hidden"
+        className="home-messages-dock feed-card flex h-full min-h-0 flex-col overflow-hidden"
         aria-label={t("messages.dockListAria")}
       >
-        <header className="home-messages-dock-header flex shrink-0 items-center gap-2 border-b border-border px-0 py-2">
+        <header className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
           <h2 className="inline-flex min-w-0 flex-1 items-center gap-1.5 truncate text-sm font-semibold text-foreground">
             {t("messages.dockTitle")}
             {unreadMessages > 0 ? (
@@ -207,7 +207,7 @@ export default function MessagingSidebarPanel() {
           </button>
         </header>
 
-        <div className="home-messages-dock-search shrink-0 border-b border-border px-0 py-1.5">
+        <div className="shrink-0 border-b border-border px-3 py-1.5">
           <label className="sr-only" htmlFor={searchId}>
             {t("messages.dockSearchLabel")}
           </label>

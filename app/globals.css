@@ -162,21 +162,46 @@ svg.logo-icon {
     overflow: hidden;
   }
 
-  /*
-   * Side columns share one row height; institutions / messages grow so
-   * About (left) and the dock list (right) sit on the same baseline.
-   */
-  .home-feed-sidebar-left,
-  .home-feed-sidebar-right {
+  .home-feed-sidebar-pin--stack > aside {
     height: 100%;
     min-height: 0;
   }
 
+  /*
+   * Left:  hospitals (scroll) | tip | about — tip/about always visible.
+   * Right: profile | messages (scroll) — bottoms align on the same row.
+   */
+  .home-feed-sidebar-left {
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto auto;
+    gap: 0.75rem;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .home-feed-sidebar-right {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 0.75rem;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .home-feed-sidebar-institutions {
+    min-height: 0;
+    overflow: hidden;
+  }
+
   .home-messages-dock {
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-    background: transparent;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .home-messages-dock-shell {
+    min-height: 0;
+    overflow: hidden;
   }
 
   /*
