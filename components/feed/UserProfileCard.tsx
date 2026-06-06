@@ -41,7 +41,7 @@ export default function UserProfileCard({ user, className = "" }: UserProfileCar
   const completionPercent = getProfileCompletionPercent(user);
 
   return (
-    <div className={`feed-card overflow-hidden ${className}`}>
+    <div className={`feed-card home-profile-card overflow-hidden ${className}`}>
       <div
         className="h-16 bg-gradient-to-r from-primary-dark/80 via-primary/60 to-accent/40"
         aria-hidden="true"

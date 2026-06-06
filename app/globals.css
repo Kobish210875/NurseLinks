@@ -164,11 +164,27 @@ svg.logo-icon {
 
   @media (max-height: 820px) {
     .home-feed-shell {
-      padding-top: 0.75rem;
-      padding-bottom: 0.75rem;
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
     }
+  }
 
-    .home-feed-pro-tip-card {
+  @media (max-height: 700px) {
+    .home-feed-shell {
+      padding-top: 0.25rem;
+      padding-bottom: 0.25rem;
+    }
+  }
+
+  /* Right sidebar: profile card shrinks on smaller screens so messages panel gets more room */
+  @media (max-height: 860px) {
+    .home-profile-card .h-16 {
+      height: 2rem;
+    }
+  }
+
+  @media (max-height: 740px) {
+    .home-profile-card {
       display: none;
     }
   }
