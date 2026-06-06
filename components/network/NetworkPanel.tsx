@@ -153,7 +153,7 @@ export default function NetworkPanel({
           <h2 className="mb-2 text-start text-sm font-semibold text-foreground">
             {t("network.searchResults")}
           </h2>
-          <div className="network-members-scroll max-h-[min(16rem,calc(100vh-14rem))] min-w-0 overflow-y-auto overscroll-contain">
+          <div className="network-members-scroll min-w-0 max-md:overflow-visible md:max-h-[min(16rem,calc(100vh-14rem))] md:overflow-y-auto md:overscroll-contain">
             <MemberList
               members={searchResults}
               variant="search"
@@ -171,7 +171,7 @@ export default function NetworkPanel({
           <p className="mb-2 text-start text-xs text-muted-foreground">
             {t("network.recommendationsHint")}
           </p>
-          <div className="network-members-scroll max-h-[min(16rem,calc(100vh-14rem))] min-w-0 overflow-y-auto overscroll-contain">
+          <div className="network-members-scroll min-w-0 max-md:overflow-visible md:max-h-[min(16rem,calc(100vh-14rem))] md:overflow-y-auto md:overscroll-contain">
             <MemberList
               members={visibleRecommendations}
               variant="recommendation"
@@ -226,7 +226,7 @@ export default function NetworkPanel({
               : t("network.count").replace("{count}", String(connections.length))}
           </span>
         </div>
-        <div className="network-members-scroll max-h-[min(22rem,calc(100vh-18rem))] min-w-0 overflow-y-auto overscroll-contain">
+        <div className="network-members-scroll min-w-0 max-md:overflow-visible md:max-h-[min(22rem,calc(100vh-18rem))] md:overflow-y-auto md:overscroll-contain">
           {tab === "connections" ? (
             <div key="tab-connections" className="panel-enter min-w-0" role="tabpanel">
               <div className="sticky top-0 z-10 mb-3 bg-card pb-0.5">
@@ -259,6 +259,7 @@ export default function NetworkPanel({
           )}
         </div>
       </section>
+      <div className="mobile-feed-bottom-spacer md:hidden" aria-hidden="true" />
     </div>
   );
 }

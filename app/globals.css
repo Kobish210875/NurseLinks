@@ -456,6 +456,25 @@ svg.logo-icon {
     padding-bottom: 0.25rem;
   }
 
+  body.has-mobile-app-shell .feed-composer-sticky {
+    box-shadow: 0 4px 12px rgb(44 74 110 / 0.08);
+  }
+
+  @media (max-width: 767px) {
+    body.has-mobile-app-shell .home-feed-center,
+    body.has-mobile-app-shell .home-feed-grid,
+    body.has-mobile-app-shell .home-feed-shell {
+      height: auto;
+      min-height: 0;
+      overflow: visible;
+    }
+  }
+
+  body.has-mobile-app-shell .network-members-scroll {
+    max-height: none;
+    overflow: visible;
+  }
+
   body.has-mobile-app-shell .post-card:last-of-type {
     margin-bottom: 0.5rem;
   }

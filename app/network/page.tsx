@@ -45,32 +45,32 @@ export default async function NetworkPage({ searchParams }: NetworkPageProps) {
 
   return (
     <>
-      <Navbar authenticated />
       <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
-      <main className="home-main-shell feed-page home-feed-shell min-h-0 flex-1 w-full min-w-0 max-w-[100vw] overflow-x-clip py-3 md:py-6 lg:overflow-hidden lg:py-4">
-        <div className="mx-auto flex h-full w-full min-w-0 max-w-[1240px] flex-col px-3 sm:px-4">
-          <header className="mb-4 shrink-0 min-w-0 text-start">
-            <h1 className="break-words text-lg font-bold text-foreground sm:text-xl">
-              {t("network.title")}
-            </h1>
-          </header>
-          <div className="home-feed-grid grid h-full min-h-0 w-full flex-1 grid-cols-1 gap-4 lg:grid-cols-[280px_minmax(0,1fr)_260px] lg:items-stretch lg:gap-6">
-            <div className="home-feed-sidebar order-1 hidden h-full min-h-0 lg:block">
-              <Suspense fallback={<NetworkSidebarSkeleton />}>
-                <NetworkSidebar />
-              </Suspense>
-            </div>
-            <div className="home-feed-center order-2 flex min-h-0 min-w-0 flex-col lg:col-span-2">
-              <Suspense fallback={<NetworkSkeleton />}>
-                <NetworkContent query={query} />
-              </Suspense>
+        <Navbar authenticated />
+        <main className="home-main-shell feed-page home-feed-shell min-h-0 w-full min-w-0 max-w-[100vw] overflow-x-clip py-3 md:py-6 max-md:h-auto max-md:overflow-visible lg:overflow-hidden lg:py-4">
+          <div className="mx-auto flex w-full min-w-0 max-w-[1240px] flex-col px-3 sm:px-4 max-md:h-auto lg:h-full">
+            <header className="mb-4 shrink-0 min-w-0 text-start">
+              <h1 className="break-words text-lg font-bold text-foreground sm:text-xl">
+                {t("network.title")}
+              </h1>
+            </header>
+            <div className="home-feed-grid grid w-full min-w-0 grid-cols-1 gap-4 max-md:h-auto max-md:min-h-0 lg:h-full lg:min-h-0 lg:flex-1 lg:grid-cols-[280px_minmax(0,1fr)_260px] lg:items-stretch lg:gap-6">
+              <div className="home-feed-sidebar order-1 hidden h-full min-h-0 lg:block">
+                <Suspense fallback={<NetworkSidebarSkeleton />}>
+                  <NetworkSidebar />
+                </Suspense>
+              </div>
+              <div className="home-feed-center order-2 flex min-h-0 min-w-0 flex-col max-md:h-auto lg:col-span-2">
+                <Suspense fallback={<NetworkSkeleton />}>
+                  <NetworkContent query={query} />
+                </Suspense>
+              </div>
             </div>
           </div>
+        </main>
+        <div className="lg:hidden">
+          <Footer />
         </div>
-      </main>
-      <div className="lg:hidden">
-        <Footer />
-      </div>
       </div>
     </>
   );

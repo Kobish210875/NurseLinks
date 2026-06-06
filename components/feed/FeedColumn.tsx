@@ -27,12 +27,12 @@ export default async function FeedColumn({ user }: FeedColumnProps) {
 
   return (
     <section
-      className="flex h-full min-h-0 min-w-0 flex-col gap-4"
+      className="flex h-full min-h-0 min-w-0 flex-col gap-4 max-md:h-auto max-md:min-h-0"
       aria-label={t("feed.feedAria")}
     >
       <FeedAutoRefresh initialVersion={feedVersion} />
       <FeedHashScroll />
-      <div className="shrink-0">
+      <div className="feed-composer-sticky shrink-0 max-md:sticky max-md:top-[var(--mobile-header-offset)] max-md:z-30 max-md:bg-[var(--background)] max-md:pb-2 max-md:pt-0.5">
         <Suspense fallback={null}>
           <FeedComposer user={user} />
         </Suspense>
