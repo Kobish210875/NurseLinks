@@ -163,6 +163,23 @@ svg.logo-icon {
   }
 
   /*
+   * Side columns share one row height; institutions / messages grow so
+   * About (left) and the dock list (right) sit on the same baseline.
+   */
+  .home-feed-sidebar-left,
+  .home-feed-sidebar-right {
+    height: 100%;
+    min-height: 0;
+  }
+
+  .home-messages-dock {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+  }
+
+  /*
    * Fit-to-screen: shrink the home content area proportionally on shorter
    * screens so every panel stays visible — same as opening on a larger monitor.
    * Scoped to .home-page-root so it only affects the fixed-height home/jobs shell
