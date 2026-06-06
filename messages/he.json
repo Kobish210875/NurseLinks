@@ -111,6 +111,9 @@
   },
   "post": {
     "options": "אפשרויות פוסט",
+    "imageOpen": "הצגת התמונה בגודל מלא",
+    "imageClose": "סגירה",
+    "imageDownload": "הורדת התמונה",
     "likes": "אהבו",
     "comments": "תגובות",
     "commentsCountLine": "{count} תגובות",

@@ -111,6 +111,9 @@
   },
   "post": {
     "options": "Post options",
+    "imageOpen": "View image full size",
+    "imageClose": "Close",
+    "imageDownload": "Download image",
     "likes": "likes",
     "comments": "comments",
     "commentsCountLine": "{count} comments",

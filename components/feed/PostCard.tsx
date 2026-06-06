@@ -5,6 +5,7 @@ import LinkifiedText from "@/components/ui/LinkifiedText";
 import { addPostComment, deletePost, togglePostLike } from "@/app/actions/feed";
 import { useT } from "@/components/i18n/LocaleProvider";
 import PostCommentRow from "@/components/feed/PostCommentRow";
+import PostImage from "@/components/feed/PostImage";
 import PostShareDialog from "@/components/feed/PostShareDialog";
 import ReportContentButton from "@/components/moderation/ReportContentButton";
 import {
@@ -220,17 +221,7 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
         </p>
       ) : null}
 
-      {post.imageUrl ? (
-        <div className="mb-0 overflow-hidden rounded-lg border border-border bg-muted/15">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={post.imageUrl}
-            alt=""
-            loading="lazy"
-            className="mx-auto max-h-[min(70vh,28rem)] w-full object-contain"
-          />
-        </div>
-      ) : null}
+      {post.imageUrl ? <PostImage src={post.imageUrl} /> : null}
 
       <div className="post-engagement-block mt-2 md:mt-3 md:border-t md:border-border">
         {hasEngagementStats ? (
