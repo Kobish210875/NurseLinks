@@ -15,10 +15,12 @@ export default function HospitalsSidebar({ activity }: HospitalsSidebarProps) {
 
   return (
     <aside
-      className="flex min-h-0 flex-1 flex-col overflow-hidden"
+      className="flex h-full min-h-0 flex-col gap-4 overflow-hidden"
       aria-label={t("feed.navAria")}
     >
       <InstitutionsPicker activity={activity} showLegend className="min-h-0 flex-1" />
+      <AboutStoryCard className="shrink-0" />
+      <ProTipCard className="shrink-0" />
     </aside>
   );
 }
