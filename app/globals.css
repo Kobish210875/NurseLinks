@@ -173,7 +173,7 @@ svg.logo-icon {
    */
   .home-feed-sidebar-left {
     display: grid;
-    grid-template-rows: minmax(0, 1fr) auto auto;
+    grid-template-rows: minmax(0, 1fr) max-content max-content;
     gap: 0.75rem;
     height: 100%;
     min-height: 0;
@@ -182,7 +182,7 @@ svg.logo-icon {
 
   .home-feed-sidebar-right {
     display: grid;
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: max-content minmax(0, 1fr);
     gap: 0.75rem;
     height: 100%;
     min-height: 0;
