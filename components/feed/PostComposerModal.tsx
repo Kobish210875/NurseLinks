@@ -32,23 +32,6 @@ function GalleryIcon({ className = "" }: { className?: string }) {
   );
 }
 
-function CloseIcon() {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="22"
-      height="22"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      aria-hidden="true"
-    >
-      <path d="M18 6 6 18M6 6l12 12" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 type PostComposerPanelProps = {
   user: CurrentUser;
   onClose: () => void;
@@ -285,15 +268,15 @@ export default function PostComposerPanel({
         aria-modal="true"
         aria-labelledby={titleId}
       >
-        <header className="composer-mobile-header flex shrink-0 items-center gap-2 border-b border-border px-2 py-2">
+        <header className="composer-mobile-header relative z-10 flex shrink-0 items-center gap-2 border-b border-border bg-white px-2 py-2">
           <button
             type="button"
             onClick={handleClose}
             disabled={saving}
-            className="flex size-11 shrink-0 items-center justify-center rounded-full text-muted-foreground transition hover:bg-muted disabled:opacity-60"
+            className="flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-white text-lg font-semibold leading-none text-foreground shadow-sm transition hover:bg-muted disabled:opacity-60"
             aria-label={t("profile.cancel")}
           >
-            <CloseIcon />
+            <span aria-hidden="true">×</span>
           </button>
           <h2
             id={titleId}

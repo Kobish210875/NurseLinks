@@ -71,10 +71,15 @@ export default function FeedComposer({ user }: FeedComposerProps) {
   }, []);
 
   useEffect(() => {
-    if (searchParams.get("compose") === "1") {
-      setOpen(true);
+    if (searchParams.get("compose") !== "1") {
+      return;
     }
-  }, [searchParams]);
+    if (isDesktop) {
+      setOpen(true);
+      return;
+    }
+    router.replace("/home", { scroll: false });
+  }, [searchParams, isDesktop, router]);
 
   useEffect(() => {
     if (!open) {

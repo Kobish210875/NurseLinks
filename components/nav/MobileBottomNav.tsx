@@ -12,7 +12,6 @@ type BottomItem = {
   label: string;
   match: (pathname: string, search: URLSearchParams) => boolean;
   badge?: "network" | "messages" | "jobs";
-  isPost?: boolean;
 };
 
 export default function MobileBottomNav() {
@@ -27,7 +26,7 @@ export default function MobileBottomNav() {
     {
       href: "/home",
       label: t("nav.home"),
-      match: (path, search) => path === "/home" && search.get("compose") !== "1",
+      match: (path) => path === "/home",
     },
     {
       href: "/network",
@@ -36,10 +35,9 @@ export default function MobileBottomNav() {
       match: (path) => path === "/network" || path.startsWith("/network/"),
     },
     {
-      href: "/home?compose=1",
-      label: t("nav.post"),
-      isPost: true,
-      match: (_path, search) => search.get("compose") === "1",
+      href: "/institutions",
+      label: t("nav.institutions"),
+      match: (path) => path === "/institutions" || path.startsWith("/hospitals/"),
     },
     {
       href: "/jobs",
@@ -55,7 +53,10 @@ export default function MobileBottomNav() {
     },
   ];
 
-  const warmRoutes = useMemo(() => ["/home", "/network", "/jobs", "/messages", "/profile"], []);
+  const warmRoutes = useMemo(
+    () => ["/home", "/network", "/institutions", "/jobs", "/messages", "/profile"],
+    [],
+  );
 
   useEffect(() => {
     if (didWarmRoutesRef.current) {
@@ -117,7 +118,7 @@ export default function MobileBottomNav() {
                   active
                     ? "text-foreground after:absolute after:inset-x-2 after:top-0 after:h-0.5 after:rounded-full after:bg-foreground"
                     : "text-muted-foreground hover:text-primary"
-                } ${item.isPost ? "text-primary" : ""}`}
+                }`}
               >
                 <span className="inline-flex max-w-full items-center justify-center gap-1.5">
                   <span className="truncate">{item.label}</span>
