@@ -31,37 +31,6 @@ function InstitutionActivityDot({ title }: { title: string }) {
   );
 }
 
-type InstitutionLabelTier = "short" | "medium" | "long";
-
-/** Pastel tiers by label length — short/medium/long pills read as intentional, not random. */
-function institutionLabelTier(label: string): InstitutionLabelTier {
-  const len = label.length;
-  if (len <= 6) {
-    return "short";
-  }
-  if (len <= 13) {
-    return "medium";
-  }
-  return "long";
-}
-
-function institutionBubbleClasses(tier: InstitutionLabelTier, isActive: boolean, hasActivity: boolean) {
-  if (isActive) {
-    return "border-primary bg-primary/10 text-primary";
-  }
-
-  const activityRing = hasActivity ? "ring-1 ring-sky-300/40" : "";
-
-  switch (tier) {
-    case "short":
-      return `border-teal-200/90 bg-teal-50/95 text-teal-900 hover:border-teal-300 hover:bg-teal-50 ${activityRing}`;
-    case "medium":
-      return `border-primary/20 bg-primary/[0.06] text-foreground hover:border-primary/35 hover:bg-primary/10 ${activityRing}`;
-    case "long":
-      return `border-amber-200/80 bg-amber-50/90 text-foreground hover:border-amber-300/90 hover:bg-amber-50 ${activityRing}`;
-  }
-}
-
 export default function InstitutionsPicker({
   activity,
   activeSlug,
@@ -131,7 +100,7 @@ export default function InstitutionsPicker({
           id={institutionListId}
           role="tabpanel"
           aria-labelledby={regionLabelId}
-          className="grid min-h-0 flex-1 grid-cols-2 content-start gap-2 overflow-y-auto overscroll-contain pe-0.5"
+          className="flex min-h-0 flex-1 flex-wrap content-start gap-1.5 overflow-y-auto overscroll-contain pe-0.5"
         >
           {institutions.map((inst) => {
             const flags = activity[inst.slug];
@@ -139,20 +108,20 @@ export default function InstitutionsPicker({
             const isActive = activeSlug === inst.slug;
 
             return (
-              <li key={inst.slug} className="min-w-0">
+              <li key={inst.slug}>
                 <Link
                   href={`/hospitals/${inst.slug}`}
                   aria-current={isActive ? "page" : undefined}
-                  className={`inline-flex w-full min-h-[2rem] items-center justify-center gap-1.5 rounded-full border px-2.5 py-1.5 text-center text-xs font-medium leading-snug shadow-sm transition-colors ${institutionBubbleClasses(
-                    institutionLabelTier(inst.shortLabel),
-                    isActive,
-                    showDot,
-                  )}`}
+                  className={`inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium leading-tight shadow-sm transition-colors ${
+                    isActive
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-white text-muted-foreground hover:border-primary/30 hover:text-primary"
+                  }`}
                 >
                   {showDot ? (
                     <InstitutionActivityDot title={t("hospitals.activityDotLabel")} />
                   ) : null}
-                  <span className="min-w-0 break-words">{inst.shortLabel}</span>
+                  <span className="whitespace-normal">{inst.shortLabel}</span>
                 </Link>
               </li>
             );
