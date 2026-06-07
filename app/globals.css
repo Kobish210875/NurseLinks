@@ -292,8 +292,38 @@ svg.logo-icon {
   }
 
   .messages-sidebar-popout .message-thread-input {
-    min-height: 2.25rem;
-    resize: none;
+    min-height: 2.75rem;
+    max-height: 10rem;
+    resize: vertical;
+  }
+
+  .messages-popout-resize-handle {
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    z-index: 1;
+    width: 1rem;
+    height: 1rem;
+    cursor: nwse-resize;
+    touch-action: none;
+    border-end-start-radius: 0.75rem;
+    background: linear-gradient(
+      135deg,
+      transparent 0 45%,
+      rgb(44 74 110 / 0.22) 45% 55%,
+      transparent 55% 100%
+    );
+  }
+
+  .messages-popout-resize-handle:hover,
+  .messages-popout-resize-handle:focus-visible {
+    background: linear-gradient(
+      135deg,
+      transparent 0 40%,
+      rgb(44 74 110 / 0.35) 40% 60%,
+      transparent 60% 100%
+    );
+    outline: none;
   }
 
   .messages-sidebar-popout .message-thread-compose .mt-2 {

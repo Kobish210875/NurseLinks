@@ -454,7 +454,8 @@
     "dockClose": "סגור חלון הודעות",
     "dockCloseConversation": "סגור שיחה",
     "dockListAria": "רשימת שיחות",
-    "dockConversationAria": "שיחה פתוחה"
+    "dockConversationAria": "שיחה פתוחה",
+    "dockResizeConversation": "שנה גודל חלון השיחה"
   },
   "moderation": {
     "report": "דיווח",

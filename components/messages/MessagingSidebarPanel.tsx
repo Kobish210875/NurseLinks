@@ -23,6 +23,8 @@ const POPOUT_GAP_PX = 12;
 const POPOUT_VIEWPORT_INSET_PX = 16;
 const POPOUT_MIN_WIDTH_PX = 24 * 16;
 const POPOUT_WIDTH_FACTOR = 1.65;
+const POPOUT_RESIZE_MIN_WIDTH_PX = 18 * 16;
+const POPOUT_RESIZE_MIN_HEIGHT_PX = 20 * 16;
 
 type PopoutAnchor = {
   panel: DOMRect;
@@ -54,6 +56,7 @@ export default function MessagingSidebarPanel() {
   const { activePeerId, openThread, closeThread } = useMessagingDock();
   const panelRef = useRef<HTMLElement>(null);
   const [popoutAnchor, setPopoutAnchor] = useState<PopoutAnchor | null>(null);
+  const [popoutSize, setPopoutSize] = useState<{ width: number; height: number } | null>(null);
 
   const [inbox, setInbox] = useState<InboxPayload | null>(null);
   const [loadingInbox, setLoadingInbox] = useState(true);
@@ -71,6 +74,48 @@ export default function MessagingSidebarPanel() {
     } finally {
       setLoadingInbox(false);
     }
+  }
+
+  useEffect(() => {
+    setPopoutSize(null);
+  }, [activePeerId]);
+
+  function startPopoutResize(
+    event: React.PointerEvent<HTMLButtonElement>,
+    baseStyle: ReturnType<typeof getConversationPopoutStyle>,
+  ) {
+    event.preventDefault();
+    const startX = event.clientX;
+    const startY = event.clientY;
+    const startWidth = popoutSize?.width ?? baseStyle.width;
+    const startHeight = popoutSize?.height ?? baseStyle.height;
+    const maxWidth = Math.max(
+      baseStyle.width,
+      popoutAnchor!.panel.left - POPOUT_GAP_PX - POPOUT_VIEWPORT_INSET_PX,
+    );
+    const maxHeight = window.innerHeight - baseStyle.top - POPOUT_VIEWPORT_INSET_PX;
+
+    function onPointerMove(moveEvent: PointerEvent) {
+      const nextWidth = Math.min(
+        maxWidth,
+        Math.max(POPOUT_RESIZE_MIN_WIDTH_PX, startWidth + (startX - moveEvent.clientX)),
+      );
+      const nextHeight = Math.min(
+        maxHeight,
+        Math.max(POPOUT_RESIZE_MIN_HEIGHT_PX, startHeight + (moveEvent.clientY - startY)),
+      );
+      setPopoutSize({ width: nextWidth, height: nextHeight });
+    }
+
+    function onPointerUp() {
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerup", onPointerUp);
+      window.removeEventListener("pointercancel", onPointerUp);
+    }
+
+    window.addEventListener("pointermove", onPointerMove);
+    window.addEventListener("pointerup", onPointerUp);
+    window.addEventListener("pointercancel", onPointerUp);
   }
 
   useEffect(() => {
@@ -155,12 +200,20 @@ export default function MessagingSidebarPanel() {
     });
   }, [inbox, search]);
 
+  const conversationPopoutStyle =
+    activePeerId && popoutAnchor ? getConversationPopoutStyle(popoutAnchor) : null;
+
   const conversationPopout =
-    activePeerId && popoutAnchor && typeof document !== "undefined"
+    activePeerId && popoutAnchor && conversationPopoutStyle && typeof document !== "undefined"
       ? createPortal(
           <section
             className="messages-sidebar-popout feed-card fixed z-[60] flex min-h-0 flex-col overflow-hidden shadow-xl"
-            style={getConversationPopoutStyle(popoutAnchor)}
+            style={{
+              ...conversationPopoutStyle,
+              ...(popoutSize
+                ? { width: popoutSize.width, height: popoutSize.height }
+                : null),
+            }}
             aria-label={t("messages.dockConversationAria")}
           >
             <MessagingDockConversation
@@ -168,6 +221,12 @@ export default function MessagingSidebarPanel() {
               peerId={activePeerId}
               onClose={closeThread}
               onThreadUpdated={() => void loadInbox()}
+            />
+            <button
+              type="button"
+              className="messages-popout-resize-handle"
+              aria-label={t("messages.dockResizeConversation")}
+              onPointerDown={(event) => startPopoutResize(event, conversationPopoutStyle)}
             />
           </section>,
           document.body,

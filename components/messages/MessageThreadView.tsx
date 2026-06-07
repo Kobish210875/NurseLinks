@@ -97,8 +97,12 @@ export default function MessageThreadView({
 
   function submit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    sendMessage();
+  }
+
+  function sendMessage() {
     const trimmed = body.trim();
-    if (!trimmed) {
+    if (!trimmed || pending) {
       return;
     }
 
@@ -135,6 +139,14 @@ export default function MessageThreadView({
       }
       router.refresh();
     });
+  }
+
+  function handleTextareaKeyDown(event: React.KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key !== "Enter" || event.shiftKey || event.nativeEvent.isComposing) {
+      return;
+    }
+    event.preventDefault();
+    sendMessage();
   }
 
   const peerAvatar = (
@@ -267,13 +279,16 @@ export default function MessageThreadView({
             <textarea
               id={messageBodyId}
               name="body"
-              rows={dockMode ? 1 : 2}
+              rows={dockMode ? 2 : 2}
               maxLength={4000}
               value={body}
               onChange={(event) => setBody(event.target.value)}
+              onKeyDown={handleTextareaKeyDown}
               disabled={pending}
               placeholder={t("messages.inputPlaceholder")}
-              className="message-thread-input w-full resize-none rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60 md:resize-y md:text-sm"
+              className={`message-thread-input w-full rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 disabled:opacity-60 md:text-sm ${
+                dockMode ? "resize-y" : "resize-none md:resize-y"
+              }`}
             />
             {error ? (
               <p className="mt-2 text-xs text-red-600" role="alert">
