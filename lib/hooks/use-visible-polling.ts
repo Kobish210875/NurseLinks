@@ -12,7 +12,9 @@ export function useVisiblePolling(
 
   useEffect(() => {
     let cancelled = false;
+    let inFlight = false;
     let intervalId: number | undefined;
+    let skipInitialPageShow = true;
 
     function stopPolling() {
       cancelled = true;
@@ -23,18 +25,33 @@ export function useVisiblePolling(
     }
 
     async function run() {
-      if (cancelled || document.visibilityState !== "visible") {
+      if (cancelled || document.visibilityState !== "visible" || inFlight) {
         return;
       }
-      const result = await tickRef.current();
-      if (result === false) {
-        stopPolling();
+      inFlight = true;
+      try {
+        const result = await tickRef.current();
+        if (result === false) {
+          stopPolling();
+        }
+      } finally {
+        inFlight = false;
       }
     }
 
     void run();
 
-    const onVisible = () => {
+    const onVisibilityChange = () => {
+      if (!cancelled && document.visibilityState === "visible") {
+        void run();
+      }
+    };
+
+    const onPageShow = () => {
+      if (skipInitialPageShow) {
+        skipInitialPageShow = false;
+        return;
+      }
       if (!cancelled && document.visibilityState === "visible") {
         void run();
       }
@@ -43,15 +60,13 @@ export function useVisiblePolling(
     intervalId = window.setInterval(() => {
       void run();
     }, intervalMs);
-    document.addEventListener("visibilitychange", onVisible);
-    window.addEventListener("focus", onVisible);
-    window.addEventListener("pageshow", onVisible);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    window.addEventListener("pageshow", onPageShow);
 
     return () => {
       stopPolling();
-      document.removeEventListener("visibilitychange", onVisible);
-      window.removeEventListener("focus", onVisible);
-      window.removeEventListener("pageshow", onVisible);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      window.removeEventListener("pageshow", onPageShow);
     };
   }, [intervalMs]);
 }

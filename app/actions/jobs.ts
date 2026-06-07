@@ -18,6 +18,7 @@ import { isHebrewDisplayName } from "@/lib/validation/hebrew-name";
 import { isValidIsraeliMobile, normalizeIsraeliMobile } from "@/lib/validation/phone";
 import { sendJobApplicationNotificationEmail } from "@/lib/notifications/job-application-email";
 import { JOB_BODY_MAX_LENGTH, JOB_TITLE_MAX_LENGTH, truncateJobBody, truncateJobTitle } from "@/lib/jobs/field-limits";
+import { MAX_CV_BYTES, resolveCvContentType } from "@/lib/jobs/cv-file";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
@@ -190,31 +191,6 @@ export async function markJobFilled(jobId: string) {
 
 const MAX_APPLICANT_NAME = 120;
 const MAX_APPLICANT_NOTE = 500;
-const MAX_CV_BYTES = 5 * 1024 * 1024;
-const ALLOWED_CV_TYPES = new Set([
-  "application/pdf",
-  "application/msword",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-]);
-
-function resolveCvContentType(file: File): string | null {
-  if (file.type && ALLOWED_CV_TYPES.has(file.type)) {
-    return file.type;
-  }
-
-  const extension = file.name.split(".").pop()?.toLowerCase();
-  if (extension === "pdf") {
-    return "application/pdf";
-  }
-  if (extension === "doc") {
-    return "application/msword";
-  }
-  if (extension === "docx") {
-    return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-  }
-
-  return null;
-}
 
 export async function submitJobApplication(jobId: string, formData: FormData) {
   try {

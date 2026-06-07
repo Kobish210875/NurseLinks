@@ -74,10 +74,6 @@ export default function MessagingSidebarPanel() {
   }
 
   useEffect(() => {
-    void loadInbox();
-  }, []);
-
-  useEffect(() => {
     if (!activePeerId) {
       return;
     }

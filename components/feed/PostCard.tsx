@@ -165,6 +165,7 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
       <header className="mb-3 flex items-start gap-3">
         <Link
           href={`/profile/${post.authorId}`}
+          prefetch={false}
           className="relative flex size-12 shrink-0 overflow-hidden rounded-full border-2 border-border bg-accent/15 transition hover:ring-2 hover:ring-primary/25"
         >
           {post.authorAvatarUrl ? (
@@ -179,6 +180,7 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
         <div className="min-w-0 flex-1 text-start">
           <Link
             href={`/profile/${post.authorId}`}
+            prefetch={false}
             className="font-semibold text-foreground hover:text-primary hover:underline"
           >
             {post.authorName}

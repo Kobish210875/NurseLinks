@@ -5,8 +5,10 @@ import { useEffect, useId, useState } from "react";
 import { useT } from "@/components/i18n/LocaleProvider";
 import {
   institutionHasActivity,
+  type InstitutionActivityFlags,
   type InstitutionActivityMap,
 } from "@/lib/data/institution-activity";
+import { isProductionApp } from "@/lib/env/app-environment";
 import {
   INSTITUTION_REGIONS,
   getInstitutionBySlug,
@@ -21,6 +23,28 @@ type InstitutionsPickerProps = {
   className?: string;
 };
 
+const splitActivityDots = !isProductionApp();
+
+function InstitutionJobDot({ title }: { title: string }) {
+  return (
+    <span
+      className="size-2 shrink-0 rounded-full bg-sky-400 ring-1 ring-sky-400/30"
+      title={title}
+      aria-label={title}
+    />
+  );
+}
+
+function InstitutionFriendDot({ title }: { title: string }) {
+  return (
+    <span
+      className="size-2 shrink-0 rounded-full bg-pink-400 ring-1 ring-pink-400/30"
+      title={title}
+      aria-label={title}
+    />
+  );
+}
+
 function InstitutionActivityDot({ title }: { title: string }) {
   return (
     <span
@@ -29,6 +53,41 @@ function InstitutionActivityDot({ title }: { title: string }) {
       aria-label={title}
     />
   );
+}
+
+function InstitutionActivityIndicators({
+  flags,
+  jobTitle,
+  friendTitle,
+  combinedTitle,
+}: {
+  flags: InstitutionActivityFlags | undefined;
+  jobTitle: string;
+  friendTitle: string;
+  combinedTitle: string;
+}) {
+  if (!flags) {
+    return null;
+  }
+
+  if (splitActivityDots) {
+    if (!flags.hasOpenJob && !flags.hasColleague) {
+      return null;
+    }
+
+    return (
+      <span className="inline-flex shrink-0 items-center gap-0.5">
+        {flags.hasOpenJob ? <InstitutionJobDot title={jobTitle} /> : null}
+        {flags.hasColleague ? <InstitutionFriendDot title={friendTitle} /> : null}
+      </span>
+    );
+  }
+
+  if (!institutionHasActivity(flags)) {
+    return null;
+  }
+
+  return <InstitutionActivityDot title={combinedTitle} />;
 }
 
 export default function InstitutionsPicker({
@@ -104,13 +163,13 @@ export default function InstitutionsPicker({
         >
           {institutions.map((inst) => {
             const flags = activity[inst.slug];
-            const showDot = institutionHasActivity(flags);
             const isActive = activeSlug === inst.slug;
 
             return (
               <li key={inst.slug}>
                 <Link
                   href={`/hospitals/${inst.slug}`}
+                  prefetch={false}
                   aria-current={isActive ? "page" : undefined}
                   className={`inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium leading-tight shadow-sm transition-colors ${
                     isActive
@@ -118,9 +177,12 @@ export default function InstitutionsPicker({
                       : "border-border bg-white text-muted-foreground hover:border-primary/30 hover:text-primary"
                   }`}
                 >
-                  {showDot ? (
-                    <InstitutionActivityDot title={t("hospitals.activityDotLabel")} />
-                  ) : null}
+                  <InstitutionActivityIndicators
+                    flags={flags}
+                    jobTitle={t("hospitals.activityDotJob")}
+                    friendTitle={t("hospitals.activityDotFriend")}
+                    combinedTitle={t("hospitals.activityDotLabel")}
+                  />
                   <span className="whitespace-normal">{inst.shortLabel}</span>
                 </Link>
               </li>
@@ -129,13 +191,26 @@ export default function InstitutionsPicker({
         </ul>
 
         {showLegend ? (
-          <p className="mt-3 flex items-center gap-2 border-t border-border pt-3 text-[11px] text-muted-foreground">
-            <span
-              className="size-2 shrink-0 rounded-full bg-sky-400 ring-1 ring-sky-400/30"
-              aria-hidden="true"
-            />
-            <span>{t("hospitals.activityLegend")}</span>
-          </p>
+          splitActivityDots ? (
+            <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-3 text-[11px] text-muted-foreground">
+              <span className="inline-flex items-center gap-1.5">
+                <InstitutionJobDot title={t("hospitals.activityLegendJob")} />
+                <span>{t("hospitals.activityLegendJob")}</span>
+              </span>
+              <span className="inline-flex items-center gap-1.5">
+                <InstitutionFriendDot title={t("hospitals.activityLegendFriend")} />
+                <span>{t("hospitals.activityLegendFriend")}</span>
+              </span>
+            </p>
+          ) : (
+            <p className="mt-3 flex items-center gap-2 border-t border-border pt-3 text-[11px] text-muted-foreground">
+              <span
+                className="size-2 shrink-0 rounded-full bg-sky-400 ring-1 ring-sky-400/30"
+                aria-hidden="true"
+              />
+              <span>{t("hospitals.activityLegend")}</span>
+            </p>
+          )
         ) : null}
       </div>
     </div>

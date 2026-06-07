@@ -3,6 +3,7 @@
 import { submitJobApplication } from "@/app/actions/jobs";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { truncateJobTitle } from "@/lib/jobs/field-limits";
+import { CV_FILE_ACCEPT } from "@/lib/jobs/cv-file";
 import { isHebrewDisplayName } from "@/lib/validation/hebrew-name";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
@@ -203,7 +204,7 @@ export default function JobApplyDialog({
                 name="cvFile"
                 type="file"
                 disabled={pending}
-                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                accept={CV_FILE_ACCEPT}
                 className="sr-only"
                 aria-labelledby={cvLabelId}
                 onChange={(event) => {

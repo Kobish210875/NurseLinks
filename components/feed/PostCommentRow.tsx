@@ -137,6 +137,7 @@ export default function PostCommentRow({
       <div className={`flex min-w-0 w-full gap-2 ${depth > 0 ? "ms-2 sm:ms-4" : ""}`}>
         <Link
           href={`/profile/${comment.authorId}`}
+          prefetch={false}
           className="flex size-8 shrink-0 overflow-hidden rounded-full border border-border bg-muted/40 transition hover:ring-2 hover:ring-primary/25 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           aria-label={comment.authorName}
         >

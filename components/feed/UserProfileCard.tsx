@@ -72,6 +72,7 @@ export default function UserProfileCard({ user, className = "" }: UserProfileCar
         </div>
         <Link
           href="/profile"
+          prefetch={false}
           className="mt-1.5 block text-center text-sm font-semibold text-foreground transition hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
         >
           {t("profile.myProfile")} <span aria-hidden="true">-</span>{" "}
