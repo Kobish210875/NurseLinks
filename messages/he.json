@@ -108,7 +108,9 @@
     "postImageTooLarge": "התמונה גדולה מדי אחרי הדחיסה. נסו תמונה קטנה יותר.",
     "postImageProcessFailed": "לא ניתן לעבד את התמונה. נסו שוב.",
     "postImageStorageMissing": "אחסון תמונות לפוסטים לא הוגדר. ב-Supabase פתחו SQL Editor והריצו את הקובץ supabase/post-images.sql (גם בפרודקשן).",
-    "emptyFeed": "עדיין אין פוסטים. פרסמו את העדכון הראשון."
+    "emptyFeed": "עדיין אין פוסטים. פרסמו את העדכון הראשון.",
+    "loadMore": "טען פוסטים נוספים",
+    "loadMoreFailed": "לא ניתן לטעון פוסטים נוספים. נסו שוב."
   },
   "post": {
     "options": "אפשרויות פוסט",

@@ -41,9 +41,21 @@ export type FeedPost = {
   comments: FeedComment[];
 };
 
-const POST_LIMIT = 40;
+export const FEED_PAGE_SIZE = 20;
 const COMMENTS_FETCH = 200;
 const MAX_ROOT_COMMENTS_PER_POST = 8;
+
+export type FeedPageOptions = {
+  limit?: number;
+  /** ISO timestamp — fetch posts older than this value. */
+  cursor?: string | null;
+};
+
+export type FeedPageResult = {
+  posts: FeedPost[];
+  hasMore: boolean;
+  nextCursor: string | null;
+};
 
 type PostRow = {
   id: string;
@@ -80,30 +92,59 @@ export async function getFeedPosts(
   currentUserId: string,
   locale: Locale,
 ): Promise<FeedPost[]> {
-  let { data: postsRaw, error: postsError } = await supabase
+  const { posts } = await getFeedPage(supabase, currentUserId, locale);
+  return posts;
+}
+
+export async function getFeedPage(
+  supabase: SupabaseClient<Database>,
+  currentUserId: string,
+  locale: Locale,
+  options: FeedPageOptions = {},
+): Promise<FeedPageResult> {
+  const limit = Math.min(Math.max(1, options.limit ?? FEED_PAGE_SIZE), 40);
+  const fetchLimit = limit + 1;
+
+  let postsQuery = supabase
     .from("posts")
     .select("id, body, image_url, created_at, author_id")
     .order("created_at", { ascending: false })
-    .limit(POST_LIMIT);
+    .limit(fetchLimit);
+
+  if (options.cursor) {
+    postsQuery = postsQuery.lt("created_at", options.cursor);
+  }
+
+  let { data: postsRaw, error: postsError } = await postsQuery;
 
   if (postsError?.message?.toLowerCase().includes("image_url")) {
-    const fallback = await supabase
+    let fallbackQuery = supabase
       .from("posts")
       .select("id, body, created_at, author_id")
       .order("created_at", { ascending: false })
-      .limit(POST_LIMIT);
+      .limit(fetchLimit);
+
+    if (options.cursor) {
+      fallbackQuery = fallbackQuery.lt("created_at", options.cursor);
+    }
+
+    const fallback = await fallbackQuery;
     postsRaw = fallback.data;
     postsError = fallback.error;
   }
 
-  const posts = ((postsRaw ?? []) as PostRow[]).map((row) => ({
+  const fetched = ((postsRaw ?? []) as PostRow[]).map((row) => ({
     ...row,
     image_url: row.image_url ?? null,
   }));
 
-  if (postsError || !posts.length) {
-    return [];
+  if (postsError || !fetched.length) {
+    return { posts: [], hasMore: false, nextCursor: null };
   }
+
+  const hasMore = fetched.length > limit;
+  const posts = hasMore ? fetched.slice(0, limit) : fetched;
+  const nextCursor = hasMore ? (posts.at(-1)?.created_at ?? null) : null;
 
   const authorIds = [...new Set(posts.map((p) => p.author_id))];
   const postIds = posts.map((p) => p.id);
@@ -351,7 +392,7 @@ export async function getFeedPosts(
     return nodes.reduce((total, node) => total + 1 + countCommentsInTree(node.replies), 0);
   }
 
-  return posts.map((p) => {
+  const enrichedPosts = posts.map((p) => {
     const prof = profileById.get(p.author_id);
     const fullName = prof?.full_name?.trim() || "User";
     const stats = statsMap.get(p.id);
@@ -381,6 +422,8 @@ export async function getFeedPosts(
       comments,
     };
   });
+
+  return { posts: enrichedPosts, hasMore, nextCursor };
 }
 
 export async function getFeedVersion(supabase: SupabaseClient<Database>) {

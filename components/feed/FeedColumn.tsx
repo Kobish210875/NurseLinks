@@ -1,11 +1,11 @@
 import FeedComposer from "@/components/feed/FeedComposer";
+import FeedPostsList from "@/components/feed/FeedPostsList";
 import FeedPostsScroll from "@/components/feed/FeedPostsScroll";
 import { Suspense } from "react";
 import FeedAutoRefresh from "@/components/feed/FeedAutoRefresh";
 import FeedHashScroll from "@/components/feed/FeedHashScroll";
-import PostCard from "@/components/feed/PostCard";
 import type { CurrentUser } from "@/lib/auth/get-current-user";
-import { getFeedPosts, getFeedVersion } from "@/lib/data/feed";
+import { getFeedPage, getFeedVersion } from "@/lib/data/feed";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
 import { createClient } from "@/lib/supabase/server";
@@ -18,12 +18,12 @@ export default async function FeedColumn({ user }: FeedColumnProps) {
   const locale = await getLocale();
   const t = createT(getMessages(locale));
   const supabase = await createClient();
-  const [posts, feedVersion] = await Promise.all([
-    getFeedPosts(supabase, user.id, locale),
+  const [feedPage, feedVersion] = await Promise.all([
+    getFeedPage(supabase, user.id, locale),
     getFeedVersion(supabase),
   ]);
 
-  const [firstPost, ...restPosts] = posts;
+  const { posts, hasMore, nextCursor } = feedPage;
 
   return (
     <section
@@ -38,21 +38,15 @@ export default async function FeedColumn({ user }: FeedColumnProps) {
         </Suspense>
       </div>
       <FeedPostsScroll>
-        {firstPost ? (
-          <PostCard post={firstPost} currentUserId={user.id} isAdmin={user.isAdmin} />
-        ) : (
-          <div className="feed-card flex flex-1 items-center justify-center p-6 text-center text-sm text-muted-foreground">
-            {t("feed.emptyFeed")}
-          </div>
-        )}
-        {restPosts.map((post) => (
-          <PostCard
-            key={post.id}
-            post={post}
-            currentUserId={user.id}
-            isAdmin={user.isAdmin}
-          />
-        ))}
+        <FeedPostsList
+          resetKey={feedVersion}
+          initialPosts={posts}
+          initialHasMore={hasMore}
+          initialNextCursor={nextCursor}
+          currentUserId={user.id}
+          isAdmin={user.isAdmin}
+          emptyMessage={t("feed.emptyFeed")}
+        />
       </FeedPostsScroll>
     </section>
   );
