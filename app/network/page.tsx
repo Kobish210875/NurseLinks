@@ -46,9 +46,9 @@ export default async function NetworkPage({ searchParams }: NetworkPageProps) {
 
   return (
     <>
-      <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
+      <div className="home-page-root network-page flex min-h-screen flex-col max-md:block max-md:min-h-0">
         <Navbar authenticated />
-        <main className="home-main-shell feed-page home-feed-shell min-h-0 w-full min-w-0 max-w-[100vw] overflow-x-clip py-3 md:py-6 max-md:h-auto max-md:overflow-visible lg:overflow-hidden lg:py-4">
+        <main className="home-main-shell feed-page home-feed-shell min-h-0 w-full min-w-0 max-w-[100vw] overflow-x-clip py-3 md:py-6 max-md:h-auto max-md:overflow-visible lg:py-4">
           <div className="mx-auto flex w-full min-w-0 max-w-[1240px] flex-col px-3 sm:px-4 max-md:h-auto lg:h-full">
             <header className="mb-4 shrink-0 min-w-0 text-start">
               <h1 className="break-words text-lg font-bold text-foreground sm:text-xl">
