@@ -43,12 +43,14 @@ export default function InstitutionResultsSections({
     <div className={cardClass}>
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-semibold text-foreground">{labels.jobsTitle}</h2>
-        <Link
-          href={`/jobs?institution=${institutionSlug}`}
-          className="text-xs font-medium text-primary hover:underline"
-        >
-          {labels.jobsOpenAll}
-        </Link>
+        {compact ? null : (
+          <Link
+            href={`/jobs?institution=${institutionSlug}`}
+            className="text-xs font-medium text-primary hover:underline"
+          >
+            {labels.jobsOpenAll}
+          </Link>
+        )}
       </div>
       <p className="mt-1 text-xs text-muted-foreground">{labels.jobsHint}</p>
 
