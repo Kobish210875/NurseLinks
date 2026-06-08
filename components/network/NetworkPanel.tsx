@@ -9,6 +9,7 @@ import {
   formatProfileHeadline,
 } from "@/lib/profile/display-professional";
 import type { NetworkMember, NetworkRecommendation } from "@/lib/network/types";
+import FeedPostsScroll from "@/components/feed/FeedPostsScroll";
 import MemberRow from "./MemberRow";
 
 type NetworkPanelProps = {
@@ -131,7 +132,12 @@ export default function NetworkPanel({
       : t("network.noConnections");
 
   return (
-    <div className="space-y-4">
+    <section
+      className="flex h-full min-h-0 min-w-0 flex-col max-md:h-auto max-md:min-h-0"
+      aria-label={t("network.title")}
+    >
+      <FeedPostsScroll>
+        <div className="space-y-4">
       <section className="feed-card min-w-0 space-y-3 p-3 sm:p-4">
         <div>
           <h2 className="text-sm font-semibold text-foreground">{t("network.searchTitle")}</h2>
@@ -279,7 +285,8 @@ export default function NetworkPanel({
           )}
         </div>
       </section>
-      <div className="mobile-feed-bottom-spacer md:hidden" aria-hidden="true" />
-    </div>
+        </div>
+      </FeedPostsScroll>
+    </section>
   );
 }

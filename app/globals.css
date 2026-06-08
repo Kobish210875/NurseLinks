@@ -338,35 +338,9 @@ svg.logo-icon {
   box-shadow: 0 1px 3px rgb(44 74 110 / 0.06);
 }
 
-/* Network: scrollable member list (jobs-like page) */
+/* Network: member list containers (scroll lives in center column panel) */
 .network-members-scroll {
   scrollbar-gutter: stable;
-}
-
-/* Network page (WEB): page scroll instead of nested boxes — home feed keeps fixed shell */
-@media (min-width: 1024px) {
-  html:has(.home-page-root.network-page),
-  body:has(.home-page-root.network-page) {
-    height: auto;
-    overflow: auto;
-  }
-
-  .home-page-root.network-page {
-    position: static;
-    height: auto;
-    min-height: 100dvh;
-    max-height: none;
-    overflow: visible;
-  }
-
-  .home-page-root.network-page .home-main-shell,
-  .home-page-root.network-page .home-feed-shell,
-  .home-page-root.network-page .home-feed-grid,
-  .home-page-root.network-page .home-feed-center {
-    height: auto;
-    min-height: 0;
-    overflow: visible;
-  }
 }
 
 /* Jobs browse: scrollable panels on WEB only (mobile uses page scroll) */
