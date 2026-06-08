@@ -5,16 +5,30 @@ import MobileInstitutionsContent from "@/components/hospitals/MobileInstitutions
 import Navbar from "@/components/Navbar";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getInstitutionActivityForUser } from "@/lib/data/institution-activity";
+import { getInstitutionDetailsMap } from "@/lib/data/institution-details";
 import { createClient } from "@/lib/supabase/server";
+import { getLocale } from "@/lib/i18n/get-locale";
+import { createT, getMessages } from "@/lib/i18n/messages";
 
 async function InstitutionsPageContent() {
   const user = await getCurrentUser();
   if (!user) {
     redirect("/");
   }
+  const locale = await getLocale();
+  const t = createT(getMessages(locale));
   const supabase = await createClient();
-  const institutionActivity = await getInstitutionActivityForUser(supabase, user.id);
-  return <MobileInstitutionsContent activity={institutionActivity} />;
+  const [institutionActivity, detailsMap] = await Promise.all([
+    getInstitutionActivityForUser(supabase, user.id),
+    getInstitutionDetailsMap(supabase, user.id, locale, t("profile.institutionOther")),
+  ]);
+  return (
+    <MobileInstitutionsContent
+      activity={institutionActivity}
+      detailsMap={detailsMap}
+      defaultApplicantName={user.fullName}
+    />
+  );
 }
 
 export default function InstitutionsPage() {

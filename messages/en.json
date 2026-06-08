@@ -345,7 +345,8 @@
     "jobsTitle": "Open jobs at this institution",
     "jobsHint": "Shows active jobs published for this institution.",
     "jobsEmpty": "There are no open jobs at this institution right now.",
-    "jobsOpenAll": "View all institution jobs"
+    "jobsOpenAll": "View all institution jobs",
+    "mobileSelectInstitution": "Choose an institution from the list to see jobs and colleagues."
   },
   "jobs": {
     "title": "Nursing jobs",

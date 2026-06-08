@@ -21,6 +21,10 @@ type InstitutionsPickerProps = {
   activeSlug?: string;
   showLegend?: boolean;
   className?: string;
+  /** When set, institution chips select inline instead of navigating away. */
+  selectedSlug?: string | null;
+  onSelect?: (slug: string) => void;
+  onRegionChange?: (region: InstitutionRegion) => void;
 };
 
 const splitActivityDots = !isProductionApp();
@@ -95,6 +99,9 @@ export default function InstitutionsPicker({
   activeSlug,
   showLegend = false,
   className = "",
+  selectedSlug,
+  onSelect,
+  onRegionChange,
 }: InstitutionsPickerProps) {
   const t = useT();
   const regionLabelId = useId();
@@ -112,6 +119,13 @@ export default function InstitutionsPicker({
 
   const institutions = getInstitutionsByRegionSorted(region);
   const activeRegion = INSTITUTION_REGIONS.find((r) => r.id === region);
+  const selectionMode = Boolean(onSelect);
+  const highlightedSlug = selectionMode ? (selectedSlug ?? undefined) : activeSlug;
+
+  function selectRegion(nextRegion: InstitutionRegion) {
+    setRegion(nextRegion);
+    onRegionChange?.(nextRegion);
+  }
 
   return (
     <div
@@ -133,7 +147,7 @@ export default function InstitutionsPicker({
               role="tab"
               aria-selected={selected}
               aria-controls="hospitals-institution-list"
-              onClick={() => setRegion(r.id)}
+              onClick={() => selectRegion(r.id)}
               className={`rounded-lg border px-2 py-2 text-[11px] font-semibold leading-tight transition-colors ${
                 selected
                   ? "border-primary bg-primary text-primary-foreground shadow-sm"
@@ -163,28 +177,44 @@ export default function InstitutionsPicker({
         >
           {institutions.map((inst) => {
             const flags = activity[inst.slug];
-            const isActive = activeSlug === inst.slug;
+            const isActive = highlightedSlug === inst.slug;
+            const chipClass = `inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium leading-tight shadow-sm transition-colors ${
+              isActive
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border bg-white text-muted-foreground hover:border-primary/30 hover:text-primary"
+            }`;
+            const indicators = (
+              <InstitutionActivityIndicators
+                flags={flags}
+                jobTitle={t("hospitals.activityDotJob")}
+                friendTitle={t("hospitals.activityDotFriend")}
+                combinedTitle={t("hospitals.activityDotLabel")}
+              />
+            );
 
             return (
               <li key={inst.slug}>
-                <Link
-                  href={`/hospitals/${inst.slug}`}
-                  prefetch={false}
-                  aria-current={isActive ? "page" : undefined}
-                  className={`inline-flex max-w-full items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium leading-tight shadow-sm transition-colors ${
-                    isActive
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border bg-white text-muted-foreground hover:border-primary/30 hover:text-primary"
-                  }`}
-                >
-                  <InstitutionActivityIndicators
-                    flags={flags}
-                    jobTitle={t("hospitals.activityDotJob")}
-                    friendTitle={t("hospitals.activityDotFriend")}
-                    combinedTitle={t("hospitals.activityDotLabel")}
-                  />
-                  <span className="whitespace-normal">{inst.shortLabel}</span>
-                </Link>
+                {selectionMode ? (
+                  <button
+                    type="button"
+                    onClick={() => onSelect?.(inst.slug)}
+                    aria-pressed={isActive}
+                    className={chipClass}
+                  >
+                    {indicators}
+                    <span className="whitespace-normal">{inst.shortLabel}</span>
+                  </button>
+                ) : (
+                  <Link
+                    href={`/hospitals/${inst.slug}`}
+                    prefetch={false}
+                    aria-current={isActive ? "page" : undefined}
+                    className={chipClass}
+                  >
+                    {indicators}
+                    <span className="whitespace-normal">{inst.shortLabel}</span>
+                  </Link>
+                )}
               </li>
             );
           })}
