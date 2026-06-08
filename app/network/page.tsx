@@ -22,7 +22,7 @@ async function NetworkContent({ query }: { query: string }) {
     redirect("/");
   }
   const supabase = await createClient();
-  const { connections, invitations, searchResults, recommendations } = await getNetworkPageData(
+  const { connections, invitations, sentInvitations, searchResults, recommendations } = await getNetworkPageData(
     supabase,
     user.id,
     query,
@@ -31,6 +31,7 @@ async function NetworkContent({ query }: { query: string }) {
     <NetworkPanel
       connections={connections}
       invitations={invitations}
+      sentInvitations={sentInvitations}
       initialQuery={query}
       recommendations={recommendations}
       searchResults={searchResults}

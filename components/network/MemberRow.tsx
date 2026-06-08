@@ -182,9 +182,9 @@ export default function MemberRow({
                     type="button"
                     disabled={pending}
                     onClick={() => run(() => cancelConnectionRequest(member.id), "none")}
-                    className={`${actionBtn} border-border text-muted-foreground`}
+                    className={`${actionBtn} border-border text-muted-foreground hover:border-red-200 hover:bg-red-50 hover:text-red-700`}
                   >
-                    {t("network.pending")}
+                    {t("network.cancelRequest")}
                   </button>
                 ) : null}
                 {optimisticStatus === "pending_in" ? (
@@ -243,9 +243,9 @@ export default function MemberRow({
                     type="button"
                     disabled={pending}
                     onClick={() => run(() => cancelConnectionRequest(member.id), "none")}
-                    className={`${actionBtn} border-border text-muted-foreground`}
+                    className={`${actionBtn} border-border text-muted-foreground hover:border-red-200 hover:bg-red-50 hover:text-red-700`}
                   >
-                    {t("network.pending")}
+                    {t("network.cancelRequest")}
                   </button>
                 ) : null}
                 {optimisticStatus === "pending_in" ? (

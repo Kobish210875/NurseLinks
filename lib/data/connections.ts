@@ -226,6 +226,30 @@ export async function getPendingInvitations(
     .filter((m): m is NetworkMember => m !== null);
 }
 
+export async function getPendingSentInvitations(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+  connectionRows?: ConnectionRow[],
+): Promise<NetworkMember[]> {
+  const rows = connectionRows ?? (await loadConnectionRows(supabase, userId));
+  const outgoing = rows.filter((r) => r.status === "pending" && r.requester_id === userId);
+  const profiles = await loadProfilesByIds(
+    supabase,
+    outgoing.map((r) => r.addressee_id),
+  );
+
+  return outgoing
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .map((r) => {
+      const profile = profiles.get(r.addressee_id);
+      if (!profile) {
+        return null;
+      }
+      return toMember(profile, resolveConnectionStatus(userId, r.addressee_id, rows));
+    })
+    .filter((m): m is NetworkMember => m !== null);
+}
+
 export async function searchPeople(
   supabase: SupabaseClient<Database>,
   userId: string,
@@ -375,6 +399,7 @@ export async function getConnectionRecommendations(
 export type NetworkPageData = {
   connections: NetworkMember[];
   invitations: NetworkMember[];
+  sentInvitations: NetworkMember[];
   searchResults: NetworkMember[];
   recommendations: NetworkRecommendation[];
 };
@@ -389,16 +414,17 @@ export async function getNetworkPageData(
   const trimmed = query.trim();
   const showSearch = trimmed.length >= 2;
 
-  const [connections, invitations, searchResults, recommendations] = await Promise.all([
+  const [connections, invitations, sentInvitations, searchResults, recommendations] = await Promise.all([
     getAcceptedConnections(supabase, userId, connectionRows, 100),
     getPendingInvitations(supabase, userId, connectionRows),
+    getPendingSentInvitations(supabase, userId, connectionRows),
     showSearch ? searchPeople(supabase, userId, trimmed, 20, connectionRows) : Promise.resolve([]),
     showSearch
       ? Promise.resolve([])
       : getConnectionRecommendations(supabase, userId, 10, connectionRows),
   ]);
 
-  return { connections, invitations, searchResults, recommendations };
+  return { connections, invitations, sentInvitations, searchResults, recommendations };
 }
 
 export async function getNetworkPeer(

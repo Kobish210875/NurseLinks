@@ -150,6 +150,7 @@ export async function cancelConnectionRequest(addresseeId: string) {
   }
 
   revalidateNetworkNav();
+  revalidatePath(`/profile/${addresseeId}`);
   return { success: true as const };
 }
 

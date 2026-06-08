@@ -14,6 +14,7 @@ import MemberRow from "./MemberRow";
 type NetworkPanelProps = {
   connections: NetworkMember[];
   invitations: NetworkMember[];
+  sentInvitations: NetworkMember[];
   initialQuery?: string;
   recommendations: NetworkRecommendation[];
   searchResults: NetworkMember[];
@@ -53,6 +54,7 @@ function MemberList({
 export default function NetworkPanel({
   connections,
   invitations,
+  sentInvitations,
   initialQuery = "",
   recommendations,
   searchResults,
@@ -158,6 +160,24 @@ export default function NetworkPanel({
               members={searchResults}
               variant="search"
               emptyText={t("network.searchEmpty")}
+            />
+          </div>
+        </section>
+      ) : null}
+
+      {!showSearch && sentInvitations.length > 0 ? (
+        <section className="feed-card min-w-0 p-3 sm:p-4">
+          <h2 className="mb-1 text-start text-sm font-semibold text-foreground">
+            {t("network.sentInvitationsTitle")}
+          </h2>
+          <p className="mb-2 text-start text-xs text-muted-foreground">
+            {t("network.sentInvitationsHint")}
+          </p>
+          <div className="network-members-scroll min-w-0 max-md:overflow-visible md:max-h-[min(16rem,calc(100vh-14rem))] md:overflow-y-auto md:overscroll-contain">
+            <MemberList
+              members={sentInvitations}
+              variant="search"
+              emptyText={t("network.noSentInvitations")}
             />
           </div>
         </section>

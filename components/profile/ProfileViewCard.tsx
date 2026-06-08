@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { removeConnection, sendConnectionRequest } from "@/app/actions/connections";
+import { removeConnection, sendConnectionRequest, cancelConnectionRequest } from "@/app/actions/connections";
 import { useLocale, useT } from "@/components/i18n/LocaleProvider";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { getCityDisplayName } from "@/lib/data/israeli-cities";
@@ -25,6 +25,7 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
   );
   const [pendingConnect, startConnect] = useTransition();
   const [pendingRemove, startRemove] = useTransition();
+  const [pendingCancel, startCancel] = useTransition();
 
   useEffect(() => {
     setConnectionStatus(profile.connectionStatus);
@@ -138,12 +139,21 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
             </button>
           ) : null}
           {!isOwnProfile && connectionStatus === "pending_out" ? (
-            <Link
-              href={`/network?q=${encodeURIComponent(profile.fullName)}`}
-              className="rounded-full border border-border px-4 py-1.5 text-sm font-medium text-muted-foreground transition hover:bg-muted/60"
+            <button
+              type="button"
+              disabled={pendingCancel}
+              onClick={() =>
+                startCancel(async () => {
+                  const result = await cancelConnectionRequest(profile.id);
+                  if (!result || typeof result !== "object" || !("error" in result)) {
+                    setConnectionStatus("none");
+                  }
+                })
+              }
+              className="rounded-full border border-border px-4 py-1.5 text-sm font-medium text-muted-foreground transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 disabled:opacity-60"
             >
-              {t("network.pending")}
-            </Link>
+              {pendingCancel ? "..." : t("network.cancelRequest")}
+            </button>
           ) : null}
         </div>
       </div>
