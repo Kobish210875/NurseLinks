@@ -157,7 +157,6 @@ export default function JobApplyDialog({
         }
         setSuccess(true);
         router.refresh();
-        window.setTimeout(() => onClose(), 1200);
       } catch {
         setError(t("jobs.applyPayloadTooLarge"));
       }
@@ -171,7 +170,7 @@ export default function JobApplyDialog({
       aria-modal="true"
       aria-labelledby={titleId}
       onMouseDown={(event) => {
-        if (event.target === event.currentTarget && !pending) {
+        if (event.target === event.currentTarget && !pending && !success) {
           onClose();
         }
       }}
@@ -184,9 +183,23 @@ export default function JobApplyDialog({
         <p className="mt-2 text-xs text-muted-foreground">{t("jobs.applyHint")}</p>
 
         {success ? (
-          <p className="mt-4 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-primary">
-            {t("jobs.applySuccess")}
-          </p>
+          <div className="mt-4 space-y-3">
+            <p
+              role="status"
+              className="rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-primary"
+            >
+              {t("jobs.applySuccess")}
+            </p>
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-full bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition hover:bg-primary/90"
+              >
+                {t("jobs.closeDetails")}
+              </button>
+            </div>
+          </div>
         ) : (
           <form noValidate onSubmit={submit} className="mt-4 space-y-3">
             <div className="grid gap-1.5">

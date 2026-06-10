@@ -16,11 +16,14 @@ export default function JobComposer() {
   const institutionId = useId();
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [formKey, setFormKey] = useState(0);
   const [institutionSlug, setInstitutionSlug] = useState("");
   const isOtherInstitution = institutionSlug === INSTITUTION_OTHER_SLUG;
 
   function submit(formData: FormData) {
     setError(null);
+    setSuccess(false);
     startTransition(async () => {
       const res = await createJob(formData);
       if (res?.error === "invalid-institution") {
@@ -31,13 +34,24 @@ export default function JobComposer() {
         setError(t("jobs.publishFailed"));
         return;
       }
-      router.push("/jobs?published=1");
+      setSuccess(true);
+      setFormKey((key) => key + 1);
+      setInstitutionSlug("");
       router.refresh();
     });
   }
 
   return (
-    <form action={submit} className="feed-card space-y-4 p-4">
+    <div className="space-y-3">
+      {success ? (
+        <p
+          role="status"
+          className="break-words rounded-lg border border-primary/25 bg-primary/5 px-3 py-2 text-sm text-primary"
+        >
+          {t("jobs.publishedBanner")}
+        </p>
+      ) : null}
+      <form key={formKey} action={submit} className="feed-card space-y-4 p-4">
       <div className="grid gap-1.5">
         <label htmlFor={jobTitleId} className="text-sm font-medium text-foreground">
           {t("jobs.fieldTitle")}
@@ -99,5 +113,6 @@ export default function JobComposer() {
         </button>
       </div>
     </form>
+    </div>
   );
 }
