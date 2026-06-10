@@ -43,7 +43,11 @@ async function JobsBrowseContent({ searchParams }: JobsPageProps) {
 
   if (view === "applications") {
     const inbox = await getJobApplicationsInbox(supabase, user.id, locale);
-    return <JobApplicationsInbox items={inbox} />;
+    return (
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col lg:overflow-hidden">
+        <JobApplicationsInbox items={inbox} />
+      </div>
+    );
   }
 
   const hasSearchFilters = Boolean(

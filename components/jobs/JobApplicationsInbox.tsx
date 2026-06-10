@@ -10,6 +10,12 @@ type JobApplicationsInboxProps = {
   items: JobApplicationInboxItem[];
 };
 
+/** Inner panel scroll on WEB (lg+); mobile uses page scroll — matches JobFeedList. */
+const panelScrollClass =
+  "lg:jobs-panel-scroll lg:min-h-0 lg:flex-1 lg:overflow-y-auto lg:overscroll-contain lg:dir-ltr";
+
+const jobsBrowseHeightClass = "lg:max-h-[calc(100dvh-11rem)]";
+
 export default async function JobApplicationsInbox({ items }: JobApplicationsInboxProps) {
   const locale = await getLocale();
   const t = createT(getMessages(locale));
@@ -31,39 +37,44 @@ export default async function JobApplicationsInbox({ items }: JobApplicationsInb
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-4 lg:overflow-hidden">
       <MarkApplicationsInboxSeen />
-      <div className="feed-card flex flex-col gap-3 p-3 sm:p-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
+      <section
+        className={`feed-card flex min-w-0 flex-col gap-3 p-3 sm:p-4 lg:min-h-0 lg:flex-1 ${jobsBrowseHeightClass}`}
+        aria-label={t("jobs.applicationsInboxTitle")}
+      >
+        <div className="flex shrink-0 flex-wrap items-center justify-between gap-2">
           <div className="text-start">
             <h2 className="text-sm font-semibold text-foreground">{t("jobs.applicationsInboxTitle")}</h2>
             <p className="mt-1 text-xs text-muted-foreground">{t("jobs.applicationsInboxHint")}</p>
           </div>
           <MarkAllApplicationsRead visible={hasUnread} />
         </div>
-        <div className="space-y-4">
-          {[...grouped.entries()].map(([jobId, jobItems]) => {
-            const job = jobItems[0]?.job;
-            if (!job) {
-              return null;
-            }
-            return (
-              <section key={jobId} className="rounded-lg border border-border bg-muted/20 p-3">
-                <h3 className="job-detail-title mb-2 text-start text-sm font-semibold text-foreground">
-                  {truncateJobTitle(job.title)}
-                </h3>
-                <ul className="space-y-2.5 sm:space-y-2">
-                  {jobItems.map((item) => (
-                    <li key={item.application.id}>
-                      <JobApplicationCard application={item.application} />
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            );
-          })}
+        <div className={panelScrollClass}>
+          <div className="space-y-4" dir="rtl">
+            {[...grouped.entries()].map(([jobId, jobItems]) => {
+              const job = jobItems[0]?.job;
+              if (!job) {
+                return null;
+              }
+              return (
+                <section key={jobId} className="rounded-lg border border-border bg-muted/20 p-3">
+                  <h3 className="job-detail-title mb-2 text-start text-sm font-semibold text-foreground">
+                    {truncateJobTitle(job.title)}
+                  </h3>
+                  <ul className="space-y-2.5 sm:space-y-2">
+                    {jobItems.map((item) => (
+                      <li key={item.application.id}>
+                        <JobApplicationCard application={item.application} />
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              );
+            })}
+          </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }
