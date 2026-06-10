@@ -5,6 +5,7 @@ import { useT } from "@/components/i18n/LocaleProvider";
 import { truncateJobTitle } from "@/lib/jobs/field-limits";
 import { CV_FILE_ACCEPT } from "@/lib/jobs/cv-file";
 import { isHebrewDisplayName } from "@/lib/validation/hebrew-name";
+import { isValidIsraeliMobile } from "@/lib/validation/phone";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 
@@ -81,13 +82,31 @@ export default function JobApplyDialog({
     return null;
   }
 
-  function submit(formData: FormData) {
+  function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
     setError(null);
+    const formData = new FormData(event.currentTarget);
+
     const fullName = String(formData.get("fullName") ?? "").trim();
-    if (!isHebrewDisplayName(fullName, 120)) {
-      setError(t("errors.invalid-hebrew-name"));
+    if (!fullName) {
+      setError(t("jobs.applyNameRequired"));
       return;
     }
+    if (!isHebrewDisplayName(fullName, 120)) {
+      setError(t("jobs.applyInvalidName"));
+      return;
+    }
+
+    const phoneRaw = String(formData.get("phone") ?? "").trim();
+    if (!phoneRaw) {
+      setError(t("jobs.applyPhoneRequired"));
+      return;
+    }
+    if (!isValidIsraeliMobile(phoneRaw)) {
+      setError(t("jobs.applyInvalidPhone"));
+      return;
+    }
+
     const cv = formData.get("cvFile");
     if (!(cv instanceof File) || cv.size === 0) {
       setError(t("jobs.applyCvRequired"));
@@ -97,7 +116,7 @@ export default function JobApplyDialog({
       try {
         const res = await submitJobApplication(jobId, formData);
         if (res?.error === "invalid-name") {
-          setError(t("errors.invalid-hebrew-name"));
+          setError(t("jobs.applyInvalidName"));
           return;
         }
         if (res?.error === "invalid-phone") {
@@ -169,7 +188,7 @@ export default function JobApplyDialog({
             {t("jobs.applySuccess")}
           </p>
         ) : (
-          <form action={submit} className="mt-4 space-y-3">
+          <form noValidate onSubmit={submit} className="mt-4 space-y-3">
             <div className="grid gap-1.5">
               <label htmlFor={fullNameId} className="text-sm font-medium text-foreground">
                 {t("jobs.applyName")}
@@ -178,7 +197,6 @@ export default function JobApplyDialog({
                 id={fullNameId}
                 name="fullName"
                 type="text"
-                required
                 maxLength={120}
                 defaultValue={defaultFullName}
                 disabled={pending}
@@ -194,7 +212,6 @@ export default function JobApplyDialog({
                 id={phoneId}
                 name="phone"
                 type="tel"
-                required
                 inputMode="tel"
                 placeholder="05XXXXXXXX"
                 disabled={pending}
@@ -212,7 +229,6 @@ export default function JobApplyDialog({
                 id={cvId}
                 name="cvFile"
                 type="file"
-                required
                 disabled={pending}
                 accept={CV_FILE_ACCEPT}
                 className="sr-only"
