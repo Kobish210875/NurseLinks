@@ -88,6 +88,11 @@ export default function JobApplyDialog({
       setError(t("errors.invalid-hebrew-name"));
       return;
     }
+    const cv = formData.get("cvFile");
+    if (!(cv instanceof File) || cv.size === 0) {
+      setError(t("jobs.applyCvRequired"));
+      return;
+    }
     startTransition(async () => {
       try {
         const res = await submitJobApplication(jobId, formData);
@@ -105,6 +110,10 @@ export default function JobApplyDialog({
         }
         if (res?.error === "not-configured") {
           setError(t("jobs.applyNotConfigured"));
+          return;
+        }
+        if (res?.error === "cv-required") {
+          setError(t("jobs.applyCvRequired"));
           return;
         }
         if (res?.error === "invalid-cv-file") {
@@ -203,6 +212,7 @@ export default function JobApplyDialog({
                 id={cvId}
                 name="cvFile"
                 type="file"
+                required
                 disabled={pending}
                 accept={CV_FILE_ACCEPT}
                 className="sr-only"

@@ -232,6 +232,10 @@ async function submitJobApplicationInternal(jobId: string, formData: FormData) {
     return { error: "invalid-phone" as const };
   }
 
+  if (!(cvFile instanceof File) || cvFile.size === 0) {
+    return { error: "cv-required" as const };
+  }
+
   const phone = normalizeIsraeliMobile(phoneRaw);
   let uploadedCvUrl: string | null = null;
 
