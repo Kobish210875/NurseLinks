@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { signUp } from "@/app/register/actions";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { validateHebrewNamePart } from "@/lib/validation/hebrew-name";
@@ -43,9 +43,25 @@ export default function RegisterForm({
   const [dialogDismissed, setDialogDismissed] = useState(false);
   const [clientError, setClientError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [policyOpen, setPolicyOpen] = useState(false);
 
   const formLocked = registrationSubmitted;
   const displayError = formLocked ? null : (clientError ?? serverError);
+
+  useEffect(() => {
+    if (!policyOpen) {
+      return;
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setPolicyOpen(false);
+      }
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [policyOpen]);
 
   function sanitizeHebrewNameInput(event: React.FormEvent<HTMLInputElement>) {
     const input = event.currentTarget;
@@ -274,14 +290,13 @@ export default function RegisterForm({
             />
             <span>
               {t("register.policyConsentLabel")}{" "}
-              <Link
-                href="/legal/privacy"
-                target="_blank"
-                rel="noopener noreferrer"
+              <button
+                type="button"
+                onClick={() => setPolicyOpen(true)}
                 className="font-semibold text-primary hover:underline"
               >
                 {t("register.policyConsentLink")}
-              </Link>
+              </button>
             </span>
           </label>
           {fieldErrors.acceptedPolicy ? (
@@ -304,6 +319,42 @@ export default function RegisterForm({
           open={registrationSubmitted && !dialogDismissed}
           onClose={() => setDialogDismissed(true)}
         />
+      ) : null}
+
+      {policyOpen ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setPolicyOpen(false);
+            }
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={t("legal.title")}
+            className="feed-card max-h-[80vh] w-full max-w-2xl overflow-y-auto p-6 text-start"
+          >
+            <div className="mb-4 flex items-start justify-between gap-3">
+              <h3 className="text-xl font-bold text-foreground">{t("legal.title")}</h3>
+              <button
+                type="button"
+                onClick={() => setPolicyOpen(false)}
+                className="rounded-full border border-border px-2.5 py-1 text-sm text-muted-foreground hover:bg-muted"
+                aria-label={t("profile.cancel")}
+              >
+                X
+              </button>
+            </div>
+            <div className="space-y-4 text-sm leading-relaxed text-foreground">
+              <p className="text-muted-foreground">{t("legal.intro")}</p>
+              <p>{t("legal.p1")}</p>
+              <p>{t("legal.p2")}</p>
+              <p className="text-muted-foreground">{t("legal.p3")}</p>
+            </div>
+          </div>
+        </div>
       ) : null}
     </>
   );
