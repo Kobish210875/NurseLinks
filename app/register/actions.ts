@@ -132,9 +132,14 @@ export async function signUp(formData: FormData) {
     getRequiredString(formData, "profession") || getRequiredString(formData, "headline"),
   );
   const requireEmailVerification = isEmailVerificationRequired();
+  const acceptedPolicy = formData.get("acceptedPolicy") === "on";
 
   if (!firstName || !lastName || !email || !password) {
     redirect("/register?error=missing-fields");
+  }
+
+  if (!acceptedPolicy) {
+    redirect("/register?error=terms-not-accepted");
   }
 
   if (validateHebrewNamePart(firstName) || validateHebrewNamePart(lastName)) {

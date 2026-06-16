@@ -196,7 +196,17 @@
     "pendingEmailBanner": "A verification email was sent. Check your inbox (and spam). After clicking the link, sign in from the home page.",
     "pendingEmailExisting": "This email is already registered. Check your inbox for verification (and spam), then sign in.",
     "pendingEmailRateLimit": "A verification email was already sent recently. Check your inbox (and spam). If it did not arrive, wait a few minutes and do not click «Create account» again.",
-    "testModeBanner": "Test mode: no email verification — you will enter the site right after registration."
+    "testModeBanner": "Test mode: no email verification — you will enter the site right after registration.",
+    "policyConsentLabel": "I have read and agree to the",
+    "policyConsentLink": "Terms of Use and Privacy Policy"
+  },
+  "legal": {
+    "title": "Terms of Use and Privacy Policy",
+    "intro": "Welcome to NurseLinks.",
+    "p1": "To use the platform, it is important to know that personal information you enter on the site (such as name, contact details, professional details, and content you choose to publish) is stored and processed for operating the service, improving user experience, and maintaining a secure and reliable system.",
+    "p2": "By approving during registration, you confirm that you have read and understood the Terms of Use and Privacy Policy, and that you agree to the storage and processing of your information according to this policy.",
+    "p3": "You can review the Terms of Use and Privacy Policy at any time through this page.",
+    "backToRegister": "Back to registration"
   },
   "login": {
     "title": "Sign in",
@@ -548,6 +558,7 @@
     "invalid-hebrew-name": "First and last name must be in Hebrew only (Hebrew letters, spaces, hyphens).",
     "password-non-english": "Password must use English characters only (letters, numbers, and symbols).",
     "password-weak": "Password must be at least 8 characters with English letters, numbers, and one special character.",
+    "terms-not-accepted": "To continue, you must accept the Terms of Use and Privacy Policy.",
     "email-already-registered": "This email is already registered. Try signing in or resetting your password.",
     "email-rate-limit": "Too many emails were sent in a short time. Please wait a few minutes and try again.",
     "missing-supabase-env": "Supabase environment variables are missing in .env.local.",

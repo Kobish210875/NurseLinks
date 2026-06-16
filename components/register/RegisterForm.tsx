@@ -35,6 +35,7 @@ export default function RegisterForm({
   const lastNameHintId = useId();
   const emailId = useId();
   const passwordId = useId();
+  const acceptedPolicyId = useId();
   const registrationSubmitted =
     requireEmailVerification && searchParams.get("success") === "check-email";
   const successHint = searchParams.get("hint");
@@ -68,6 +69,7 @@ export default function RegisterForm({
     const lastName = String(formData.get("lastName") ?? "").trim();
     const email = String(formData.get("email") ?? "").trim();
     const password = String(formData.get("password") ?? "");
+    const acceptedPolicy = formData.get("acceptedPolicy") === "on";
 
     if (!firstName) {
       errors.firstName = t("register.fieldRequired");
@@ -89,6 +91,9 @@ export default function RegisterForm({
       if (passwordError) {
         errors.password = t(`errors.${passwordError}`);
       }
+    }
+    if (!acceptedPolicy) {
+      errors.acceptedPolicy = t("errors.terms-not-accepted");
     }
 
     const errorKeys = Object.keys(errors);
@@ -256,6 +261,33 @@ export default function RegisterForm({
             />
           </label>
         </fieldset>
+
+        <div className="mt-4 grid gap-1.5">
+          <label htmlFor={acceptedPolicyId} className="flex items-start gap-2 text-sm text-foreground">
+            <input
+              id={acceptedPolicyId}
+              name="acceptedPolicy"
+              type="checkbox"
+              required
+              aria-invalid={Boolean(fieldErrors.acceptedPolicy)}
+              className="mt-0.5 h-4 w-4 rounded border-border text-primary focus:ring-primary/30"
+            />
+            <span>
+              {t("register.policyConsentLabel")}{" "}
+              <Link
+                href="/legal/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-primary hover:underline"
+              >
+                {t("register.policyConsentLink")}
+              </Link>
+            </span>
+          </label>
+          {fieldErrors.acceptedPolicy ? (
+            <span className="text-sm text-red-600">{fieldErrors.acceptedPolicy}</span>
+          ) : null}
+        </div>
 
         <RegisterSubmitButton disabled={formLocked} />
 

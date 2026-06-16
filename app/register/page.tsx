@@ -13,6 +13,7 @@ const knownErrors = new Set([
   "password-non-english",
   "password-weak",
   "email-already-registered",
+  "terms-not-accepted",
   "missing-supabase-env",
   "invalid-supabase-env",
   "supabase-connection-failed",
