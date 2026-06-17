@@ -1,5 +1,39 @@
 const CV_LINE_RE = /^CV:\s*(https?:\/\/\S+)\s*$/im;
 
+export const CV_BUCKET = "job-applications";
+export const CV_SIGNED_URL_TTL_SECONDS = 600;
+
+const CV_BUCKET_URL_MARKER = "/job-applications/";
+
+/**
+ * Resolves the bucket-relative object path for a stored CV reference.
+ * Accepts either a bare object path (new rows: `<jobId>/<uid>/<file>`) or a
+ * legacy full public URL (older rows / `CV: <url>` note fallback).
+ * Returns null when no path can be derived.
+ */
+export function resolveCvObjectPath(stored: string | null | undefined): string | null {
+  const value = stored?.trim();
+  if (!value) {
+    return null;
+  }
+
+  const markerIdx = value.indexOf(CV_BUCKET_URL_MARKER);
+  if (markerIdx !== -1) {
+    const raw = value.slice(markerIdx + CV_BUCKET_URL_MARKER.length).split("?")[0];
+    try {
+      return decodeURIComponent(raw) || null;
+    } catch {
+      return raw || null;
+    }
+  }
+
+  if (/^https?:\/\//i.test(value)) {
+    return null;
+  }
+
+  return value;
+}
+
 export type RawJobApplicationRow = {
   id: string;
   job_id: string;
@@ -32,7 +66,12 @@ function fileNameFromUrl(url: string): string {
     const decoded = decodeURIComponent(segment);
     return decoded || "cv";
   } catch {
-    return "cv";
+    const segment = url.split("?")[0].split("/").pop() ?? "cv";
+    try {
+      return decodeURIComponent(segment) || "cv";
+    } catch {
+      return segment || "cv";
+    }
   }
 }
 

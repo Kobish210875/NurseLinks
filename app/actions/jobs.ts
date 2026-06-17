@@ -259,10 +259,7 @@ async function submitJobApplicationInternal(jobId: string, formData: FormData) {
       return { error: "cv-upload-failed" as const };
     }
 
-    const {
-      data: { publicUrl },
-    } = supabase.storage.from("job-applications").getPublicUrl(cvPath);
-    uploadedCvUrl = publicUrl;
+    uploadedCvUrl = cvPath;
   }
 
   const note = noteText || null;

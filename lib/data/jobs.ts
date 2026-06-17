@@ -16,7 +16,10 @@ export type {
 } from "./jobs-types";
 
 import {
+  CV_BUCKET,
+  CV_SIGNED_URL_TTL_SECONDS,
   parseJobApplicationRow,
+  resolveCvObjectPath,
   type RawJobApplicationRow,
 } from "@/lib/jobs/application-display";
 import type { JobApplicationInboxItem, JobListing, JobApplicationView } from "./jobs-types";
@@ -54,6 +57,25 @@ function toApplicationView(
     timeLabel: formatFeedTimestamp(parsed.createdAt, locale),
     isUnread: parsed.ownerReadAt == null,
   };
+}
+
+async function attachSignedCvUrls(
+  supabase: SupabaseClient<Database>,
+  views: JobApplicationView[],
+): Promise<void> {
+  await Promise.all(
+    views.map(async (view) => {
+      const path = resolveCvObjectPath(view.cvUrl);
+      if (!path) {
+        view.cvUrl = null;
+        return;
+      }
+      const { data } = await supabase.storage
+        .from(CV_BUCKET)
+        .createSignedUrl(path, CV_SIGNED_URL_TTL_SECONDS);
+      view.cvUrl = data?.signedUrl ?? null;
+    }),
+  );
 }
 
 const APPLICATION_SELECT =
@@ -369,11 +391,16 @@ async function enrichJobRows(
   const appliedJobIds = new Set(myApplicationsRaw.map((row) => row.job_id));
 
   const applicationsByJob = new Map<string, JobApplicationView[]>();
+  const allApplicationViews: JobApplicationView[] = [];
   for (const row of receivedApplicationsRaw) {
     const list = applicationsByJob.get(row.job_id) ?? [];
-    list.push(toApplicationView(row, locale));
+    const view = toApplicationView(row, locale);
+    list.push(view);
+    allApplicationViews.push(view);
     applicationsByJob.set(row.job_id, list);
   }
+
+  await attachSignedCvUrls(supabase, allApplicationViews);
 
   return rows.map((j) => {
     const apps = applicationsByJob.get(j.id) ?? [];
@@ -546,6 +573,11 @@ export async function getJobApplicationsInbox(
       application: toApplicationView(row, locale),
     });
   }
+
+  await attachSignedCvUrls(
+    supabase,
+    items.map((item) => item.application),
+  );
 
   items.sort(
     (a, b) =>
