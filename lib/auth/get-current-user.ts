@@ -4,7 +4,6 @@ import { hasSupabaseAuthCookie } from "@/lib/auth/has-auth-cookie";
 import { isTimeoutError, withTimeout } from "@/lib/async/with-timeout";
 import { resolveWorkplaceSlug } from "@/lib/profile/workplace";
 import { truncateHeadline, truncateProfileText } from "@/lib/profile/field-limits";
-import { sanitizeLicenseNumber } from "@/lib/validation/license-number";
 import { createClient } from "@/lib/supabase/server";
 import { cache } from "react";
 import { getInitials } from "./initials";
@@ -16,7 +15,6 @@ export type CurrentUser = {
   headline: string | null;
   workplaceInstitutionSlug: string | null;
   city: string | null;
-  licenseNumber: string | null;
   avatarUrl: string | null;
   initials: string;
   isAdmin: boolean;
@@ -58,14 +56,13 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
     headline: string | null;
     workplace_institution_slug?: string | null;
     city: string | null;
-    license_number: string | null;
     avatar_url: string | null;
     cv_draft?: CvDraft | null;
     deleted_at?: string | null;
   };
 
   const fullSelect =
-    "full_name, headline, workplace_institution_slug, city, license_number, avatar_url, cv_draft, deleted_at";
+    "full_name, headline, workplace_institution_slug, city, avatar_url, cv_draft, deleted_at";
 
   let profile: ProfileRow | null = null;
 
@@ -81,7 +78,7 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
       const fallbackResult = (await withTimeout(
         supabase
           .from("profiles")
-          .select("full_name, headline, city, license_number, avatar_url, cv_draft")
+          .select("full_name, headline, city, avatar_url, cv_draft")
           .eq("id", user.id)
           .maybeSingle<ProfileRow>(),
         AUTH_SESSION_TIMEOUT_MS,
@@ -166,7 +163,6 @@ function buildUser(
     headline?: string | null;
     workplace_institution_slug?: string | null;
     city?: string | null;
-    license_number?: string | null;
     avatar_url?: string | null;
   } | null,
   fullName: string,
@@ -184,7 +180,6 @@ function buildUser(
       cvDraft,
     ),
     city: profile?.city ?? metadata.city ?? null,
-    licenseNumber: sanitizeLicenseNumber(profile?.license_number ?? "") || null,
     avatarUrl: profile?.avatar_url ?? null,
     initials: getInitials(fullName),
     isAdmin,

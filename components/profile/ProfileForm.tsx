@@ -7,10 +7,8 @@ import type { CurrentUser } from "@/lib/auth/get-current-user";
 import {
   PROFILE_CV_TEXT_MAX_LENGTH,
   PROFILE_HEADLINE_MAX_LENGTH,
-  PROFILE_LICENSE_NUMBER_MAX_LENGTH,
   truncateHeadline,
 } from "@/lib/profile/field-limits";
-import { sanitizeLicenseNumber } from "@/lib/validation/license-number";
 import { useEffect, useId, useRef, useState } from "react";
 import InstitutionSelect from "./InstitutionSelect";
 import ProfileAvatar from "./ProfileAvatar";
@@ -27,7 +25,6 @@ type ProfileFormProps = {
 export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
   const t = useT();
   const professionId = useId();
-  const licenseNumberId = useId();
   const cityId = useId();
   const institutionId = useId();
   const bioId = useId();
@@ -69,14 +66,6 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
   function handleCancel() {
     setFormKey((k) => k + 1);
     setIsDirty(false);
-  }
-
-  function sanitizeLicenseNumberInput(event: React.FormEvent<HTMLInputElement>) {
-    const input = event.currentTarget;
-    const digitsOnly = sanitizeLicenseNumber(input.value);
-    if (input.value !== digitsOnly) {
-      input.value = digitsOnly;
-    }
   }
 
   return (
@@ -128,23 +117,6 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
           triggerId={institutionId}
           onChange={markDirty}
         />
-
-        <div className="grid gap-1.5">
-          <label htmlFor={licenseNumberId} className="text-sm font-medium text-foreground">
-            {t("profile.licenseNumber")}
-          </label>
-          <input
-            id={licenseNumberId}
-            name="licenseNumber"
-            type="text"
-            inputMode="numeric"
-            autoComplete="off"
-            maxLength={PROFILE_LICENSE_NUMBER_MAX_LENGTH}
-            defaultValue={sanitizeLicenseNumber(user.licenseNumber ?? "")}
-            className={fieldClassName}
-            onInput={sanitizeLicenseNumberInput}
-          />
-        </div>
 
       </div>
 

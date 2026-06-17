@@ -17,7 +17,6 @@ function getProfileCompletionPercent(user: CurrentUser) {
   const fields = [
     user.headline,
     user.workplaceInstitutionSlug,
-    user.licenseNumber,
     user.city,
     user.cvDraft.bio,
     user.cvDraft.experience,

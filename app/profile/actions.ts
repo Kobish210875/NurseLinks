@@ -13,8 +13,6 @@ import {
 } from "@/lib/profile/workplace";
 import { truncateHeadline, truncateProfileText } from "@/lib/profile/field-limits";
 import { updateProfile, type ProfileUpdate } from "@/lib/supabase/profiles";
-import { sanitizeLicenseNumber } from "@/lib/validation/license-number";
-
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 
 function getRequiredString(formData: FormData, key: string) {
@@ -95,7 +93,6 @@ export async function saveProfile(formData: FormData) {
 
   const profession = truncateHeadline(getRequiredString(formData, "profession"));
   const institutionSlug = getRequiredString(formData, "workplaceInstitution");
-  const licenseNumber = sanitizeLicenseNumber(getRequiredString(formData, "licenseNumber"));
   const cityInput = getRequiredString(formData, "city");
   const bio = truncateProfileText(getRequiredString(formData, "bio"));
   const experience = truncateProfileText(getRequiredString(formData, "experience"));
@@ -126,7 +123,7 @@ export async function saveProfile(formData: FormData) {
 
   const baseUpdate: ProfileUpdate = {
     headline: profession || null,
-    license_number: licenseNumber || null,
+    license_number: null,
     city,
     cv_draft: cvDraft as ProfileUpdate["cv_draft"],
   };

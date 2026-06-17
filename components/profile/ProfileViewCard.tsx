@@ -9,7 +9,6 @@ import type { ProfileView } from "@/lib/data/profile-view";
 import type { ConnectionStatus } from "@/lib/network/types";
 import { formatFeedTimestamp } from "@/lib/i18n/format-feed-time";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
-import { sanitizeLicenseNumber } from "@/lib/validation/license-number";
 import { useEffect, useState, useTransition } from "react";
 
 type ProfileViewCardProps = {
@@ -63,11 +62,6 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
             <h1 className="text-xl font-bold text-foreground">{profile.fullName}</h1>
             {professionalLine ? (
               <p className="mt-1 break-words text-sm text-muted-foreground">{professionalLine}</p>
-            ) : null}
-            {profile.licenseNumber ? (
-              <p className="mt-1 break-all text-xs text-muted-foreground">
-                {t("profile.licenseNumber")}: {sanitizeLicenseNumber(profile.licenseNumber)}
-              </p>
             ) : null}
             {!isOwnProfile && connectionStatus === "connected" && profile.connectedAt ? (
               <p className="mt-2 text-xs text-muted-foreground">

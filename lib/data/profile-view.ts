@@ -2,7 +2,6 @@ import type { CvDraft } from "@/app/profile/actions";
 import { getInitials } from "@/lib/auth/initials";
 import { resolveWorkplaceSlug } from "@/lib/profile/workplace";
 import { truncateHeadline, truncateProfileText } from "@/lib/profile/field-limits";
-import { sanitizeLicenseNumber } from "@/lib/validation/license-number";
 import { resolveConnectionStatus, loadConnectionRows } from "@/lib/data/connections";
 import type { ConnectionStatus } from "@/lib/network/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -14,7 +13,6 @@ export type ProfileView = {
   headline: string | null;
   workplaceInstitutionSlug: string | null;
   city: string | null;
-  licenseNumber: string | null;
   avatarUrl: string | null;
   initials: string;
   cvDraft: CvDraft;
@@ -28,7 +26,6 @@ type ProfileRow = {
   headline: string | null;
   workplace_institution_slug: string | null;
   city: string | null;
-  license_number: string | null;
   avatar_url: string | null;
   cv_draft?: CvDraft | null;
   deleted_at?: string | null;
@@ -89,7 +86,7 @@ export async function getProfileView(
 ): Promise<ProfileView | null> {
   const withCv = await supabase
     .from("profiles")
-    .select("id, full_name, headline, workplace_institution_slug, city, license_number, avatar_url, cv_draft, deleted_at")
+    .select("id, full_name, headline, workplace_institution_slug, city, avatar_url, cv_draft, deleted_at")
     .eq("id", profileId)
     .maybeSingle();
 
@@ -99,14 +96,14 @@ export async function getProfileView(
   if (errMsg.includes("workplace_institution_slug") || errMsg.includes("deleted_at")) {
     const { data: fallback } = await supabase
       .from("profiles")
-      .select("id, full_name, headline, city, license_number, avatar_url, cv_draft")
+      .select("id, full_name, headline, city, avatar_url, cv_draft")
       .eq("id", profileId)
       .maybeSingle();
     profile = (fallback as ProfileRow | null) ?? null;
   } else if (errMsg.includes("cv_draft")) {
     const { data: fallback } = await supabase
       .from("profiles")
-      .select("id, full_name, headline, city, license_number, avatar_url")
+      .select("id, full_name, headline, city, avatar_url")
       .eq("id", profileId)
       .maybeSingle();
     profile = (fallback as ProfileRow | null) ?? null;
@@ -142,7 +139,6 @@ export async function getProfileView(
       cvDraft,
     ),
     city: profile.city,
-    licenseNumber: sanitizeLicenseNumber(profile.license_number ?? "") || null,
     avatarUrl: profile.avatar_url,
     initials: getInitials(fullName),
     cvDraft,
