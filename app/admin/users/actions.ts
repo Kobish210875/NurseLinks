@@ -35,7 +35,9 @@ export async function adminDeleteUser(formData: FormData) {
     redirect("/admin/users?error=cannot-delete-admin");
   }
 
-  const cleanupResults = await Promise.all([
+  // Best-effort row cleanup. FK cascades from auth.users -> profiles also remove
+  // these, so failures here must NOT block the authoritative auth-user deletion.
+  await Promise.allSettled([
     admin
       .from("connections")
       .delete()
@@ -58,17 +60,21 @@ export async function adminDeleteUser(formData: FormData) {
     admin.from("job_applications").delete().eq("applicant_id", targetUserId),
   ]);
 
-  if (cleanupResults.some((result) => result.error)) {
-    redirect("/admin/users?error=delete-failed");
-  }
+  // Remove storage objects (not covered by DB cascade). Best-effort.
+  await admin.storage
+    .from("avatars")
+    .remove([`${targetUserId}/avatar.jpg`])
+    .catch(() => undefined);
 
+  // Remove the profile row, which cascades the remaining owned content.
+  await admin.from("profiles").delete().eq("id", targetUserId);
+
+  // Authoritative step: hard-delete the auth user so the email is freed.
   const { error: authError } = await admin.auth.admin.deleteUser(targetUserId);
 
   if (authError) {
     redirect("/admin/users?error=delete-failed");
   }
-
-  await admin.storage.from("avatars").remove([`${targetUserId}/avatar.jpg`]);
 
   revalidatePath("/admin/users");
   revalidatePath("/network");

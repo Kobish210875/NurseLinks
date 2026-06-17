@@ -168,7 +168,9 @@ export async function deleteAccount() {
     redirect("/profile?error=delete-not-configured");
   }
 
-  const cleanupResults = await Promise.all([
+  // Best-effort row cleanup. FK cascades from auth.users -> profiles also remove
+  // these, so failures here must NOT block the authoritative auth-user deletion.
+  await Promise.allSettled([
     admin.from("connections").delete().or(`requester_id.eq.${user.id},addressee_id.eq.${user.id}`),
     admin.from("follows").delete().or(`follower_id.eq.${user.id},following_id.eq.${user.id}`),
     admin.from("user_specialties").delete().eq("user_id", user.id),
@@ -179,17 +181,24 @@ export async function deleteAccount() {
     admin.from("job_applications").delete().eq("applicant_id", user.id),
   ]);
 
-  if (cleanupResults.some((result) => result.error)) {
-    redirect("/profile?error=delete-failed");
-  }
+  // Remove storage objects (not covered by DB cascade). Best-effort.
+  await admin.storage
+    .from("avatars")
+    .remove([`${user.id}/avatar.jpg`])
+    .catch(() => undefined);
 
+  // Remove the profile row, which cascades the remaining owned content
+  // (posts, likes, comments, jobs, etc.). Best-effort; the auth deletion below
+  // also cascades it when the profiles -> auth.users FK is ON DELETE CASCADE.
+  await admin.from("profiles").delete().eq("id", user.id);
+
+  // Authoritative step: hard-delete the auth user so the email is freed for
+  // re-registration. This is the only failure that aborts the flow.
   const { error: authError } = await admin.auth.admin.deleteUser(user.id);
 
   if (authError) {
     redirect("/profile?error=delete-failed");
   }
-
-  await supabase.storage.from("avatars").remove([`${user.id}/avatar.jpg`]);
 
   await supabase.auth.signOut({ scope: "local" });
 
