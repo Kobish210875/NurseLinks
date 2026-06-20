@@ -4,11 +4,9 @@ import Link from "next/link";
 import { useEffect, useId, useState } from "react";
 import { useT } from "@/components/i18n/LocaleProvider";
 import {
-  institutionHasActivity,
   type InstitutionActivityFlags,
   type InstitutionActivityMap,
 } from "@/lib/data/institution-activity";
-import { isProductionApp } from "@/lib/env/app-environment";
 import {
   INSTITUTION_REGIONS,
   getInstitutionBySlug,
@@ -26,8 +24,6 @@ type InstitutionsPickerProps = {
   onSelect?: (slug: string) => void;
   onRegionChange?: (region: InstitutionRegion) => void;
 };
-
-const splitActivityDots = !isProductionApp();
 
 function InstitutionJobDot({ title }: { title: string }) {
   return (
@@ -49,49 +45,29 @@ function InstitutionFriendDot({ title }: { title: string }) {
   );
 }
 
-function InstitutionActivityDot({ title }: { title: string }) {
-  return (
-    <span
-      className="size-2 shrink-0 rounded-full bg-sky-400 ring-1 ring-sky-400/30"
-      title={title}
-      aria-label={title}
-    />
-  );
-}
-
 function InstitutionActivityIndicators({
   flags,
   jobTitle,
   friendTitle,
-  combinedTitle,
 }: {
   flags: InstitutionActivityFlags | undefined;
   jobTitle: string;
   friendTitle: string;
-  combinedTitle: string;
 }) {
   if (!flags) {
     return null;
   }
 
-  if (splitActivityDots) {
-    if (!flags.hasOpenJob && !flags.hasColleague) {
-      return null;
-    }
-
-    return (
-      <span className="inline-flex shrink-0 items-center gap-0.5">
-        {flags.hasOpenJob ? <InstitutionJobDot title={jobTitle} /> : null}
-        {flags.hasColleague ? <InstitutionFriendDot title={friendTitle} /> : null}
-      </span>
-    );
-  }
-
-  if (!institutionHasActivity(flags)) {
+  if (!flags.hasOpenJob && !flags.hasColleague) {
     return null;
   }
 
-  return <InstitutionActivityDot title={combinedTitle} />;
+  return (
+    <span className="inline-flex shrink-0 items-center gap-0.5">
+      {flags.hasOpenJob ? <InstitutionJobDot title={jobTitle} /> : null}
+      {flags.hasColleague ? <InstitutionFriendDot title={friendTitle} /> : null}
+    </span>
+  );
 }
 
 export default function InstitutionsPicker({
@@ -188,7 +164,6 @@ export default function InstitutionsPicker({
                 flags={flags}
                 jobTitle={t("hospitals.activityDotJob")}
                 friendTitle={t("hospitals.activityDotFriend")}
-                combinedTitle={t("hospitals.activityDotLabel")}
               />
             );
 
@@ -221,26 +196,16 @@ export default function InstitutionsPicker({
         </ul>
 
         {showLegend ? (
-          splitActivityDots ? (
-            <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-3 text-[11px] text-muted-foreground">
-              <span className="inline-flex items-center gap-1.5">
-                <InstitutionJobDot title={t("hospitals.activityLegendJob")} />
-                <span>{t("hospitals.activityLegendJob")}</span>
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <InstitutionFriendDot title={t("hospitals.activityLegendFriend")} />
-                <span>{t("hospitals.activityLegendFriend")}</span>
-              </span>
-            </p>
-          ) : (
-            <p className="mt-3 flex items-center gap-2 border-t border-border pt-3 text-[11px] text-muted-foreground">
-              <span
-                className="size-2 shrink-0 rounded-full bg-sky-400 ring-1 ring-sky-400/30"
-                aria-hidden="true"
-              />
-              <span>{t("hospitals.activityLegend")}</span>
-            </p>
-          )
+          <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border pt-3 text-[11px] text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <InstitutionJobDot title={t("hospitals.activityLegendJob")} />
+              <span>{t("hospitals.activityLegendJob")}</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <InstitutionFriendDot title={t("hospitals.activityLegendFriend")} />
+              <span>{t("hospitals.activityLegendFriend")}</span>
+            </span>
+          </p>
         ) : null}
       </div>
     </div>
