@@ -8,7 +8,8 @@ import MobileBottomNav from "@/components/nav/MobileBottomNav";
 import MobileShellEffects from "@/components/nav/MobileShellEffects";
 import { NavCountsProvider } from "@/components/nav/NavCountsProvider";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
-import { getAppEnvironment } from "@/lib/env/app-environment";
+import DevEnvironmentBanner from "@/components/dev/DevEnvironmentBanner";
+import { getAppEnvironment, isDevLikeApp } from "@/lib/env/app-environment";
 import { getDirection } from "@/lib/i18n/config";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
@@ -112,10 +113,19 @@ export default async function RootLayout({
   const messages = getMessages(locale);
   const dir = getDirection(locale);
   const appEnv = getAppEnvironment();
+  const t = createT(messages);
+  const showDevBanner = isDevLikeApp();
 
   return (
     <html lang={locale} dir={dir} data-app-env={appEnv} className={`${rubik.variable} scroll-smooth`}>
       <body className="min-h-screen overflow-x-clip antialiased">
+        {showDevBanner ? (
+          <DevEnvironmentBanner
+            label={
+              appEnv === "preview" ? t("dev.previewBanner") : t("dev.banner")
+            }
+          />
+        ) : null}
         <LocaleProvider locale={locale} messages={messages}>
           {/*
            * enablePolling is always true; NavCountsPoller calls /api/sync/nav

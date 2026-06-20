@@ -3,7 +3,8 @@
     "description": "הפלטפורמה שמחברת אחים ואחיות לקהילות מקצועיות, ידע ומשאבים, קשר עם קולגות והזדמנויות עבודה בקריירת הסיעוד."
   },
   "dev": {
-    "banner": "מצב פיתוח"
+    "banner": "מצב פיתוח",
+    "previewBanner": "PREVIEW — נתוני dev (לא production)"
   },
   "lang": {
     "switchToEn": "English",

@@ -3,7 +3,8 @@
     "description": "The platform connecting nurses to professional communities, knowledge, colleagues, and career opportunities."
   },
   "dev": {
-    "banner": "DEV MODE"
+    "banner": "DEV MODE",
+    "previewBanner": "PREVIEW — dev data (not production)"
   },
   "lang": {
     "switchToEn": "English",

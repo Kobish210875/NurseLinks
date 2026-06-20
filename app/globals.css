@@ -29,8 +29,9 @@
   --like-heart: var(--primary);
 }
 
-/* Localhost dev: gold/yellow palette (production stays blue above) */
-html[data-app-env="development"] {
+/* Localhost + Vercel Preview: gold/yellow palette (production stays blue above) */
+html[data-app-env="development"],
+html[data-app-env="preview"] {
   --background: #fffbeb;
   --foreground: #713f12;
   --primary: #ca8a04;

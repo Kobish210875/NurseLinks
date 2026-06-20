@@ -18,3 +18,9 @@ export function getAppEnvironment(): AppEnvironment {
 export function isProductionApp(): boolean {
   return getAppEnvironment() === "production";
 }
+
+/** Localhost (`development`) and Vercel Preview (`preview`) — not live production. */
+export function isDevLikeApp(): boolean {
+  const env = getAppEnvironment();
+  return env === "development" || env === "preview";
+}
