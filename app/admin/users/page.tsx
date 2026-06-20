@@ -1,7 +1,7 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import Link from "next/link";
 import AdminDeleteUserButton from "@/components/admin/AdminDeleteUserButton";
+import AdminNavTabs from "@/components/admin/AdminNavTabs";
 import { requireAdmin } from "@/lib/auth/admin";
 import { resolveAdminUsersErrorMessage } from "@/lib/admin/page-errors";
 import { getAdminUsers } from "@/lib/admin/users";
@@ -42,24 +42,11 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
       <Navbar authenticated />
       <main className="home-main-shell feed-page min-h-0 w-full min-w-0 max-w-[100vw] flex-1 overflow-hidden py-4 max-md:block max-md:flex-none max-md:overflow-x-clip max-md:py-8 max-md:pb-[calc(var(--mobile-bottom-nav-offset)+1.75rem)] md:py-6">
         <div className="mx-auto flex h-full w-full min-w-0 max-w-[1128px] flex-col gap-3 overflow-hidden px-4 max-md:block max-md:h-auto max-md:overflow-x-clip max-md:pb-[calc(var(--mobile-bottom-nav-offset)+1.5rem)]">
-        <div className="shrink-0 flex flex-wrap items-center justify-between gap-3">
+        <div className="shrink-0 flex flex-col gap-3">
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("admin.usersTitle")}</h1>
           </div>
-          <div className="flex gap-2">
-            <Link
-              href="/admin/moderation"
-              className="rounded-lg border border-primary/30 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/5"
-            >
-              {t("nav.adminModeration")}
-            </Link>
-            <Link
-              href="/admin/backups"
-              className="rounded-lg border border-primary/30 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/5"
-            >
-              {t("nav.adminBackups")}
-            </Link>
-          </div>
+          <AdminNavTabs />
         </div>
 
         {params.deleted === "1" ? (

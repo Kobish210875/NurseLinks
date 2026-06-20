@@ -1,11 +1,11 @@
 import Footer from "@/components/Footer";
 import AdminModerationPanel from "@/components/admin/AdminModerationPanel";
+import AdminNavTabs from "@/components/admin/AdminNavTabs";
 import Navbar from "@/components/Navbar";
 import { requireAdmin } from "@/lib/auth/admin";
 import { getAdminModerationFlags } from "@/lib/admin/moderation";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
-import Link from "next/link";
 
 type AdminModerationPageProps = {
   searchParams: Promise<{ error?: string; done?: string }>;
@@ -32,7 +32,7 @@ export default async function AdminModerationPage({ searchParams }: AdminModerat
       <Navbar authenticated />
       <main className="home-main-shell feed-page min-h-0 flex-1 py-4 max-md:block max-md:flex-none max-md:py-8">
         <div className="mx-auto flex w-full max-w-3xl flex-col gap-4 px-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-col gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-primary">
                 {t("admin.badge")}
@@ -40,12 +40,7 @@ export default async function AdminModerationPage({ searchParams }: AdminModerat
               <h1 className="text-2xl font-bold text-foreground">{t("admin.moderationTitle")}</h1>
               <p className="mt-1 text-sm text-muted-foreground">{t("admin.moderationSubtitle")}</p>
             </div>
-            <Link
-              href="/admin/users"
-              className="text-sm font-medium text-primary hover:underline"
-            >
-              {t("admin.backToAdmin")}
-            </Link>
+            <AdminNavTabs />
           </div>
 
           {params.done === "1" ? (

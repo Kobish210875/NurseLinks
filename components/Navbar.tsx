@@ -53,6 +53,7 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
     ...(mobileUser?.isAdmin
       ? [
           { href: "/admin/users", label: t("nav.adminUsers") },
+          { href: "/admin/backups", label: t("nav.adminBackups") },
           { href: "/admin/moderation", label: t("nav.adminModeration") },
         ]
       : []),

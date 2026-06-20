@@ -1,6 +1,6 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import Link from "next/link";
+import AdminNavTabs from "@/components/admin/AdminNavTabs";
 import { requireAdmin } from "@/lib/auth/admin";
 import { getBackupLogs, type BackupLogRow } from "@/lib/admin/backups";
 import { getLocale } from "@/lib/i18n/get-locale";
@@ -59,7 +59,7 @@ export default async function AdminBackupsPage() {
         <div className="mx-auto flex h-full w-full min-w-0 max-w-[1128px] flex-col gap-3 overflow-hidden px-4 max-md:block max-md:h-auto max-md:overflow-x-clip max-md:pb-[calc(var(--mobile-bottom-nav-offset)+1.5rem)]">
 
           {/* Header */}
-          <div className="shrink-0 flex flex-wrap items-center justify-between gap-3">
+          <div className="shrink-0 flex flex-col gap-3">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wide text-primary">
                 {t("admin.badge")}
@@ -67,12 +67,7 @@ export default async function AdminBackupsPage() {
               <h1 className="text-2xl font-bold text-foreground">{t("admin.backupTitle")}</h1>
               <p className="mt-1 text-sm text-muted-foreground">{t("admin.backupSubtitle")}</p>
             </div>
-            <Link
-              href="/admin/users"
-              className="text-sm font-medium text-primary hover:underline"
-            >
-              {t("admin.backToAdmin")}
-            </Link>
+            <AdminNavTabs />
           </div>
 
           {error ? (
