@@ -121,6 +121,7 @@ export default async function RootLayout({
       <body className="min-h-screen overflow-x-clip antialiased">
         {showDevBanner ? (
           <DevEnvironmentBanner
+            variant={appEnv === "preview" ? "preview" : "development"}
             label={
               appEnv === "preview" ? t("dev.previewBanner") : t("dev.banner")
             }

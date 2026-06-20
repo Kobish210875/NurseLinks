@@ -29,9 +29,8 @@
   --like-heart: var(--primary);
 }
 
-/* Localhost + Vercel Preview: gold/yellow palette (production stays blue above) */
-html[data-app-env="development"],
-html[data-app-env="preview"] {
+/* Localhost dev: gold/yellow palette (production stays blue above) */
+html[data-app-env="development"] {
   --background: #fffbeb;
   --foreground: #713f12;
   --primary: #ca8a04;
@@ -47,6 +46,26 @@ html[data-app-env="preview"] {
   --secondary: #fef9c3;
   --secondary-foreground: #a16207;
   --nav-bg: #fffbeb;
+  --like-heart: var(--primary);
+}
+
+/* Vercel Preview (develop branch): red palette — visually distinct from localhost */
+html[data-app-env="preview"] {
+  --background: #fff1f2;
+  --foreground: #7f1d1d;
+  --primary: #dc2626;
+  --primary-dark: #b91c1c;
+  --primary-foreground: #ffffff;
+  --accent: #ef4444;
+  --accent-light: #fee2e2;
+  --card: #ffffff;
+  --card-foreground: #7f1d1d;
+  --muted: #fee2e2;
+  --muted-foreground: #b91c1c;
+  --border: #fecaca;
+  --secondary: #fef2f2;
+  --secondary-foreground: #991b1b;
+  --nav-bg: #fff1f2;
   --like-heart: var(--primary);
 }
 
