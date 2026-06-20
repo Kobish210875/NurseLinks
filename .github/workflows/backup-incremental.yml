@@ -1,0 +1,161 @@
+name: Incremental Database Backup
+
+# Runs Sun–Thu at 02:00 UTC (05:00 Israel time) — public-schema snapshot.
+# Can also be triggered manually from the admin UI or GitHub UI.
+on:
+  schedule:
+    - cron: "0 2 * * 0-4"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: "prod"
+        type: choice
+        options:
+          - dev
+          - prod
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      # ── resolve which environment we are targeting ──────────────────────────
+      - name: Resolve environment
+        id: env
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            echo "name=prod" >> "$GITHUB_OUTPUT"
+            echo "triggered_by=schedule" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=${{ github.event.inputs.environment }}" >> "$GITHUB_OUTPUT"
+            echo "triggered_by=manual" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── pick the right secrets ───────────────────────────────────────────────
+      - name: Export environment-specific secrets
+        run: |
+          if [ "${{ steps.env.outputs.name }}" = "prod" ]; then
+            echo "DB_URL=${{ secrets.SUPABASE_PROD_DB_URL }}"           >> "$GITHUB_ENV"
+            echo "SUPABASE_URL=${{ secrets.SUPABASE_PROD_URL }}"        >> "$GITHUB_ENV"
+            echo "SERVICE_KEY=${{ secrets.SUPABASE_PROD_SERVICE_ROLE_KEY }}" >> "$GITHUB_ENV"
+          else
+            echo "DB_URL=${{ secrets.SUPABASE_DEV_DB_URL }}"            >> "$GITHUB_ENV"
+            echo "SUPABASE_URL=${{ secrets.SUPABASE_DEV_URL }}"         >> "$GITHUB_ENV"
+            echo "SERVICE_KEY=${{ secrets.SUPABASE_DEV_SERVICE_ROLE_KEY }}"  >> "$GITHUB_ENV"
+          fi
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get install -y --no-install-recommends postgresql-client
+
+      # ── create a "running" log entry ─────────────────────────────────────────
+      - name: Insert backup_log (running)
+        id: log
+        run: |
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          LOG_ID=$(curl -fsSL -X POST \
+            "${SUPABASE_URL}/rest/v1/backup_logs" \
+            -H "Authorization: Bearer ${SERVICE_KEY}" \
+            -H "apikey: ${SERVICE_KEY}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=representation" \
+            -d "{
+              \"backup_type\": \"incremental\",
+              \"environment\": \"${{ steps.env.outputs.name }}\",
+              \"status\": \"running\",
+              \"triggered_by\": \"${{ steps.env.outputs.triggered_by }}\",
+              \"github_run_url\": \"${RUN_URL}\"
+            }" \
+            | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['id'])")
+          echo "id=${LOG_ID}" >> "$GITHUB_OUTPUT"
+
+      # ── pg_dump (public schema, data-only for speed) ─────────────────────────
+      - name: Dump public schema (data)
+        run: |
+          # Dumps schema + data for the public schema (faster than a full dump).
+          # Pair with the last full backup to restore to this point in time.
+          TIMESTAMP=$(date -u +%Y%m%dT%H%M%SZ)
+          FILENAME="${{ steps.env.outputs.name }}-incremental-${TIMESTAMP}.sql.gz"
+          echo "FILENAME=${FILENAME}" >> "$GITHUB_ENV"
+          echo "FILE_PATH=${{ steps.env.outputs.name }}/${FILENAME}" >> "$GITHUB_ENV"
+
+          pg_dump "$DB_URL" \
+            --schema=public \
+            --no-owner \
+            --no-acl \
+            --format=plain \
+            --verbose \
+            2>pg_dump.log \
+          | gzip > "${FILENAME}"
+
+          TABLE_COUNT=$(grep -c "^CREATE TABLE" pg_dump.log || true)
+          echo "TABLE_COUNT=${TABLE_COUNT}" >> "$GITHUB_ENV"
+          echo "FILE_SIZE=$(stat --format='%s' ${FILENAME})" >> "$GITHUB_ENV"
+
+      # ── collect row counts for key tables ────────────────────────────────────
+      - name: Collect row counts
+        id: counts
+        run: |
+          ROW_COUNTS=$(psql "$DB_URL" -t -c "
+            select json_object_agg(table_name, cnt)
+            from (
+              select 'profiles'    as table_name, count(*) as cnt from public.profiles
+              union all
+              select 'posts',      count(*) from public.posts
+              union all
+              select 'jobs',       count(*) from public.jobs
+              union all
+              select 'messages',   count(*) from public.messages
+            ) t;
+          " | tr -d '[:space:]')
+          echo "json=${ROW_COUNTS}" >> "$GITHUB_OUTPUT"
+
+      # ── upload to Supabase Storage ───────────────────────────────────────────
+      - name: Upload to Supabase Storage
+        run: |
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST \
+            "${SUPABASE_URL}/storage/v1/object/backups/${FILE_PATH}" \
+            -H "Authorization: Bearer ${SERVICE_KEY}" \
+            -H "Content-Type: application/gzip" \
+            --data-binary "@${FILENAME}")
+
+          if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 300 ]; then
+            echo "Storage upload failed with HTTP ${HTTP_STATUS}"
+            exit 1
+          fi
+
+      # ── mark completed ───────────────────────────────────────────────────────
+      - name: Update backup_log (completed)
+        if: success()
+        run: |
+          curl -fsSL -X PATCH \
+            "${SUPABASE_URL}/rest/v1/backup_logs?id=eq.${{ steps.log.outputs.id }}" \
+            -H "Authorization: Bearer ${SERVICE_KEY}" \
+            -H "apikey: ${SERVICE_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"status\": \"completed\",
+              \"completed_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+              \"file_path\": \"${FILE_PATH}\",
+              \"file_size_bytes\": ${FILE_SIZE},
+              \"tables_dumped\": ${TABLE_COUNT},
+              \"row_counts\": ${{ steps.counts.outputs.json }}
+            }"
+
+      # ── mark failed ──────────────────────────────────────────────────────────
+      - name: Update backup_log (failed)
+        if: failure()
+        run: |
+          curl -s -X PATCH \
+            "${SUPABASE_URL}/rest/v1/backup_logs?id=eq.${{ steps.log.outputs.id }}" \
+            -H "Authorization: Bearer ${SERVICE_KEY}" \
+            -H "apikey: ${SERVICE_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"status\": \"failed\",
+              \"completed_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+              \"error_message\": \"pg_dump or upload failed — see the GitHub Actions log for details.\"
+            }" || true

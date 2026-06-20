@@ -46,12 +46,20 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
           <div>
             <h1 className="text-2xl font-bold text-foreground">{t("admin.usersTitle")}</h1>
           </div>
-          <Link
-            href="/admin/moderation"
-            className="rounded-lg border border-primary/30 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/5"
-          >
-            {t("nav.adminModeration")}
-          </Link>
+          <div className="flex gap-2">
+            <Link
+              href="/admin/moderation"
+              className="rounded-lg border border-primary/30 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/5"
+            >
+              {t("nav.adminModeration")}
+            </Link>
+            <Link
+              href="/admin/backups"
+              className="rounded-lg border border-primary/30 px-3 py-2 text-sm font-semibold text-primary hover:bg-primary/5"
+            >
+              {t("nav.adminBackups")}
+            </Link>
+          </div>
         </div>
 
         {params.deleted === "1" ? (

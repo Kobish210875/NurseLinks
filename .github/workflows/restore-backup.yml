@@ -1,0 +1,118 @@
+name: Restore Database from Backup
+
+# MANUAL ONLY — never runs on a schedule.
+# Triggered from the admin UI (Restore button) or directly from GitHub.
+#
+# ⚠️  WARNING: This drops and recreates the public schema.
+#              All existing data in public.* will be overwritten.
+#              Run this only after confirming with the team.
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment to restore INTO"
+        required: true
+        type: choice
+        options:
+          - dev
+          - prod
+      backup_file_path:
+        description: "File path inside the 'backups' bucket (e.g. prod/prod-full-20260621T020000Z.sql.gz)"
+        required: true
+        type: string
+      backup_log_id:
+        description: "backup_logs.id to mark as the restore point (optional)"
+        required: false
+        type: string
+      confirm:
+        description: "Type RESTORE to confirm you want to overwrite the target database"
+        required: true
+        type: string
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      # ── safety guard ─────────────────────────────────────────────────────────
+      - name: Confirm restore intent
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "RESTORE" ]; then
+            echo "❌ Safety check failed. You must type RESTORE in the confirm field."
+            exit 1
+          fi
+
+      # ── pick the right secrets ───────────────────────────────────────────────
+      - name: Export environment-specific secrets
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
+            echo "DB_URL=${{ secrets.SUPABASE_PROD_DB_URL }}"                >> "$GITHUB_ENV"
+            echo "SUPABASE_URL=${{ secrets.SUPABASE_PROD_URL }}"             >> "$GITHUB_ENV"
+            echo "SERVICE_KEY=${{ secrets.SUPABASE_PROD_SERVICE_ROLE_KEY }}" >> "$GITHUB_ENV"
+          else
+            echo "DB_URL=${{ secrets.SUPABASE_DEV_DB_URL }}"                 >> "$GITHUB_ENV"
+            echo "SUPABASE_URL=${{ secrets.SUPABASE_DEV_URL }}"              >> "$GITHUB_ENV"
+            echo "SERVICE_KEY=${{ secrets.SUPABASE_DEV_SERVICE_ROLE_KEY }}"  >> "$GITHUB_ENV"
+          fi
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get install -y --no-install-recommends postgresql-client
+
+      # ── download the backup file from Supabase Storage ───────────────────────
+      - name: Download backup file
+        run: |
+          FILE_PATH="${{ github.event.inputs.backup_file_path }}"
+          FILENAME=$(basename "${FILE_PATH}")
+          echo "FILENAME=${FILENAME}" >> "$GITHUB_ENV"
+
+          HTTP_STATUS=$(curl -s -o "${FILENAME}" -w "%{http_code}" \
+            "${SUPABASE_URL}/storage/v1/object/backups/${FILE_PATH}" \
+            -H "Authorization: Bearer ${SERVICE_KEY}")
+
+          if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 300 ]; then
+            echo "Failed to download backup (HTTP ${HTTP_STATUS})"
+            exit 1
+          fi
+          echo "Downloaded ${FILENAME} ($(stat --format='%s' ${FILENAME}) bytes)"
+
+      # ── restore ──────────────────────────────────────────────────────────────
+      - name: Drop and recreate public schema
+        run: |
+          psql "$DB_URL" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+
+      - name: Restore from backup
+        run: |
+          gunzip -c "${FILENAME}" | psql "$DB_URL"
+
+      # ── log the restore in backup_logs ───────────────────────────────────────
+      - name: Log restore to backup_logs
+        if: success()
+        run: |
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -fsSL -X POST \
+            "${SUPABASE_URL}/rest/v1/backup_logs" \
+            -H "Authorization: Bearer ${SERVICE_KEY}" \
+            -H "apikey: ${SERVICE_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"backup_type\": \"full\",
+              \"environment\": \"${{ github.event.inputs.environment }}\",
+              \"status\": \"completed\",
+              \"triggered_by\": \"manual\",
+              \"completed_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+              \"file_path\": \"${{ github.event.inputs.backup_file_path }}\",
+              \"github_run_url\": \"${RUN_URL}\",
+              \"error_message\": \"RESTORE from: ${{ github.event.inputs.backup_file_path }}\"
+            }"
+
+      - name: Restore succeeded
+        if: success()
+        run: |
+          echo "✅ Restore completed. The public schema of '${{ github.event.inputs.environment }}' has been replaced with the contents of '${{ github.event.inputs.backup_file_path }}'."
+
+      - name: Restore failed
+        if: failure()
+        run: |
+          echo "❌ Restore FAILED. The database may be in a partial state."
+          echo "   Re-run this workflow with a known-good backup file to recover."

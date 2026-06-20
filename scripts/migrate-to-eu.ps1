@@ -93,7 +93,8 @@ if (-not $SkipSchema) {
         "connection-remove-friend.sql",
         "recommendation-dismissals.sql",
         "profile-cv-fix.sql",
-        "connections-messaging-fix.sql"
+        "connections-messaging-fix.sql",
+        "backup-logs.sql"
     )
 
     foreach ($f in $schemaFiles) {
