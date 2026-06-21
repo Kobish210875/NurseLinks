@@ -130,15 +130,24 @@ jobs:
 
       - name: Insert backup_log (running)
         id: log
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SERVICE_KEY: ${{ env.SERVICE_KEY }}
+          BACKUP_STARTED_AT: ${{ github.run_started_at }}
         run: |
+          set -euo pipefail
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          STARTED_AT="${BACKUP_STARTED_AT:-}"
+          if [ -z "${STARTED_AT}" ]; then
+            STARTED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          fi
           LOG_ID=$(bash .github/scripts/insert-backup-log.sh "{
             \"backup_type\": \"snapshot\",
             \"operation\": \"backup\",
             \"environment\": \"${{ steps.target.outputs.environment }}\",
             \"status\": \"running\",
             \"triggered_by\": \"manual\",
-            \"started_at\": \"${{ github.run_started_at }}\",
+            \"started_at\": \"${STARTED_AT}\",
             \"file_path\": \"${FILE_PATH}\",
             \"file_size_bytes\": ${FILE_SIZE},
             \"tables_dumped\": ${TABLE_COUNT},
@@ -194,7 +203,6 @@ jobs:
 
           payload = {
               "status": "completed",
-              "started_at": os.environ["BACKUP_STARTED_AT"],
               "completed_at": subprocess.check_output(
                   ["date", "-u", "+%Y-%m-%dT%H:%M:%SZ"], text=True
               ).strip(),
@@ -203,6 +211,9 @@ jobs:
               "tables_dumped": int(os.environ["TABLE_COUNT"]),
               "row_counts": row_counts,
           }
+          started_at = os.environ.get("BACKUP_STARTED_AT", "").strip()
+          if started_at:
+              payload["started_at"] = started_at
 
           url = (
               os.environ["SUPABASE_URL"]
