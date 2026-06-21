@@ -559,7 +559,6 @@
     "backupEnvDev": "DEV environment",
     "backupEnvProd": "PROD environment",
     "backupTypeSnapshot": "Snapshot",
-    "backupTypeLegacy": "Snapshot (legacy)",
     "backupRunSnapshot": "Run Snapshot Backup",
     "backupTriggering": "Triggering…",
     "backupTriggered": "Triggered! Refresh in a minute.",

@@ -63,11 +63,6 @@ export default async function AdminBackupsPage() {
     return environment === "dev" ? t("admin.backupEnvDev") : t("admin.backupEnvProd");
   }
 
-  function formatBackupType(type: BackupLogRow["backup_type"]) {
-    if (type === "snapshot") return t("admin.backupTypeSnapshot");
-    return t("admin.backupTypeLegacy");
-  }
-
   return (
     <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
       <Navbar authenticated />
@@ -149,7 +144,9 @@ export default async function AdminBackupsPage() {
                 <tbody className="divide-y divide-border">
                   {logs.map((log) => (
                     <tr key={log.id} className="align-middle">
-                      <td className="px-4 py-2.5 font-medium">{formatBackupType(log.backup_type)}</td>
+                      <td className="px-4 py-2.5 font-medium whitespace-nowrap">
+                        {t("admin.backupTypeSnapshot")}
+                      </td>
                       <td className="px-4 py-2.5">
                         <span
                           className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
@@ -185,7 +182,7 @@ export default async function AdminBackupsPage() {
                         ) : null}
                       </td>
                       <td className="px-4 py-2.5">
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-nowrap items-center gap-1.5">
                           {log.status === "completed" && log.file_path ? (
                             <>
                               <BackupDownloadButton filePath={log.file_path} />
@@ -201,7 +198,7 @@ export default async function AdminBackupsPage() {
                               href={log.github_run_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted/40"
+                              className="inline-flex shrink-0 items-center whitespace-nowrap rounded-lg border border-border px-2 py-1 text-xs font-semibold text-muted-foreground hover:bg-muted/40"
                             >
                               {t("admin.backupViewRun")}
                             </a>

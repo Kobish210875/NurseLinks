@@ -559,7 +559,6 @@
     "backupEnvDev": "סביבת DEV",
     "backupEnvProd": "סביבת PROD",
     "backupTypeSnapshot": "Snapshot",
-    "backupTypeLegacy": "Snapshot (legacy)",
     "backupRunSnapshot": "הפעל גיבוי Snapshot",
     "backupTriggering": "מפעיל…",
     "backupTriggered": "הופעל! רעננו את הדף בעוד דקה.",

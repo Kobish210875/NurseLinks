@@ -94,7 +94,7 @@ export function BackupDownloadButton({ filePath }: { filePath: string }) {
       type="button"
       onClick={handleDownload}
       disabled={loading}
-      className="rounded-lg border border-green-300 px-3 py-1.5 text-xs font-semibold text-green-700 transition hover:bg-green-50 disabled:opacity-60"
+      className="inline-flex shrink-0 items-center whitespace-nowrap rounded-lg border border-green-300 px-2 py-1 text-xs font-semibold text-green-700 transition hover:bg-green-50 disabled:opacity-60"
     >
       {loading ? "…" : t("admin.backupDownload")}
     </button>
@@ -148,22 +148,18 @@ export function BackupRestoreButton({
   }
 
   return (
-    <div className="flex flex-col gap-1">
-      <button
-        type="button"
-        onClick={handleRestore}
-        disabled={state === "loading" || state === "ok"}
-        className="rounded-lg border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
-      >
+    <button
+      type="button"
+      onClick={handleRestore}
+      disabled={state === "loading" || state === "ok"}
+      className="inline-flex shrink-0 items-center whitespace-nowrap rounded-lg border border-red-200 px-2 py-1 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
+      title={state === "error" && errorMsg ? errorMsg : undefined}
+    >
         {state === "loading"
           ? t("admin.backupRestoring")
           : state === "ok"
             ? t("admin.backupRestoreTriggered")
             : t("admin.backupRestore")}
-      </button>
-      {state === "error" && errorMsg ? (
-        <p className="max-w-[180px] text-xs text-red-600">{errorMsg}</p>
-      ) : null}
-    </div>
+    </button>
   );
 }
