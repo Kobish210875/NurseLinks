@@ -142,17 +142,18 @@ jobs:
       - name: Collect row counts
         id: counts
         run: |
+          set -euo pipefail
           source /tmp/pg-connection.env
-          ROW_COUNTS=$(psql -t -c "
-            select json_object_agg(table_name, cnt)
+          ROW_COUNTS=$(psql -t -A -c "
+            select coalesce(json_object_agg(table_name, cnt), '{}'::json)
             from (
-              select 'profiles'    as table_name, count(*) as cnt from public.profiles
+              select 'profiles' as table_name, count(*)::bigint as cnt from public.profiles
               union all
-              select 'posts',      count(*) from public.posts
+              select 'posts', count(*)::bigint from public.posts
               union all
-              select 'jobs',       count(*) from public.jobs
+              select 'jobs', count(*)::bigint from public.jobs
               union all
-              select 'messages',   count(*) from public.messages
+              select 'direct_messages', count(*)::bigint from public.direct_messages
             ) t;
           " | tr -d '[:space:]')
           echo "json=${ROW_COUNTS}" >> "$GITHUB_OUTPUT"
@@ -176,19 +177,52 @@ jobs:
       - name: Update backup_log (completed)
         if: success()
         run: |
-          curl -fsSL -X PATCH \
-            "${SUPABASE_URL}/rest/v1/backup_logs?id=eq.${{ steps.log.outputs.id }}" \
-            -H "Authorization: Bearer ${SERVICE_KEY}" \
-            -H "apikey: ${SERVICE_KEY}" \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"status\": \"completed\",
-              \"completed_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
-              \"file_path\": \"${FILE_PATH}\",
-              \"file_size_bytes\": ${FILE_SIZE},
-              \"tables_dumped\": ${TABLE_COUNT},
-              \"row_counts\": ${{ steps.counts.outputs.json }}
-            }"
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          import urllib.request
+
+          row_counts_raw = os.environ.get("ROW_COUNTS_JSON", "").strip() or "{}"
+          row_counts = json.loads(row_counts_raw)
+
+          payload = {
+              "status": "completed",
+              "completed_at": subprocess.check_output(
+                  ["date", "-u", "+%Y-%m-%dT%H:%M:%SZ"], text=True
+              ).strip(),
+              "file_path": os.environ["FILE_PATH"],
+              "file_size_bytes": int(os.environ["FILE_SIZE"]),
+              "tables_dumped": int(os.environ["TABLE_COUNT"]),
+              "row_counts": row_counts,
+          }
+
+          url = (
+              os.environ["SUPABASE_URL"]
+              + "/rest/v1/backup_logs?id=eq."
+              + os.environ["LOG_ID"]
+          )
+          req = urllib.request.Request(
+              url,
+              data=json.dumps(payload).encode("utf-8"),
+              method="PATCH",
+              headers={
+                  "Authorization": f"Bearer {os.environ['SERVICE_KEY']}",
+                  "apikey": os.environ["SERVICE_KEY"],
+                  "Content-Type": "application/json",
+              },
+          )
+          with urllib.request.urlopen(req) as resp:
+              print(f"backup_log updated (HTTP {resp.status})")
+          PY
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SERVICE_KEY: ${{ env.SERVICE_KEY }}
+          FILE_PATH: ${{ env.FILE_PATH }}
+          FILE_SIZE: ${{ env.FILE_SIZE }}
+          TABLE_COUNT: ${{ env.TABLE_COUNT }}
+          LOG_ID: ${{ steps.log.outputs.id }}
+          ROW_COUNTS_JSON: ${{ steps.counts.outputs.json }}
 
       # ── mark failed ──────────────────────────────────────────────────────────
       - name: Update backup_log (failed)
