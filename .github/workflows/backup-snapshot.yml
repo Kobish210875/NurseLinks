@@ -1,7 +1,9 @@
 name: Database Snapshot Backup
 
 # Manual DEV/PROD snapshots from admin UI or GitHub UI.
+# From GitHub UI: pick branch "develop" for DEV, "main" for PROD (Use workflow from).
 # PROD schedule lives in backup-snapshot-schedule.yml (every 4 hours).
+run-name: Snapshot ${{ github.event.inputs.environment || 'noop' }} (${{ github.ref_name }})
 on:
   push:
     branches: [main, develop]
@@ -45,6 +47,7 @@ jobs:
 
       - name: Log target environment
         run: |
+          echo "Git ref: ${{ github.ref_name }}"
           echo "Backup target environment: ${{ steps.target.outputs.environment }}"
           echo "Triggered by: manual"
 

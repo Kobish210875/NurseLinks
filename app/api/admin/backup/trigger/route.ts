@@ -8,6 +8,8 @@ import { requireAdmin } from "@/lib/auth/admin";
 const GITHUB_REPO = "Kobish210875/NurseLinks";
 const SNAPSHOT_WORKFLOW = "backup-snapshot.yml";
 
+export const dynamic = "force-dynamic";
+
 export async function POST(req: Request) {
   try {
     await requireAdmin();
@@ -35,6 +37,8 @@ export async function POST(req: Request) {
     );
   }
 
+  const workflowRef = getWorkflowRefForBackupEnvironment(environment);
+
   const ghRes = await fetch(
     `https://api.github.com/repos/${GITHUB_REPO}/actions/workflows/${SNAPSHOT_WORKFLOW}/dispatches`,
     {
@@ -46,7 +50,7 @@ export async function POST(req: Request) {
         "X-GitHub-Api-Version": "2022-11-28",
       },
       body: JSON.stringify({
-        ref: getWorkflowRefForBackupEnvironment(environment),
+        ref: workflowRef,
         inputs: { environment },
       }),
     },
@@ -60,5 +64,5 @@ export async function POST(req: Request) {
     );
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, environment, workflowRef });
 }

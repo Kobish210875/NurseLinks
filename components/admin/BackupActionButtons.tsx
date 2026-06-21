@@ -9,6 +9,7 @@ export function BackupTriggerButton({ environment }: { environment: BackupEnv })
   const t = useT();
   const [state, setState] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [successRef, setSuccessRef] = useState("");
 
   async function handleClick() {
     if (state === "loading") return;
@@ -24,6 +25,7 @@ export function BackupTriggerButton({ environment }: { environment: BackupEnv })
 
     setState("loading");
     setErrorMsg("");
+    setSuccessRef("");
 
     try {
       const res = await fetch("/api/admin/backup/trigger", {
@@ -37,6 +39,10 @@ export function BackupTriggerButton({ environment }: { environment: BackupEnv })
         setState("error");
         return;
       }
+      const data = (await res.json().catch(() => ({}))) as {
+        workflowRef?: string;
+      };
+      setSuccessRef(data.workflowRef ?? "");
       setState("ok");
       setTimeout(() => setState("idle"), 5000);
     } catch {
@@ -59,9 +65,17 @@ export function BackupTriggerButton({ environment }: { environment: BackupEnv })
         {isLoading
           ? t("admin.backupTriggering")
           : isOk
-            ? t("admin.backupTriggered")
+            ? t("admin.backupTriggered").replace(
+                "{ref}",
+                successRef ? ` (${successRef})` : "",
+              )
             : t("admin.backupRunSnapshot")}
       </button>
+      {isOk && successRef ? (
+        <p className="text-xs text-green-700">
+          {t("admin.backupTriggerBranchHint").replace("{ref}", successRef)}
+        </p>
+      ) : null}
       {state === "error" && errorMsg ? (
         <p className="text-xs text-red-600">{errorMsg}</p>
       ) : null}
