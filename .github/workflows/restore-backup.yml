@@ -48,8 +48,9 @@ jobs:
       # ── safety guard ─────────────────────────────────────────────────────────
       - name: Confirm restore intent
         run: |
-          if [ "${{ github.event.inputs.confirm }}" != "RESTORE" ]; then
-            echo "❌ Safety check failed. You must type RESTORE in the confirm field."
+          CONFIRM=$(echo "${{ github.event.inputs.confirm }}" | tr -d '[:space:]' | tr '[:lower:]' '[:upper:]')
+          if [ "$CONFIRM" != "RESTORE" ]; then
+            echo "❌ Safety check failed. Type RESTORE exactly in the confirm field (got: '${{ github.event.inputs.confirm }}')."
             exit 1
           fi
 
