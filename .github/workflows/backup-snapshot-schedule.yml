@@ -1,69 +1,33 @@
-name: Database Snapshot Backup
+name: Database Snapshot Backup (PROD schedule)
 
-# Manual DEV/PROD snapshots from admin UI or GitHub UI.
-# PROD schedule lives in backup-snapshot-schedule.yml (every 4 hours).
+# PROD every 4 hours. Separate file avoids GitHub push-event bugs on the manual workflow.
 on:
-  push:
-    branches: [main, develop]
-  workflow_dispatch:
-    inputs:
-      environment:
-        description: "Target environment"
-        required: false
-        default: "prod"
-        type: choice
-        options:
-          - dev
-          - prod
+  schedule:
+    - cron: "0 */4 * * *"
 
 jobs:
-  # GitHub sometimes registers phantom "push" runs for workflow_dispatch-only
-  # workflows (0 real jobs, immediate failure). This no-op keeps those harmless.
-  ci-push-noop:
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Push event — snapshot backup runs on schedule (PROD) or manual dispatch only."
-
   backup:
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == matrix.environment
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        environment: [dev, prod]
+    env:
+      BACKUP_ENV: prod
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Log target environment
-        run: |
-          echo "Backup target environment: ${{ matrix.environment }}"
-          echo "Triggered by: manual"
-
       - name: Export environment-specific secrets
         run: |
-          if [ "${{ matrix.environment }}" = "prod" ]; then
-            echo "DB_URL=${{ secrets.SUPABASE_PROD_DB_URL }}"           >> "$GITHUB_ENV"
-            echo "DB_PASSWORD=${{ secrets.SUPABASE_PROD_DB_PASSWORD }}" >> "$GITHUB_ENV"
-            echo "DB_POOLER_HOST=${{ secrets.SUPABASE_PROD_DB_POOLER_HOST }}" >> "$GITHUB_ENV"
-            echo "SUPABASE_URL=${{ secrets.SUPABASE_PROD_URL }}"        >> "$GITHUB_ENV"
-            echo "SERVICE_KEY=${{ secrets.SUPABASE_PROD_SERVICE_ROLE_KEY }}" >> "$GITHUB_ENV"
-          else
-            echo "DB_URL=${{ secrets.SUPABASE_DEV_DB_URL }}"            >> "$GITHUB_ENV"
-            echo "DB_PASSWORD=${{ secrets.SUPABASE_DEV_DB_PASSWORD }}"  >> "$GITHUB_ENV"
-            echo "DB_POOLER_HOST=${{ secrets.SUPABASE_DEV_DB_POOLER_HOST }}" >> "$GITHUB_ENV"
-            echo "SUPABASE_URL=${{ secrets.SUPABASE_DEV_URL }}"         >> "$GITHUB_ENV"
-            echo "SERVICE_KEY=${{ secrets.SUPABASE_DEV_SERVICE_ROLE_KEY }}"  >> "$GITHUB_ENV"
-          fi
+          echo "DB_URL=${{ secrets.SUPABASE_PROD_DB_URL }}"           >> "$GITHUB_ENV"
+          echo "DB_PASSWORD=${{ secrets.SUPABASE_PROD_DB_PASSWORD }}" >> "$GITHUB_ENV"
+          echo "DB_POOLER_HOST=${{ secrets.SUPABASE_PROD_DB_POOLER_HOST }}" >> "$GITHUB_ENV"
+          echo "SUPABASE_URL=${{ secrets.SUPABASE_PROD_URL }}"        >> "$GITHUB_ENV"
+          echo "SERVICE_KEY=${{ secrets.SUPABASE_PROD_SERVICE_ROLE_KEY }}" >> "$GITHUB_ENV"
 
       - name: Insert backup_log (running)
         id: log
         run: |
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          TRIGGERED_BY="manual"
           LOG_ID=$(curl -fsSL -X POST \
             "${SUPABASE_URL}/rest/v1/backup_logs" \
             -H "Authorization: Bearer ${SERVICE_KEY}" \
@@ -72,9 +36,9 @@ jobs:
             -H "Prefer: return=representation" \
             -d "{
               \"backup_type\": \"snapshot\",
-              \"environment\": \"${{ matrix.environment }}\",
+              \"environment\": \"prod\",
               \"status\": \"running\",
-              \"triggered_by\": \"${TRIGGERED_BY}\",
+              \"triggered_by\": \"schedule\",
               \"github_run_url\": \"${RUN_URL}\"
             }" \
             | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['id'])")
@@ -100,11 +64,10 @@ jobs:
           if [ ! -x "$PG_DUMP" ]; then
             PG_DUMP=$(command -v pg_dump)
           fi
-          echo "Using $("$PG_DUMP" --version)"
           TIMESTAMP=$(date -u +%Y%m%dT%H%M%SZ)
-          FILENAME="${{ matrix.environment }}-snapshot-${TIMESTAMP}.sql.gz"
+          FILENAME="prod-snapshot-${TIMESTAMP}.sql.gz"
           echo "FILENAME=${FILENAME}" >> "$GITHUB_ENV"
-          echo "FILE_PATH=${{ matrix.environment }}/${FILENAME}" >> "$GITHUB_ENV"
+          echo "FILE_PATH=prod/${FILENAME}" >> "$GITHUB_ENV"
 
           if ! "$PG_DUMP" \
             --schema=public \
@@ -114,22 +77,15 @@ jobs:
             --format=plain \
             2>pg_dump.log \
           | gzip > "${FILENAME}"; then
-            echo "--- pg_dump failed ---"
             cat pg_dump.log || true
             exit 1
           fi
 
           FILE_SIZE=$(stat --format='%s' "${FILENAME}")
           TABLE_COUNT=$(gzip -dc "${FILENAME}" | grep -c '^CREATE TABLE ' || true)
-
           if [ "$FILE_SIZE" -lt 500 ] || [ "$TABLE_COUNT" -eq 0 ]; then
-            echo "Backup looks empty (size=${FILE_SIZE} bytes, tables=${TABLE_COUNT})."
-            echo "--- pg_dump.log ---"
-            cat pg_dump.log || true
             exit 1
           fi
-
-          echo "Dump OK: ${FILE_SIZE} bytes, ${TABLE_COUNT} tables"
           echo "TABLE_COUNT=${TABLE_COUNT}" >> "$GITHUB_ENV"
           echo "FILE_SIZE=${FILE_SIZE}" >> "$GITHUB_ENV"
 
@@ -142,12 +98,9 @@ jobs:
             select coalesce(json_object_agg(table_name, cnt), '{}'::json)
             from (
               select 'profiles' as table_name, count(*)::bigint as cnt from public.profiles
-              union all
-              select 'posts', count(*)::bigint from public.posts
-              union all
-              select 'jobs', count(*)::bigint from public.jobs
-              union all
-              select 'direct_messages', count(*)::bigint from public.direct_messages
+              union all select 'posts', count(*)::bigint from public.posts
+              union all select 'jobs', count(*)::bigint from public.jobs
+              union all select 'direct_messages', count(*)::bigint from public.direct_messages
             ) t;
           " | tr -d '[:space:]')
           echo "json=${ROW_COUNTS}" >> "$GITHUB_OUTPUT"
@@ -160,53 +113,31 @@ jobs:
             -H "Authorization: Bearer ${SERVICE_KEY}" \
             -H "Content-Type: application/gzip" \
             --data-binary "@${FILENAME}")
-
           if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 300 ]; then
-            echo "Storage upload failed with HTTP ${HTTP_STATUS}"
             exit 1
           fi
-          echo "Upload successful (HTTP ${HTTP_STATUS})"
 
       - name: Update backup_log (completed)
         if: success()
         run: |
           python3 - <<'PY'
-          import json
-          import os
-          import subprocess
-          import urllib.request
-
-          row_counts_raw = os.environ.get("ROW_COUNTS_JSON", "").strip() or "{}"
-          row_counts = json.loads(row_counts_raw)
-
+          import json, os, subprocess, urllib.request
           payload = {
               "status": "completed",
-              "completed_at": subprocess.check_output(
-                  ["date", "-u", "+%Y-%m-%dT%H:%M:%SZ"], text=True
-              ).strip(),
+              "completed_at": subprocess.check_output(["date", "-u", "+%Y-%m-%dT%H:%M:%SZ"], text=True).strip(),
               "file_path": os.environ["FILE_PATH"],
               "file_size_bytes": int(os.environ["FILE_SIZE"]),
               "tables_dumped": int(os.environ["TABLE_COUNT"]),
-              "row_counts": row_counts,
+              "row_counts": json.loads(os.environ.get("ROW_COUNTS_JSON", "{}") or "{}"),
           }
-
-          url = (
-              os.environ["SUPABASE_URL"]
-              + "/rest/v1/backup_logs?id=eq."
-              + os.environ["LOG_ID"]
-          )
-          req = urllib.request.Request(
-              url,
-              data=json.dumps(payload).encode("utf-8"),
-              method="PATCH",
-              headers={
-                  "Authorization": f"Bearer {os.environ['SERVICE_KEY']}",
-                  "apikey": os.environ["SERVICE_KEY"],
-                  "Content-Type": "application/json",
-              },
-          )
+          url = os.environ["SUPABASE_URL"] + "/rest/v1/backup_logs?id=eq." + os.environ["LOG_ID"]
+          req = urllib.request.Request(url, data=json.dumps(payload).encode(), method="PATCH", headers={
+              "Authorization": f"Bearer {os.environ['SERVICE_KEY']}",
+              "apikey": os.environ["SERVICE_KEY"],
+              "Content-Type": "application/json",
+          })
           with urllib.request.urlopen(req) as resp:
-              print(f"backup_log updated (HTTP {resp.status})")
+              print(resp.status)
           PY
         env:
           SUPABASE_URL: ${{ env.SUPABASE_URL }}
@@ -219,10 +150,8 @@ jobs:
 
       - name: Delete backups older than 72 hours
         if: success()
-        run: bash .github/scripts/cleanup-old-backups.sh "${{ matrix.environment }}" 72
+        run: bash .github/scripts/cleanup-old-backups.sh prod 72
         env:
-          CLEANUP_ENV: ${{ matrix.environment }}
-          RETENTION_HOURS: "72"
           SUPABASE_URL: ${{ env.SUPABASE_URL }}
           SERVICE_KEY: ${{ env.SERVICE_KEY }}
 
@@ -234,8 +163,4 @@ jobs:
             -H "Authorization: Bearer ${SERVICE_KEY}" \
             -H "apikey: ${SERVICE_KEY}" \
             -H "Content-Type: application/json" \
-            -d "{
-              \"status\": \"failed\",
-              \"completed_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
-              \"error_message\": \"Backup workflow failed — see the GitHub Actions log for details.\"
-            }" || true
+            -d "{\"status\":\"failed\",\"completed_at\":\"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",\"error_message\":\"Scheduled PROD backup failed.\"}" || true
