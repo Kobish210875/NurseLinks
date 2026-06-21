@@ -9,11 +9,12 @@ begin
     where table_schema = 'public' and table_name = 'profiles'
   ) then
     raise exception
-      'public.profiles does not exist. Go to /admin/backups → שחזור DB on a completed snapshot and wait for GitHub "Restore from backup" to succeed before running this script.';
+      'public.profiles does not exist. Either run supabase/dev-emergency-login-bootstrap.sql for login-only recovery, or restore from /admin/backups first.';
   end if;
 end $$;
 
--- DROP SCHEMA public CASCADE removes public.handle_new_user(); the auth.users trigger-- may then be broken and auth accounts can exist without a matching profiles row.
+-- DROP SCHEMA public CASCADE removes public.handle_new_user(); the auth.users trigger
+-- may then be broken and auth accounts can exist without a matching profiles row.
 
 create or replace function public.handle_new_user()
 returns trigger

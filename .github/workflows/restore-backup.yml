@@ -93,23 +93,45 @@ jobs:
           fi
           echo "Downloaded ${FILENAME} ($(stat --format='%s' ${FILENAME}) bytes)"
 
+      - name: Validate backup file
+        run: |
+          set -euo pipefail
+          FILE_SIZE=$(stat --format='%s' "${FILENAME}")
+          TABLE_COUNT=$(gunzip -c "${FILENAME}" | grep -c '^CREATE TABLE ' || true)
+          echo "Backup file: ${FILE_SIZE} bytes, ${TABLE_COUNT} CREATE TABLE statements"
+          if [ "$FILE_SIZE" -lt 500 ] || [ "$TABLE_COUNT" -eq 0 ]; then
+            echo "Backup file looks empty or invalid."
+            exit 1
+          fi
+
       # ── restore ──────────────────────────────────────────────────────────────
       - name: Drop public schema
         run: |
           set -euo pipefail
           source /tmp/pg-connection.env
-          psql -v ON_ERROR_STOP=1 -c "DROP SCHEMA IF EXISTS public CASCADE;"
+          psql -v ON_ERROR_STOP=1 -c "
+            DROP SCHEMA IF EXISTS public CASCADE;
+            CREATE SCHEMA public;
+            GRANT ALL ON SCHEMA public TO postgres;
+            GRANT ALL ON SCHEMA public TO public;
+          "
 
       - name: Restore from backup
         id: restore
         run: |
           set -euo pipefail
           source /tmp/pg-connection.env
-          # Do not CREATE SCHEMA public before this — pg_dump includes it.
-          # Strip pg_dump 17 meta-commands that can break non-interactive psql.
+          set +e
           gunzip -c "${FILENAME}" \
             | sed '/^\\restrict /d; /^\\unrestrict /d' \
-            | psql -v ON_ERROR_STOP=1 --single-transaction 2>&1 | tee restore.log
+            | psql -v ON_ERROR_STOP=1 2>&1 | tee restore.log
+          RESTORE_EXIT=${PIPESTATUS[1]}
+          set -e
+          if [ "$RESTORE_EXIT" -ne 0 ]; then
+            echo "--- last 40 lines of restore.log ---"
+            tail -n 40 restore.log || true
+            exit "$RESTORE_EXIT"
+          fi
           TABLE_COUNT=$(psql -tAc "select count(*) from information_schema.tables where table_schema = 'public';" | tr -d '[:space:]')
           echo "Public tables after restore: ${TABLE_COUNT}"
           if [ "${TABLE_COUNT}" -lt 1 ]; then
