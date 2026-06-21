@@ -1,10 +1,10 @@
 name: Database Snapshot Backup
 
-# Daily PROD snapshot at 02:00 UTC (05:00 Israel). Adjust cron when you want more runs per day.
-# Can also be triggered manually from the admin UI or GitHub UI.
+# Scheduled: DEV + PROD every 2 hours. Manual: one environment from admin UI or GitHub UI.
+# Files older than 48 hours are deleted after each successful backup.
 on:
   schedule:
-    - cron: "0 2 * * *"
+    - cron: "0 */2 * * *"
   workflow_dispatch:
     inputs:
       environment:
@@ -18,37 +18,26 @@ on:
 
 jobs:
   backup:
+    if: github.event_name == 'schedule' || github.event.inputs.environment == matrix.environment
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [dev, prod]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Resolve environment
-        id: env
-        run: |
-          if [ "${{ github.event_name }}" = "schedule" ]; then
-            echo "name=prod" >> "$GITHUB_OUTPUT"
-            echo "triggered_by=schedule" >> "$GITHUB_OUTPUT"
-          else
-            INPUT="${{ github.event.inputs.environment }}"
-            if [ "$INPUT" != "dev" ] && [ "$INPUT" != "prod" ]; then
-              echo "Invalid or missing environment input: '$INPUT' (expected dev or prod)"
-              exit 1
-            fi
-            echo "name=$INPUT" >> "$GITHUB_OUTPUT"
-            echo "triggered_by=manual" >> "$GITHUB_OUTPUT"
-          fi
-
       - name: Log target environment
         run: |
-          echo "Backup target environment: ${{ steps.env.outputs.name }}"
-          echo "Triggered by: ${{ steps.env.outputs.triggered_by }}"
+          echo "Backup target environment: ${{ matrix.environment }}"
+          echo "Triggered by: ${{ github.event_name == 'schedule' && 'schedule' || 'manual' }}"
 
       - name: Export environment-specific secrets
         run: |
-          if [ "${{ steps.env.outputs.name }}" = "prod" ]; then
+          if [ "${{ matrix.environment }}" = "prod" ]; then
             echo "DB_URL=${{ secrets.SUPABASE_PROD_DB_URL }}"           >> "$GITHUB_ENV"
             echo "DB_PASSWORD=${{ secrets.SUPABASE_PROD_DB_PASSWORD }}" >> "$GITHUB_ENV"
             echo "DB_POOLER_HOST=${{ secrets.SUPABASE_PROD_DB_POOLER_HOST }}" >> "$GITHUB_ENV"
@@ -66,6 +55,7 @@ jobs:
         id: log
         run: |
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          TRIGGERED_BY="${{ github.event_name == 'schedule' && 'schedule' || 'manual' }}"
           LOG_ID=$(curl -fsSL -X POST \
             "${SUPABASE_URL}/rest/v1/backup_logs" \
             -H "Authorization: Bearer ${SERVICE_KEY}" \
@@ -74,9 +64,9 @@ jobs:
             -H "Prefer: return=representation" \
             -d "{
               \"backup_type\": \"snapshot\",
-              \"environment\": \"${{ steps.env.outputs.name }}\",
+              \"environment\": \"${{ matrix.environment }}\",
               \"status\": \"running\",
-              \"triggered_by\": \"${{ steps.env.outputs.triggered_by }}\",
+              \"triggered_by\": \"${TRIGGERED_BY}\",
               \"github_run_url\": \"${RUN_URL}\"
             }" \
             | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['id'])")
@@ -104,9 +94,9 @@ jobs:
           fi
           echo "Using $("$PG_DUMP" --version)"
           TIMESTAMP=$(date -u +%Y%m%dT%H%M%SZ)
-          FILENAME="${{ steps.env.outputs.name }}-snapshot-${TIMESTAMP}.sql.gz"
+          FILENAME="${{ matrix.environment }}-snapshot-${TIMESTAMP}.sql.gz"
           echo "FILENAME=${FILENAME}" >> "$GITHUB_ENV"
-          echo "FILE_PATH=${{ steps.env.outputs.name }}/${FILENAME}" >> "$GITHUB_ENV"
+          echo "FILE_PATH=${{ matrix.environment }}/${FILENAME}" >> "$GITHUB_ENV"
 
           if ! "$PG_DUMP" \
             --schema=public \
@@ -217,6 +207,15 @@ jobs:
           TABLE_COUNT: ${{ env.TABLE_COUNT }}
           LOG_ID: ${{ steps.log.outputs.id }}
           ROW_COUNTS_JSON: ${{ steps.counts.outputs.json }}
+
+      - name: Delete backups older than 48 hours
+        if: success()
+        run: bash .github/scripts/cleanup-old-backups.sh "${{ matrix.environment }}" 48
+        env:
+          CLEANUP_ENV: ${{ matrix.environment }}
+          RETENTION_HOURS: "48"
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SERVICE_KEY: ${{ env.SERVICE_KEY }}
 
       - name: Update backup_log (failed)
         if: failure()
