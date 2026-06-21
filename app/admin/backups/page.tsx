@@ -1,7 +1,7 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { requireAdmin } from "@/lib/auth/admin";
-import { getBackupEnvironmentForApp } from "@/lib/admin/backup-environment";
+import { getAllowedBackupEnvironments, type BackupEnvironment } from "@/lib/admin/backup-environment";
 import { getBackupLogs, type BackupLogRow } from "@/lib/admin/backups";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
@@ -51,7 +51,17 @@ export default async function AdminBackupsPage() {
   const locale = await getLocale();
   const t = createT(getMessages(locale));
   const { logs, error } = await getBackupLogs();
-  const backupEnvironment = getBackupEnvironmentForApp();
+  const allowedBackupEnvironments = getAllowedBackupEnvironments();
+
+  function triggerHint(environment: BackupEnvironment) {
+    return environment === "dev"
+      ? t("admin.backupTriggerHintDev")
+      : t("admin.backupTriggerHintProd");
+  }
+
+  function envTitle(environment: BackupEnvironment) {
+    return environment === "dev" ? t("admin.backupEnvDev") : t("admin.backupEnvProd");
+  }
 
   return (
     <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
@@ -74,26 +84,31 @@ export default async function AdminBackupsPage() {
             </p>
           ) : null}
 
-          {/* Trigger card — only the environment matching this deployment */}
+          {/* Trigger cards — production admin can target both DEV and PROD */}
           <section className="feed-card shrink-0 p-4">
-            <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
-              <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">
-                {backupEnvironment === "dev"
-                  ? t("admin.backupEnvDev")
-                  : t("admin.backupEnvProd")}
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                <BackupTriggerButton backupType="full" environment={backupEnvironment} />
-                <BackupTriggerButton
-                  backupType="incremental"
-                  environment={backupEnvironment}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {backupEnvironment === "dev"
-                  ? t("admin.backupTriggerHintDev")
-                  : t("admin.backupTriggerHintProd")}
-              </p>
+            <div
+              className={`grid gap-3 ${
+                allowedBackupEnvironments.length > 1 ? "md:grid-cols-2" : ""
+              }`}
+            >
+              {allowedBackupEnvironments.map((environment) => (
+                <div
+                  key={environment}
+                  className="flex flex-col gap-3 rounded-lg border border-border p-4"
+                >
+                  <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">
+                    {envTitle(environment)}
+                  </h2>
+                  <div className="flex flex-wrap gap-2">
+                    <BackupTriggerButton backupType="full" environment={environment} />
+                    <BackupTriggerButton
+                      backupType="incremental"
+                      environment={environment}
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground">{triggerHint(environment)}</p>
+                </div>
+              ))}
             </div>
           </section>
 

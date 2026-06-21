@@ -2,20 +2,27 @@ import { getAppEnvironment, isProductionApp } from "@/lib/env/app-environment";
 
 export type BackupEnvironment = "dev" | "prod";
 
-/** Which Supabase project manual backups may target from this deployment. */
+const BACKUP_ENVIRONMENTS: BackupEnvironment[] = ["dev", "prod"];
+
+/** Which environments manual backups may target from this deployment. */
+export function getAllowedBackupEnvironments(): BackupEnvironment[] {
+  return isProductionApp() ? BACKUP_ENVIRONMENTS : ["dev"];
+}
+
+/** @deprecated Prefer getAllowedBackupEnvironments — kept for single-env callers. */
 export function getBackupEnvironmentForApp(): BackupEnvironment {
   return isProductionApp() ? "prod" : "dev";
 }
 
 export function assertBackupEnvironmentAllowed(requested: string): BackupEnvironment {
-  const allowed = getBackupEnvironmentForApp();
-  const normalized = requested === "prod" ? "prod" : "dev";
+  const allowed = getAllowedBackupEnvironments();
+  const normalized: BackupEnvironment = requested === "prod" ? "prod" : "dev";
 
-  if (normalized !== allowed) {
+  if (!allowed.includes(normalized)) {
     const appEnv = getAppEnvironment();
     throw new Error(
       appEnv === "production"
-        ? "Production site can only trigger prod backups."
+        ? "Invalid backup environment."
         : "Dev and Preview sites can only trigger dev backups.",
     );
   }
