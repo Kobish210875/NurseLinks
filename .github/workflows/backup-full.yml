@@ -85,11 +85,11 @@ jobs:
             | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['id'])")
           echo "id=${LOG_ID}" >> "$GITHUB_OUTPUT"
 
-      - name: Install PostgreSQL client
-        run: sudo apt-get install -y --no-install-recommends postgresql-client
-
       - name: Configure PostgreSQL connection (IPv4)
         run: bash .github/scripts/configure-pg-ipv4.sh
+
+      - name: Install matching PostgreSQL client
+        run: bash .github/scripts/install-pg-client.sh
 
       - name: Test database connection
         run: |
@@ -102,19 +102,28 @@ jobs:
         run: |
           set -euo pipefail
           source /tmp/pg-connection.env
+          PG_DUMP="${PG_BIN_DIR:-}/pg_dump"
+          if [ ! -x "$PG_DUMP" ]; then
+            PG_DUMP=$(command -v pg_dump)
+          fi
+          echo "Using $("$PG_DUMP" --version)"
           # Session pooler on port 5432 (IPv4-compatible for GitHub Actions).
           TIMESTAMP=$(date -u +%Y%m%dT%H%M%SZ)
           FILENAME="${{ steps.env.outputs.name }}-full-${TIMESTAMP}.sql.gz"
           echo "FILENAME=${FILENAME}" >> "$GITHUB_ENV"
           echo "FILE_PATH=${{ steps.env.outputs.name }}/${FILENAME}" >> "$GITHUB_ENV"
 
-          pg_dump \
+          if ! "$PG_DUMP" \
             --schema=public \
             --no-owner \
             --no-acl \
             --format=plain \
             2>pg_dump.log \
-          | gzip > "${FILENAME}"
+          | gzip > "${FILENAME}"; then
+            echo "--- pg_dump failed ---"
+            cat pg_dump.log || true
+            exit 1
+          fi
 
           FILE_SIZE=$(stat --format='%s' "${FILENAME}")
           TABLE_COUNT=$(gzip -dc "${FILENAME}" | grep -c '^CREATE TABLE ' || true)

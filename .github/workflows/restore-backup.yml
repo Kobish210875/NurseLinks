@@ -63,11 +63,11 @@ jobs:
             echo "SERVICE_KEY=${{ secrets.SUPABASE_DEV_SERVICE_ROLE_KEY }}"  >> "$GITHUB_ENV"
           fi
 
-      - name: Install PostgreSQL client
-        run: sudo apt-get install -y --no-install-recommends postgresql-client
-
       - name: Configure PostgreSQL connection (IPv4)
         run: bash .github/scripts/configure-pg-ipv4.sh
+
+      - name: Install matching PostgreSQL client
+        run: bash .github/scripts/install-pg-client.sh
 
       # ── download the backup file from Supabase Storage ───────────────────────
       - name: Download backup file
