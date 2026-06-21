@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
-import { assertBackupEnvironmentAllowed } from "@/lib/admin/backup-environment";
+import {
+  assertBackupEnvironmentAllowed,
+  getWorkflowRefForBackupEnvironment,
+} from "@/lib/admin/backup-environment";
 import { requireAdmin } from "@/lib/auth/admin";
 
 const GITHUB_REPO = "Kobish210875/NurseLinks";
@@ -54,7 +57,7 @@ export async function POST(req: Request) {
         "X-GitHub-Api-Version": "2022-11-28",
       },
       body: JSON.stringify({
-        ref: "main",
+        ref: getWorkflowRefForBackupEnvironment(environment),
         inputs: {
           environment,
           backup_file_path: body.backup_file_path,

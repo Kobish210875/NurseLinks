@@ -26,3 +26,10 @@ export function assertBackupEnvironmentAllowed(requested: string): BackupEnviron
 
   return normalized;
 }
+
+/** Git branch used when dispatching backup/restore workflows (matches app ↔ DB mapping). */
+export function getWorkflowRefForBackupEnvironment(
+  environment: BackupEnvironment,
+): "develop" | "main" {
+  return environment === "dev" ? "develop" : "main";
+}
