@@ -1,6 +1,19 @@
--- Run after restoring public schema from a snapshot (GitHub restore or manual psql).
--- DROP SCHEMA public CASCADE removes public.handle_new_user(); the auth.users trigger
--- may then be broken and auth accounts can exist without a matching profiles row.
+-- Run ONLY after a successful snapshot restore (GitHub "Restore from backup" = green).
+-- If public.profiles is missing, restore the database first — this script cannot recreate tables.
+
+do $$
+begin
+  if not exists (
+    select 1
+    from information_schema.tables
+    where table_schema = 'public' and table_name = 'profiles'
+  ) then
+    raise exception
+      'public.profiles does not exist. Go to /admin/backups → שחזור DB on a completed snapshot and wait for GitHub "Restore from backup" to succeed before running this script.';
+  end if;
+end $$;
+
+-- DROP SCHEMA public CASCADE removes public.handle_new_user(); the auth.users trigger-- may then be broken and auth accounts can exist without a matching profiles row.
 
 create or replace function public.handle_new_user()
 returns trigger
