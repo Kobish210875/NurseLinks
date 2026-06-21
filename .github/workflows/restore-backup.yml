@@ -35,6 +35,9 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       # ── safety guard ─────────────────────────────────────────────────────────
       - name: Confirm restore intent
         run: |
@@ -59,6 +62,9 @@ jobs:
       - name: Install PostgreSQL client
         run: sudo apt-get install -y --no-install-recommends postgresql-client
 
+      - name: Configure PostgreSQL connection (IPv4)
+        run: bash .github/scripts/configure-pg-ipv4.sh
+
       # ── download the backup file from Supabase Storage ───────────────────────
       - name: Download backup file
         run: |
@@ -79,11 +85,11 @@ jobs:
       # ── restore ──────────────────────────────────────────────────────────────
       - name: Drop and recreate public schema
         run: |
-          psql "$DB_URL" -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+          psql -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 
       - name: Restore from backup
         run: |
-          gunzip -c "${FILENAME}" | psql "$DB_URL"
+          gunzip -c "${FILENAME}" | psql
 
       # ── log the restore in backup_logs ───────────────────────────────────────
       - name: Log restore to backup_logs

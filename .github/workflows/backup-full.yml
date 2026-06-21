@@ -22,6 +22,9 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       # ── resolve which environment we are targeting ──────────────────────────
       - name: Resolve environment
         id: env
@@ -60,10 +63,13 @@ jobs:
       - name: Install PostgreSQL client
         run: sudo apt-get install -y --no-install-recommends postgresql-client
 
+      - name: Configure PostgreSQL connection (IPv4)
+        run: bash .github/scripts/configure-pg-ipv4.sh
+
       - name: Test database connection
         run: |
           set -euo pipefail
-          psql "$DB_URL" -v ON_ERROR_STOP=1 -c "select current_database(), count(*) from information_schema.tables where table_schema = 'public';"
+          psql -v ON_ERROR_STOP=1 -c "select current_database(), count(*) from information_schema.tables where table_schema = 'public';"
 
       # ── create a "running" log entry and capture its id ─────────────────────
       - name: Insert backup_log (running)
@@ -97,7 +103,7 @@ jobs:
           echo "FILENAME=${FILENAME}" >> "$GITHUB_ENV"
           echo "FILE_PATH=${{ steps.env.outputs.name }}/${FILENAME}" >> "$GITHUB_ENV"
 
-          pg_dump "$DB_URL" \
+          pg_dump \
             --schema=public \
             --no-owner \
             --no-acl \
