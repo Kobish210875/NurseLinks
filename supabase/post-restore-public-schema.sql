@@ -81,3 +81,7 @@ alter table public.backup_logs
 alter table public.backup_logs
   add constraint backup_logs_backup_type_check
   check (backup_type in ('snapshot', 'full', 'incremental'));
+
+alter table public.backup_logs
+  add column if not exists operation text not null default 'backup'
+  check (operation in ('backup', 'restore'));

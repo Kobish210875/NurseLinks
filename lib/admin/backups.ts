@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 export type BackupLogRow = {
   id: string;
   backup_type: "snapshot" | "full" | "incremental";
+  operation?: "backup" | "restore";
   environment: "dev" | "prod";
   status: "pending" | "running" | "completed" | "failed";
   started_at: string;
@@ -17,7 +18,16 @@ export type BackupLogRow = {
 };
 
 const BACKUP_LOG_COLUMNS =
-  "id,backup_type,environment,status,started_at,completed_at,file_path,file_size_bytes,tables_dumped,triggered_by,error_message,github_run_url";
+  "id,backup_type,operation,environment,status,started_at,completed_at,file_path,file_size_bytes,tables_dumped,triggered_by,error_message,github_run_url";
+
+/** Legacy rows may lack operation or use error_message before the column existed. */
+export function getBackupLogOperation(
+  log: Pick<BackupLogRow, "operation" | "error_message">,
+): "backup" | "restore" {
+  if (log.operation === "restore") return "restore";
+  if (log.error_message?.startsWith("RESTORE from:")) return "restore";
+  return "backup";
+}
 
 export async function getBackupLogs(): Promise<{
   logs: BackupLogRow[];

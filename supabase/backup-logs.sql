@@ -7,10 +7,13 @@
 create table if not exists public.backup_logs (
   id            uuid        primary key default gen_random_uuid(),
 
-  -- 'snapshot' = full public-schema dump (scheduled or manual)
-  -- 'full' / 'incremental' = legacy labels kept for old rows
+  -- 'snapshot' = legacy label; new rows use backup_type snapshot + operation backup|restore
   backup_type   text        not null
                 check (backup_type in ('snapshot', 'full', 'incremental')),
+
+  -- backup = snapshot created; restore = database restored from a file
+  operation     text        not null default 'backup'
+                check (operation in ('backup', 'restore')),
 
   -- which Supabase project
   environment   text        not null

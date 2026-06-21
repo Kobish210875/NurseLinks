@@ -16,7 +16,7 @@ export function BackupTriggerButton({ environment }: { environment: BackupEnv })
     if (
       !window.confirm(
         t("admin.backupTriggerConfirm")
-          .replace("{type}", t("admin.backupTypeSnapshot"))
+          .replace("{type}", t("admin.backupTypeBackup"))
           .replace("{env}", environment.toUpperCase()),
       )
     ) {

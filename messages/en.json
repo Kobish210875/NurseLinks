@@ -559,6 +559,8 @@
     "backupEnvDev": "DEV environment",
     "backupEnvProd": "PROD environment",
     "backupTypeSnapshot": "Snapshot",
+    "backupTypeBackup": "Backup",
+    "backupTypeRestore": "Restore",
     "backupRunSnapshot": "Run Snapshot Backup",
     "backupTriggering": "Triggering…",
     "backupTriggered": "Triggered! Refresh in a minute.{ref}",

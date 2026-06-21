@@ -2,7 +2,7 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { requireAdmin } from "@/lib/auth/admin";
 import { getAllowedBackupEnvironments, getBackupEnvironmentForApp, type BackupEnvironment } from "@/lib/admin/backup-environment";
-import { getBackupLogs, type BackupLogRow } from "@/lib/admin/backups";
+import { getBackupLogs, getBackupLogOperation, type BackupLogRow } from "@/lib/admin/backups";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
 import {
@@ -68,6 +68,12 @@ export default async function AdminBackupsPage() {
 
   function envTitle(environment: BackupEnvironment) {
     return environment === "dev" ? t("admin.backupEnvDev") : t("admin.backupEnvProd");
+  }
+
+  function logTypeLabel(log: BackupLogRow) {
+    return getBackupLogOperation(log) === "restore"
+      ? t("admin.backupTypeRestore")
+      : t("admin.backupTypeBackup");
   }
 
   return (
@@ -142,10 +148,12 @@ export default async function AdminBackupsPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {logs.map((log) => (
+                  {logs.map((log) => {
+                    const isRestore = getBackupLogOperation(log) === "restore";
+                    return (
                     <tr key={log.id} className="align-middle">
                       <td className="px-4 py-2.5 font-medium whitespace-nowrap">
-                        {t("admin.backupTypeSnapshot")}
+                        {logTypeLabel(log)}
                       </td>
                       <td className="px-4 py-2.5">
                         <span
@@ -160,7 +168,7 @@ export default async function AdminBackupsPage() {
                       </td>
                       <td className="px-4 py-2.5">
                         <StatusBadge status={log.status} />
-                        {log.error_message ? (
+                        {log.status === "failed" && log.error_message ? (
                           <p
                             className="mt-1 max-w-[220px] truncate text-xs text-red-600"
                             title={log.error_message}
@@ -176,14 +184,22 @@ export default async function AdminBackupsPage() {
                         {formatDuration(log.started_at, log.completed_at)}
                       </td>
                       <td className="px-4 py-2.5 text-muted-foreground whitespace-nowrap">
-                        {formatBytes(log.file_size_bytes)}
-                        {log.tables_dumped != null ? (
-                          <span className="ml-1 text-xs">({log.tables_dumped} tables)</span>
-                        ) : null}
+                        {isRestore ? (
+                          <span className="text-xs" title={log.file_path ?? undefined}>
+                            {log.file_path ?? "—"}
+                          </span>
+                        ) : (
+                          <>
+                            {formatBytes(log.file_size_bytes)}
+                            {log.tables_dumped != null ? (
+                              <span className="ml-1 text-xs">({log.tables_dumped} tables)</span>
+                            ) : null}
+                          </>
+                        )}
                       </td>
                       <td className="px-4 py-2.5">
                         <div className="flex flex-nowrap items-start gap-1.5">
-                          {log.status === "completed" && log.file_path ? (
+                          {!isRestore && log.status === "completed" && log.file_path ? (
                             <>
                               <BackupDownloadButton filePath={log.file_path} />
                               <BackupRestoreButton
@@ -206,7 +222,8 @@ export default async function AdminBackupsPage() {
                         </div>
                       </td>
                     </tr>
-                  ))}
+                    );
+                  })}
                   {logs.length === 0 && !error ? (
                     <tr>
                       <td colSpan={7} className="px-4 py-8 text-center text-muted-foreground">

@@ -173,6 +173,7 @@ jobs:
 
           payload = {
               "backup_type": "snapshot",
+              "operation": "restore",
               "environment": environment,
               "status": "completed",
               "triggered_by": "manual",
@@ -181,30 +182,27 @@ jobs:
               ).strip(),
               "file_path": file_path,
               "github_run_url": run_url,
-              "error_message": f"RESTORE from: {file_path}",
           }
 
           headers = {
               "Authorization": f"Bearer {service_key}",
               "apikey": service_key,
               "Content-Type": "application/json",
+              "Prefer": "return=representation",
           }
 
           def request(method, url, body=None):
               data = json.dumps(body).encode("utf-8") if body is not None else None
               req = urllib.request.Request(url, data=data, method=method, headers=headers)
               with urllib.request.urlopen(req) as resp:
-                  return resp.status
+                  return resp.status, resp.read()
 
           try:
+              url = f"{supabase_url}/rest/v1/backup_logs"
+              status, body = request("POST", url, payload)
+              print(f"Inserted restore audit row (HTTP {status})")
               if log_id:
-                  url = f"{supabase_url}/rest/v1/backup_logs?id=eq.{log_id}"
-                  status = request("PATCH", url, {k: v for k, v in payload.items() if k != "backup_type"})
-                  print(f"Updated backup_log {log_id} (HTTP {status})")
-              else:
-                  url = f"{supabase_url}/rest/v1/backup_logs"
-                  status = request("POST", url, payload)
-                  print(f"Inserted restore audit row (HTTP {status})")
+                  print(f"Restored from backup_log {log_id}")
           except urllib.error.HTTPError as err:
               body = err.read().decode("utf-8", errors="replace")
               print(f"Audit log skipped (HTTP {err.code}): {body}")

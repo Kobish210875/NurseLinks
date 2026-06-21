@@ -123,6 +123,8 @@ create table if not exists public.backup_logs (
   id            uuid        primary key default gen_random_uuid(),
   backup_type   text        not null
                 check (backup_type in ('snapshot', 'full', 'incremental')),
+  operation     text        not null default 'backup'
+                check (operation in ('backup', 'restore')),
   environment   text        not null
                 check (environment in ('dev', 'prod')),
   status        text        not null default 'pending'
