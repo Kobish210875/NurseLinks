@@ -94,18 +94,28 @@ jobs:
           echo "Downloaded ${FILENAME} ($(stat --format='%s' ${FILENAME}) bytes)"
 
       # ── restore ──────────────────────────────────────────────────────────────
-      - name: Drop and recreate public schema
+      - name: Drop public schema
         run: |
           set -euo pipefail
           source /tmp/pg-connection.env
-          psql -v ON_ERROR_STOP=1 -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+          psql -v ON_ERROR_STOP=1 -c "DROP SCHEMA IF EXISTS public CASCADE;"
 
       - name: Restore from backup
         id: restore
         run: |
           set -euo pipefail
           source /tmp/pg-connection.env
-          gunzip -c "${FILENAME}" | psql -v ON_ERROR_STOP=1
+          # Do not CREATE SCHEMA public before this — pg_dump includes it.
+          # Strip pg_dump 17 meta-commands that can break non-interactive psql.
+          gunzip -c "${FILENAME}" \
+            | sed '/^\\restrict /d; /^\\unrestrict /d' \
+            | psql -v ON_ERROR_STOP=1 --single-transaction 2>&1 | tee restore.log
+          TABLE_COUNT=$(psql -tAc "select count(*) from information_schema.tables where table_schema = 'public';" | tr -d '[:space:]')
+          echo "Public tables after restore: ${TABLE_COUNT}"
+          if [ "${TABLE_COUNT}" -lt 1 ]; then
+            echo "Restore produced an empty public schema."
+            exit 1
+          fi
 
       - name: Repair auth profile trigger and missing profiles
         if: steps.restore.outcome == 'success'

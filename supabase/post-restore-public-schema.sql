@@ -57,3 +57,5 @@ grant select, insert, update, delete on all tables in schema public to authentic
 grant select on all tables in schema public to anon;
 
 grant usage on all sequences in schema public to authenticated, anon;
+
+grant select, insert, update, delete on public.backup_logs to service_role;
