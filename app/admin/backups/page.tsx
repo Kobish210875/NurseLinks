@@ -1,7 +1,7 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { requireAdmin } from "@/lib/auth/admin";
-import { getAllowedBackupEnvironments, type BackupEnvironment } from "@/lib/admin/backup-environment";
+import { getAllowedBackupEnvironments, getBackupEnvironmentForApp, type BackupEnvironment } from "@/lib/admin/backup-environment";
 import { getBackupLogs, type BackupLogRow } from "@/lib/admin/backups";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
@@ -52,11 +52,18 @@ export default async function AdminBackupsPage() {
   const t = createT(getMessages(locale));
   const { logs, error } = await getBackupLogs();
   const allowedBackupEnvironments = getAllowedBackupEnvironments();
+  const backupEnvironment = getBackupEnvironmentForApp();
 
   function triggerHint(environment: BackupEnvironment) {
     return environment === "dev"
       ? t("admin.backupTriggerHintDev")
       : t("admin.backupTriggerHintProd");
+  }
+
+  function historyHint() {
+    return backupEnvironment === "dev"
+      ? t("admin.backupHistoryHintDev")
+      : t("admin.backupHistoryHintProd");
   }
 
   function envTitle(environment: BackupEnvironment) {
@@ -107,7 +114,7 @@ export default async function AdminBackupsPage() {
               <div>
                 <h2 className="text-sm font-bold text-foreground">{t("admin.backupHistoryTitle")}</h2>
                 <p className="mt-0.5 text-xs text-muted-foreground">
-                  {t("admin.backupHistoryHint")}
+                  {historyHint()}
                 </p>
               </div>
               <form>
