@@ -6,7 +6,7 @@ import type { Database } from "@/lib/supabase/database.types";
 
 export type BackupLogRow = {
   id: string;
-  backup_type: "full" | "incremental";
+  backup_type: "snapshot" | "full" | "incremental";
   environment: "dev" | "prod";
   status: "pending" | "running" | "completed" | "failed";
   started_at: string;

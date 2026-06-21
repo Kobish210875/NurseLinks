@@ -7,10 +7,10 @@
 create table if not exists public.backup_logs (
   id            uuid        primary key default gen_random_uuid(),
 
-  -- 'full' = complete pg_dump every Saturday
-  -- 'incremental' = rows changed since last backup, Sun–Thu
+  -- 'snapshot' = full public-schema dump (scheduled or manual)
+  -- 'full' / 'incremental' = legacy labels kept for old rows
   backup_type   text        not null
-                check (backup_type in ('full', 'incremental')),
+                check (backup_type in ('snapshot', 'full', 'incremental')),
 
   -- which Supabase project
   environment   text        not null

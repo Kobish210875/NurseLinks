@@ -108,7 +108,7 @@ jobs:
             -H "apikey: ${SERVICE_KEY}" \
             -H "Content-Type: application/json" \
             -d "{
-              \"backup_type\": \"full\",
+              \"backup_type\": \"snapshot\",
               \"environment\": \"${{ github.event.inputs.environment }}\",
               \"status\": \"completed\",
               \"triggered_by\": \"manual\",

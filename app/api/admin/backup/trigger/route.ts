@@ -3,8 +3,7 @@ import { assertBackupEnvironmentAllowed } from "@/lib/admin/backup-environment";
 import { requireAdmin } from "@/lib/auth/admin";
 
 const GITHUB_REPO = "Kobish210875/NurseLinks";
-const FULL_WORKFLOW = "backup-full.yml";
-const INCREMENTAL_WORKFLOW = "backup-incremental.yml";
+const SNAPSHOT_WORKFLOW = "backup-snapshot.yml";
 
 export async function POST(req: Request) {
   try {
@@ -21,8 +20,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const body = (await req.json()) as { type?: string; environment?: string };
-  const backupType = body.type === "full" ? "full" : "incremental";
+  const body = (await req.json()) as { environment?: string };
 
   let environment: "dev" | "prod";
   try {
@@ -34,10 +32,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const workflow = backupType === "full" ? FULL_WORKFLOW : INCREMENTAL_WORKFLOW;
-
   const ghRes = await fetch(
-    `https://api.github.com/repos/${GITHUB_REPO}/actions/workflows/${workflow}/dispatches`,
+    `https://api.github.com/repos/${GITHUB_REPO}/actions/workflows/${SNAPSHOT_WORKFLOW}/dispatches`,
     {
       method: "POST",
       headers: {

@@ -4,29 +4,18 @@ import { useState } from "react";
 import { useT } from "@/components/i18n/LocaleProvider";
 
 type BackupEnv = "dev" | "prod";
-type BackupType = "full" | "incremental";
 
-export function BackupTriggerButton({
-  backupType,
-  environment,
-}: {
-  backupType: BackupType;
-  environment: BackupEnv;
-}) {
+export function BackupTriggerButton({ environment }: { environment: BackupEnv }) {
   const t = useT();
   const [state, setState] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
   async function handleClick() {
     if (state === "loading") return;
-    const label =
-      backupType === "full"
-        ? t("admin.backupTypeFull")
-        : t("admin.backupTypeIncremental");
     if (
       !window.confirm(
         t("admin.backupTriggerConfirm")
-          .replace("{type}", label)
+          .replace("{type}", t("admin.backupTypeSnapshot"))
           .replace("{env}", environment.toUpperCase()),
       )
     ) {
@@ -40,7 +29,7 @@ export function BackupTriggerButton({
       const res = await fetch("/api/admin/backup/trigger", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: backupType, environment }),
+        body: JSON.stringify({ environment }),
       });
       if (!res.ok) {
         const data = (await res.json().catch(() => ({}))) as { error?: string };
@@ -65,19 +54,13 @@ export function BackupTriggerButton({
         type="button"
         onClick={handleClick}
         disabled={isLoading}
-        className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition disabled:opacity-60 ${
-          backupType === "full"
-            ? "border-amber-300 text-amber-700 hover:bg-amber-50"
-            : "border-primary/30 text-primary hover:bg-primary/5"
-        }`}
+        className="rounded-lg border border-primary/30 px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary/5 disabled:opacity-60"
       >
         {isLoading
           ? t("admin.backupTriggering")
           : isOk
             ? t("admin.backupTriggered")
-            : backupType === "full"
-              ? t("admin.backupRunFull")
-              : t("admin.backupRunIncremental")}
+            : t("admin.backupRunSnapshot")}
       </button>
       {state === "error" && errorMsg ? (
         <p className="text-xs text-red-600">{errorMsg}</p>

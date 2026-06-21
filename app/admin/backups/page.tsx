@@ -63,6 +63,11 @@ export default async function AdminBackupsPage() {
     return environment === "dev" ? t("admin.backupEnvDev") : t("admin.backupEnvProd");
   }
 
+  function formatBackupType(type: BackupLogRow["backup_type"]) {
+    if (type === "snapshot") return t("admin.backupTypeSnapshot");
+    return t("admin.backupTypeLegacy");
+  }
+
   return (
     <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
       <Navbar authenticated />
@@ -100,11 +105,7 @@ export default async function AdminBackupsPage() {
                     {envTitle(environment)}
                   </h2>
                   <div className="flex flex-wrap gap-2">
-                    <BackupTriggerButton backupType="full" environment={environment} />
-                    <BackupTriggerButton
-                      backupType="incremental"
-                      environment={environment}
-                    />
+                    <BackupTriggerButton environment={environment} />
                   </div>
                   <p className="text-xs text-muted-foreground">{triggerHint(environment)}</p>
                 </div>
@@ -148,7 +149,7 @@ export default async function AdminBackupsPage() {
                 <tbody className="divide-y divide-border">
                   {logs.map((log) => (
                     <tr key={log.id} className="align-middle">
-                      <td className="px-4 py-2.5 font-medium capitalize">{log.backup_type}</td>
+                      <td className="px-4 py-2.5 font-medium">{formatBackupType(log.backup_type)}</td>
                       <td className="px-4 py-2.5">
                         <span
                           className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
