@@ -119,7 +119,7 @@ jobs:
           source /tmp/pg-connection.env
           set +e
           gunzip -c "${FILENAME}" \
-            | sed '/^\\restrict /d; /^\\unrestrict /d; /^CREATE SCHEMA public;/d' \
+            | sed '/^\\restrict /d; /^\\unrestrict /d' \
             | psql -v ON_ERROR_STOP=1 2>&1 | tee restore.log
           RESTORE_EXIT=${PIPESTATUS[1]}
           set -e
