@@ -118,6 +118,75 @@ insert into public.admin_users (user_id)
 select id from auth.users where email = 'YOUR_EMAIL_HERE'
 on conflict (user_id) do nothing;
 
+-- Backup admin UI (requires is_admin above)
+create table if not exists public.backup_logs (
+  id            uuid        primary key default gen_random_uuid(),
+  backup_type   text        not null
+                check (backup_type in ('snapshot', 'full', 'incremental')),
+  environment   text        not null
+                check (environment in ('dev', 'prod')),
+  status        text        not null default 'pending'
+                check (status in ('pending', 'running', 'completed', 'failed')),
+  started_at    timestamptz not null default now(),
+  completed_at  timestamptz,
+  file_path     text,
+  file_size_bytes bigint,
+  tables_dumped int,
+  row_counts    jsonb,
+  triggered_by  text        not null default 'schedule'
+                check (triggered_by in ('schedule', 'manual')),
+  triggered_by_user_id uuid references public.profiles (id) on delete set null,
+  error_message text,
+  github_run_url text,
+  created_at    timestamptz not null default now()
+);
+
+create index if not exists backup_logs_env_started_idx
+  on public.backup_logs (environment, started_at desc);
+
+create index if not exists backup_logs_status_idx
+  on public.backup_logs (status, started_at desc);
+
+alter table public.backup_logs enable row level security;
+
+drop policy if exists "Admins can read backup logs" on public.backup_logs;
+create policy "Admins can read backup logs"
+  on public.backup_logs for select
+  to authenticated
+  using (public.is_admin(auth.uid()));
+
+drop policy if exists "Admins can insert backup logs" on public.backup_logs;
+create policy "Admins can insert backup logs"
+  on public.backup_logs for insert
+  to authenticated
+  with check (public.is_admin(auth.uid()));
+
+grant select, insert, update, delete on public.backup_logs to service_role;
+grant select, insert on public.backup_logs to authenticated;
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values (
+  'backups',
+  'backups',
+  false,
+  524288000,
+  array['application/gzip', 'application/x-gzip', 'application/octet-stream', 'text/plain']
+)
+on conflict (id) do update
+set
+  public = excluded.public,
+  file_size_limit = excluded.file_size_limit,
+  allowed_mime_types = excluded.allowed_mime_types;
+
+drop policy if exists "Admins can read backup files" on storage.objects;
+create policy "Admins can read backup files"
+  on storage.objects for select
+  to authenticated
+  using (
+    bucket_id = 'backups'
+    and public.is_admin(auth.uid())
+  );
+
 grant usage on schema public to postgres, anon, authenticated, service_role;
 grant all on all tables in schema public to postgres, service_role;
 grant all on all functions in schema public to postgres, service_role;
