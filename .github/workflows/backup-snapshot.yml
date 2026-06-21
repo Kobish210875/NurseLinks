@@ -3,6 +3,10 @@ name: Database Snapshot Backup
 # Scheduled: PROD every 4 hours. DEV is manual only (admin UI / GitHub UI).
 # Files older than 72 hours (3 days) are deleted after each successful backup.
 on:
+  # GitHub may register phantom failed "push" runs for workflow_dispatch-only workflows.
+  # Declaring push explicitly lets the noop job below run and mark those runs green.
+  push:
+    branches: [main, develop]
   schedule:
     - cron: "0 */4 * * *"
   workflow_dispatch:
@@ -19,11 +23,11 @@ on:
 jobs:
   # GitHub sometimes registers phantom "push" runs for workflow_dispatch-only
   # workflows (0 real jobs, immediate failure). This no-op keeps those harmless.
-  phantom-push-guard:
+  ci-push-noop:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Ignored phantom push trigger for manual/scheduled backup workflow."
+      - run: echo "Push event — snapshot backup runs on schedule (PROD) or manual dispatch only."
 
   backup:
     if: github.event_name != 'push' && ((github.event_name == 'schedule' && matrix.environment == 'prod') || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == matrix.environment))

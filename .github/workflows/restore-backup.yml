@@ -7,6 +7,8 @@ name: Restore Database from Backup
 #              All existing data in public.* will be overwritten.
 #              Run this only after confirming with the team.
 on:
+  push:
+    branches: [main, develop]
   workflow_dispatch:
     inputs:
       environment:
@@ -30,11 +32,11 @@ on:
         type: string
 
 jobs:
-  phantom-push-guard:
+  ci-push-noop:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - run: echo "Ignored phantom push trigger for manual restore workflow."
+      - run: echo "Push event — restore runs via manual dispatch or admin UI only."
 
   restore:
     if: github.event_name != 'push'
