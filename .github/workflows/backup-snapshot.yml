@@ -26,26 +26,31 @@ jobs:
       - run: echo "Push event — snapshot backup runs on schedule (PROD) or manual dispatch only."
 
   backup:
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == matrix.environment
+    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        environment: [dev, prod]
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Resolve target environment
+        id: target
+        run: |
+          ENV="${{ github.event.inputs.environment }}"
+          if [ "$ENV" != "dev" ] && [ "$ENV" != "prod" ]; then
+            ENV="prod"
+          fi
+          echo "environment=${ENV}" >> "$GITHUB_OUTPUT"
+
       - name: Log target environment
         run: |
-          echo "Backup target environment: ${{ matrix.environment }}"
+          echo "Backup target environment: ${{ steps.target.outputs.environment }}"
           echo "Triggered by: manual"
 
       - name: Export environment-specific secrets
         run: |
-          if [ "${{ matrix.environment }}" = "prod" ]; then
+          if [ "${{ steps.target.outputs.environment }}" = "prod" ]; then
             echo "DB_URL=${{ secrets.SUPABASE_PROD_DB_URL }}"           >> "$GITHUB_ENV"
             echo "DB_PASSWORD=${{ secrets.SUPABASE_PROD_DB_PASSWORD }}" >> "$GITHUB_ENV"
             echo "DB_POOLER_HOST=${{ secrets.SUPABASE_PROD_DB_POOLER_HOST }}" >> "$GITHUB_ENV"
@@ -63,7 +68,6 @@ jobs:
         id: log
         run: |
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          TRIGGERED_BY="manual"
           LOG_ID=$(curl -fsSL -X POST \
             "${SUPABASE_URL}/rest/v1/backup_logs" \
             -H "Authorization: Bearer ${SERVICE_KEY}" \
@@ -72,9 +76,9 @@ jobs:
             -H "Prefer: return=representation" \
             -d "{
               \"backup_type\": \"snapshot\",
-              \"environment\": \"${{ matrix.environment }}\",
+              \"environment\": \"${{ steps.target.outputs.environment }}\",
               \"status\": \"running\",
-              \"triggered_by\": \"${TRIGGERED_BY}\",
+              \"triggered_by\": \"manual\",
               \"github_run_url\": \"${RUN_URL}\"
             }" \
             | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['id'])")
@@ -102,9 +106,9 @@ jobs:
           fi
           echo "Using $("$PG_DUMP" --version)"
           TIMESTAMP=$(date -u +%Y%m%dT%H%M%SZ)
-          FILENAME="${{ matrix.environment }}-snapshot-${TIMESTAMP}.sql.gz"
+          FILENAME="${{ steps.target.outputs.environment }}-snapshot-${TIMESTAMP}.sql.gz"
           echo "FILENAME=${FILENAME}" >> "$GITHUB_ENV"
-          echo "FILE_PATH=${{ matrix.environment }}/${FILENAME}" >> "$GITHUB_ENV"
+          echo "FILE_PATH=${{ steps.target.outputs.environment }}/${FILENAME}" >> "$GITHUB_ENV"
 
           if ! "$PG_DUMP" \
             --schema=public \
