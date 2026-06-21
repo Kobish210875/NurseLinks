@@ -561,6 +561,7 @@
     "backupTypeSnapshot": "Snapshot",
     "backupTypeBackup": "גיבוי",
     "backupTypeRestore": "שחזור",
+    "backupRestoreFrom": "מקור: {file}",
     "backupRunSnapshot": "הפעל גיבוי Snapshot",
     "backupTriggering": "מפעיל…",
     "backupTriggered": "הופעל! רעננו את הדף בעוד דקה.{ref}",

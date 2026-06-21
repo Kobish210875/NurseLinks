@@ -109,7 +109,6 @@ jobs:
 
           if ! "$PG_DUMP" \
             --schema=public \
-            --exclude-table-data=public.backup_logs \
             --no-owner \
             --no-acl \
             --format=plain \

@@ -176,6 +176,17 @@ export default async function AdminBackupsPage() {
                             {log.error_message}
                           </p>
                         ) : null}
+                        {isRestore && log.file_path ? (
+                          <p
+                            className="mt-1 max-w-[220px] truncate text-xs text-muted-foreground"
+                            title={log.file_path}
+                          >
+                            {t("admin.backupRestoreFrom").replace(
+                              "{file}",
+                              log.file_path.split("/").pop() ?? log.file_path,
+                            )}
+                          </p>
+                        ) : null}
                       </td>
                       <td className="px-4 py-2.5 text-muted-foreground whitespace-nowrap">
                         {formatDate(log.started_at, locale)}
@@ -184,18 +195,10 @@ export default async function AdminBackupsPage() {
                         {formatDuration(log.started_at, log.completed_at)}
                       </td>
                       <td className="px-4 py-2.5 text-muted-foreground whitespace-nowrap">
-                        {isRestore ? (
-                          <span className="text-xs" title={log.file_path ?? undefined}>
-                            {log.file_path ?? "—"}
-                          </span>
-                        ) : (
-                          <>
-                            {formatBytes(log.file_size_bytes)}
-                            {log.tables_dumped != null ? (
-                              <span className="ml-1 text-xs">({log.tables_dumped} tables)</span>
-                            ) : null}
-                          </>
-                        )}
+                        {formatBytes(log.file_size_bytes)}
+                        {log.tables_dumped != null ? (
+                          <span className="ml-1 text-xs">({log.tables_dumped} tables)</span>
+                        ) : null}
                       </td>
                       <td className="px-4 py-2.5">
                         <div className="flex flex-nowrap items-start gap-1.5">

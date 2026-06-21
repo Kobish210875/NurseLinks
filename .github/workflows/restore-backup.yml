@@ -63,6 +63,7 @@ jobs:
             echo "❌ backup_file_path is required (e.g. dev/dev-snapshot-....sql.gz)."
             exit 1
           fi
+          echo "RESTORE_STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
 
       # ── pick the right secrets ───────────────────────────────────────────────
       - name: Export environment-specific secrets
@@ -114,6 +115,8 @@ jobs:
             echo "Backup file looks empty or invalid."
             exit 1
           fi
+          echo "RESTORE_FILE_SIZE=${FILE_SIZE}" >> "$GITHUB_ENV"
+          echo "RESTORE_TABLE_COUNT=${TABLE_COUNT}" >> "$GITHUB_ENV"
 
       # ── restore ──────────────────────────────────────────────────────────────
       - name: Drop public schema
@@ -170,6 +173,9 @@ jobs:
           file_path = os.environ["RESTORE_FILE_PATH"]
           run_url = os.environ["GITHUB_RUN_URL"]
           log_id = os.environ.get("RESTORE_LOG_ID", "").strip()
+          started_at = os.environ["RESTORE_STARTED_AT"]
+          file_size = int(os.environ.get("RESTORE_FILE_SIZE", "0"))
+          table_count = int(os.environ.get("RESTORE_TABLE_COUNT", "0"))
 
           payload = {
               "backup_type": "snapshot",
@@ -177,10 +183,13 @@ jobs:
               "environment": environment,
               "status": "completed",
               "triggered_by": "manual",
+              "started_at": started_at,
               "completed_at": subprocess.check_output(
                   ["date", "-u", "+%Y-%m-%dT%H:%M:%SZ"], text=True
               ).strip(),
               "file_path": file_path,
+              "file_size_bytes": file_size,
+              "tables_dumped": table_count,
               "github_run_url": run_url,
           }
 
@@ -213,6 +222,9 @@ jobs:
           RESTORE_ENV: ${{ github.event.inputs.environment }}
           RESTORE_FILE_PATH: ${{ github.event.inputs.backup_file_path }}
           RESTORE_LOG_ID: ${{ github.event.inputs.backup_log_id }}
+          RESTORE_STARTED_AT: ${{ env.RESTORE_STARTED_AT }}
+          RESTORE_FILE_SIZE: ${{ env.RESTORE_FILE_SIZE }}
+          RESTORE_TABLE_COUNT: ${{ env.RESTORE_TABLE_COUNT }}
           GITHUB_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Restore succeeded

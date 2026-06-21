@@ -561,6 +561,7 @@
     "backupTypeSnapshot": "Snapshot",
     "backupTypeBackup": "Backup",
     "backupTypeRestore": "Restore",
+    "backupRestoreFrom": "From: {file}",
     "backupRunSnapshot": "Run Snapshot Backup",
     "backupTriggering": "Triggering…",
     "backupTriggered": "Triggered! Refresh in a minute.{ref}",

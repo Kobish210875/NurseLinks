@@ -19,7 +19,7 @@ create table if not exists public.backup_logs (
   environment   text        not null
                 check (environment in ('dev', 'prod')),
 
-  -- workflow lifecycle
+  -- workflow lifecycle (rows are included in snapshots so history survives restore)
   status        text        not null default 'pending'
                 check (status in ('pending', 'running', 'completed', 'failed')),
 
