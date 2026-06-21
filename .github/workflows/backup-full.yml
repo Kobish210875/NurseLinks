@@ -69,6 +69,7 @@ jobs:
       - name: Test database connection
         run: |
           set -euo pipefail
+          source /tmp/pg-connection.env
           psql -v ON_ERROR_STOP=1 -c "select current_database(), count(*) from information_schema.tables where table_schema = 'public';"
 
       # ── create a "running" log entry and capture its id ─────────────────────
@@ -96,6 +97,7 @@ jobs:
       - name: Dump database
         run: |
           set -euo pipefail
+          source /tmp/pg-connection.env
           # Uses the direct connection (port 5432), not the pooler.
           # SUPABASE_PROD_DB_URL format: postgresql://postgres:PASSWORD@db.REF.supabase.co:5432/postgres
           TIMESTAMP=$(date -u +%Y%m%dT%H%M%SZ)

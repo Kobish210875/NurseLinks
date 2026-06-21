@@ -85,10 +85,12 @@ jobs:
       # ── restore ──────────────────────────────────────────────────────────────
       - name: Drop and recreate public schema
         run: |
+          source /tmp/pg-connection.env
           psql -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 
       - name: Restore from backup
         run: |
+          source /tmp/pg-connection.env
           gunzip -c "${FILENAME}" | psql
 
       # ── log the restore in backup_logs ───────────────────────────────────────

@@ -69,6 +69,7 @@ jobs:
       - name: Test database connection
         run: |
           set -euo pipefail
+          source /tmp/pg-connection.env
           psql -v ON_ERROR_STOP=1 -c "select current_database(), count(*) from information_schema.tables where table_schema = 'public';"
 
       # ── create a "running" log entry ─────────────────────────────────────────
@@ -96,6 +97,7 @@ jobs:
       - name: Dump public schema (data)
         run: |
           set -euo pipefail
+          source /tmp/pg-connection.env
           TIMESTAMP=$(date -u +%Y%m%dT%H%M%SZ)
           FILENAME="${{ steps.env.outputs.name }}-incremental-${TIMESTAMP}.sql.gz"
           echo "FILENAME=${FILENAME}" >> "$GITHUB_ENV"
@@ -127,6 +129,7 @@ jobs:
       - name: Collect row counts
         id: counts
         run: |
+          source /tmp/pg-connection.env
           ROW_COUNTS=$(psql -t -c "
             select json_object_agg(table_name, cnt)
             from (
