@@ -227,6 +227,18 @@ jobs:
           RESTORE_TABLE_COUNT: ${{ env.RESTORE_TABLE_COUNT }}
           GITHUB_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
+      - name: Sync backup_logs metadata (post-restore)
+        if: steps.restore.outcome == 'success'
+        continue-on-error: true
+        run: python3 .github/scripts/sync-backup-logs-metadata.py
+        env:
+          SYNC_ENV: ${{ github.event.inputs.environment }}
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SERVICE_KEY: ${{ env.SERVICE_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          LOCAL_BACKUP_FILE: ${{ env.FILENAME }}
+
       - name: Restore succeeded
         if: steps.restore.outcome == 'success'
         run: |

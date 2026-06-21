@@ -24,19 +24,14 @@ jobs:
           echo "SUPABASE_URL=${{ secrets.SUPABASE_PROD_URL }}"        >> "$GITHUB_ENV"
           echo "SERVICE_KEY=${{ secrets.SUPABASE_PROD_SERVICE_ROLE_KEY }}" >> "$GITHUB_ENV"
 
-      - name: Insert backup_log (running)
-        id: log
-        run: |
-          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          LOG_ID=$(bash .github/scripts/insert-backup-log.sh "{
-            \"backup_type\": \"snapshot\",
-            \"operation\": \"backup\",
-            \"environment\": \"prod\",
-            \"status\": \"running\",
-            \"triggered_by\": \"schedule\",
-            \"github_run_url\": \"${RUN_URL}\"
-          }")
-          echo "id=${LOG_ID}" >> "$GITHUB_OUTPUT"
+      - name: Sync backup_logs metadata (pre-dump)
+        run: python3 .github/scripts/sync-backup-logs-metadata.py
+        env:
+          SYNC_ENV: prod
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SERVICE_KEY: ${{ env.SERVICE_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
 
       - name: Configure PostgreSQL connection (IPv4)
         run: bash .github/scripts/configure-pg-ipv4.sh
@@ -81,6 +76,23 @@ jobs:
           fi
           echo "TABLE_COUNT=${TABLE_COUNT}" >> "$GITHUB_ENV"
           echo "FILE_SIZE=${FILE_SIZE}" >> "$GITHUB_ENV"
+
+      - name: Insert backup_log (running)
+        id: log
+        run: |
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          LOG_ID=$(bash .github/scripts/insert-backup-log.sh "{
+            \"backup_type\": \"snapshot\",
+            \"operation\": \"backup\",
+            \"environment\": \"prod\",
+            \"status\": \"running\",
+            \"triggered_by\": \"schedule\",
+            \"file_path\": \"${FILE_PATH}\",
+            \"file_size_bytes\": ${FILE_SIZE},
+            \"tables_dumped\": ${TABLE_COUNT},
+            \"github_run_url\": \"${RUN_URL}\"
+          }")
+          echo "id=${LOG_ID}" >> "$GITHUB_OUTPUT"
 
       - name: Collect row counts
         id: counts
@@ -140,6 +152,17 @@ jobs:
           TABLE_COUNT: ${{ env.TABLE_COUNT }}
           LOG_ID: ${{ steps.log.outputs.id }}
           ROW_COUNTS_JSON: ${{ steps.counts.outputs.json }}
+
+      - name: Sync backup_logs metadata (post-backup)
+        if: success()
+        run: python3 .github/scripts/sync-backup-logs-metadata.py
+        env:
+          SYNC_ENV: prod
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SERVICE_KEY: ${{ env.SERVICE_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          LOCAL_BACKUP_FILE: ${{ env.FILENAME }}
 
       - name: Delete backups older than 72 hours
         if: success()
