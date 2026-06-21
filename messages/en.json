@@ -568,7 +568,7 @@
     "backupTriggerHintDev": "Creates a full public-schema snapshot of DEV. Runs in GitHub Actions — refresh after a minute.",
     "backupTriggerHintProd": "Creates a full public-schema snapshot of PRODUCTION. Scheduled daily at 02:00 UTC — refresh after a minute.",
     "backupHistoryTitle": "Backup history",
-    "backupHistoryHint": "Last 100 backups across both environments.",
+    "backupHistoryHint": "Last 100 snapshots for this environment.",
     "backupRefresh": "Refresh",
     "backupColType": "Type",
     "backupColEnv": "Env",

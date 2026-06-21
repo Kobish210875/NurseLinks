@@ -2,27 +2,24 @@ import { getAppEnvironment, isProductionApp } from "@/lib/env/app-environment";
 
 export type BackupEnvironment = "dev" | "prod";
 
-const BACKUP_ENVIRONMENTS: BackupEnvironment[] = ["dev", "prod"];
-
-/** Which environments manual backups may target from this deployment. */
+/** Which environment manual backups may target from this deployment. */
 export function getAllowedBackupEnvironments(): BackupEnvironment[] {
-  return isProductionApp() ? BACKUP_ENVIRONMENTS : ["dev"];
+  return isProductionApp() ? ["prod"] : ["dev"];
 }
 
-/** @deprecated Prefer getAllowedBackupEnvironments — kept for single-env callers. */
 export function getBackupEnvironmentForApp(): BackupEnvironment {
   return isProductionApp() ? "prod" : "dev";
 }
 
 export function assertBackupEnvironmentAllowed(requested: string): BackupEnvironment {
-  const allowed = getAllowedBackupEnvironments();
+  const allowed = getBackupEnvironmentForApp();
   const normalized: BackupEnvironment = requested === "prod" ? "prod" : "dev";
 
-  if (!allowed.includes(normalized)) {
+  if (normalized !== allowed) {
     const appEnv = getAppEnvironment();
     throw new Error(
       appEnv === "production"
-        ? "Invalid backup environment."
+        ? "Production site can only trigger prod backups."
         : "Dev and Preview sites can only trigger dev backups.",
     );
   }

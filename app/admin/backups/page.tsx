@@ -84,18 +84,11 @@ export default async function AdminBackupsPage() {
             </p>
           ) : null}
 
-          {/* Trigger cards — production admin can target both DEV and PROD */}
+          {/* Trigger card — only the environment matching this deployment */}
           <section className="feed-card shrink-0 p-4">
-            <div
-              className={`grid gap-3 ${
-                allowedBackupEnvironments.length > 1 ? "md:grid-cols-2" : ""
-              }`}
-            >
+            <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
               {allowedBackupEnvironments.map((environment) => (
-                <div
-                  key={environment}
-                  className="flex flex-col gap-3 rounded-lg border border-border p-4"
-                >
+                <div key={environment} className="flex flex-col gap-3">
                   <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">
                     {envTitle(environment)}
                   </h2>

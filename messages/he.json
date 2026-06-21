@@ -568,7 +568,7 @@
     "backupTriggerHintDev": "יוצר snapshot מלא של סכמת public ב-DEV. רץ ב-GitHub Actions — רעננו בעוד דקה.",
     "backupTriggerHintProd": "יוצר snapshot מלא של PRODUCTION. מתוזמן יומית ב-02:00 UTC — רעננו בעוד דקה.",
     "backupHistoryTitle": "היסטוריית גיבויים",
-    "backupHistoryHint": "100 הגיבויים האחרונים משתי הסביבות.",
+    "backupHistoryHint": "100 נקודות השחזור האחרונות לסביבה זו.",
     "backupRefresh": "רענון",
     "backupColType": "סוג",
     "backupColEnv": "סביבה",
