@@ -30,7 +30,14 @@ on:
         type: string
 
 jobs:
+  phantom-push-guard:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Ignored phantom push trigger for manual restore workflow."
+
   restore:
+    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 

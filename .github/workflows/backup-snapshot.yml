@@ -17,8 +17,16 @@ on:
           - prod
 
 jobs:
+  # GitHub sometimes registers phantom "push" runs for workflow_dispatch-only
+  # workflows (0 real jobs, immediate failure). This no-op keeps those harmless.
+  phantom-push-guard:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Ignored phantom push trigger for manual/scheduled backup workflow."
+
   backup:
-    if: (github.event_name == 'schedule' && matrix.environment == 'prod') || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == matrix.environment)
+    if: github.event_name != 'push' && ((github.event_name == 'schedule' && matrix.environment == 'prod') || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == matrix.environment))
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
