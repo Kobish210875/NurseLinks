@@ -181,6 +181,34 @@ def fetch_github_run_times(run_url: str) -> tuple[str | None, str | None]:
     return started, completed
 
 
+def needs_github_time_backfill(row: dict) -> bool:
+    run_url = row.get("github_run_url") or ""
+    if not run_url:
+        return False
+    started = row.get("started_at")
+    completed = row.get("completed_at")
+    if not completed:
+        return True
+    if not started:
+        return True
+    started_dt = datetime.fromisoformat(started.replace("Z", "+00:00"))
+    completed_dt = datetime.fromisoformat(completed.replace("Z", "+00:00"))
+    if started_dt >= completed_dt:
+        return True
+    return (completed_dt - started_dt).total_seconds() < 10
+
+
+def apply_github_run_times(row: dict, updates: dict) -> None:
+    run_url = row.get("github_run_url") or ""
+    if not needs_github_time_backfill(row):
+        return
+    gh_started, gh_completed = fetch_github_run_times(run_url)
+    if gh_started:
+        updates["started_at"] = gh_started
+    if gh_completed:
+        updates["completed_at"] = gh_completed
+
+
 def patch_log(log_id: str, payload: dict):
     request("PATCH", f"{SUPABASE_URL}/rest/v1/backup_logs?id=eq.{log_id}", payload)
 
@@ -262,27 +290,14 @@ def main():
                     tables = count_tables(path)
                     if tables is not None:
                         updates["tables_dumped"] = tables
-            run_url = row.get("github_run_url") or ""
-            started = row.get("started_at")
-            completed = row.get("completed_at")
-            needs_times = (
-                run_url
-                and completed
-                and (
-                    not started
-                    or started == completed
-                    or (
-                        datetime.fromisoformat(started.replace("Z", "+00:00"))
-                        >= datetime.fromisoformat(completed.replace("Z", "+00:00"))
-                    )
-                )
-            )
-            if needs_times:
-                gh_started, gh_completed = fetch_github_run_times(run_url)
-                if gh_started:
-                    updates["started_at"] = gh_started
-                if gh_completed:
-                    updates["completed_at"] = gh_completed
+            apply_github_run_times(row, updates)
+            if updates:
+                patch_log(row_id, updates)
+                fixed += 1
+            continue
+
+        if row.get("status") == "completed" and not is_restore_row(row):
+            apply_github_run_times(row, updates)
             if updates:
                 patch_log(row_id, updates)
                 fixed += 1

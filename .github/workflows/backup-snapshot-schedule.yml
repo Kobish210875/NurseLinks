@@ -87,6 +87,7 @@ jobs:
             \"environment\": \"prod\",
             \"status\": \"running\",
             \"triggered_by\": \"schedule\",
+            \"started_at\": \"${{ github.run_started_at }}\",
             \"file_path\": \"${FILE_PATH}\",
             \"file_size_bytes\": ${FILE_SIZE},
             \"tables_dumped\": ${TABLE_COUNT},
@@ -129,6 +130,7 @@ jobs:
           import json, os, subprocess, urllib.request
           payload = {
               "status": "completed",
+              "started_at": os.environ["BACKUP_STARTED_AT"],
               "completed_at": subprocess.check_output(["date", "-u", "+%Y-%m-%dT%H:%M:%SZ"], text=True).strip(),
               "file_path": os.environ["FILE_PATH"],
               "file_size_bytes": int(os.environ["FILE_SIZE"]),
@@ -152,6 +154,7 @@ jobs:
           TABLE_COUNT: ${{ env.TABLE_COUNT }}
           LOG_ID: ${{ steps.log.outputs.id }}
           ROW_COUNTS_JSON: ${{ steps.counts.outputs.json }}
+          BACKUP_STARTED_AT: ${{ github.run_started_at }}
 
       - name: Sync backup_logs metadata (post-backup)
         if: success()
