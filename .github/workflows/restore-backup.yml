@@ -89,42 +89,89 @@ jobs:
       # ── restore ──────────────────────────────────────────────────────────────
       - name: Drop and recreate public schema
         run: |
+          set -euo pipefail
           source /tmp/pg-connection.env
-          psql -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
+          psql -v ON_ERROR_STOP=1 -c "DROP SCHEMA public CASCADE; CREATE SCHEMA public;"
 
       - name: Restore from backup
+        id: restore
         run: |
+          set -euo pipefail
           source /tmp/pg-connection.env
-          gunzip -c "${FILENAME}" | psql
+          gunzip -c "${FILENAME}" | psql -v ON_ERROR_STOP=1
 
-      # ── log the restore in backup_logs ───────────────────────────────────────
+      # Audit log only — must not fail the restore job
       - name: Log restore to backup_logs
-        if: success()
+        if: steps.restore.outcome == 'success'
+        continue-on-error: true
         run: |
-          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          curl -fsSL -X POST \
-            "${SUPABASE_URL}/rest/v1/backup_logs" \
-            -H "Authorization: Bearer ${SERVICE_KEY}" \
-            -H "apikey: ${SERVICE_KEY}" \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"backup_type\": \"snapshot\",
-              \"environment\": \"${{ github.event.inputs.environment }}\",
-              \"status\": \"completed\",
-              \"triggered_by\": \"manual\",
-              \"completed_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
-              \"file_path\": \"${{ github.event.inputs.backup_file_path }}\",
-              \"github_run_url\": \"${RUN_URL}\",
-              \"error_message\": \"RESTORE from: ${{ github.event.inputs.backup_file_path }}\"
-            }"
+          python3 - <<'PY'
+          import json
+          import os
+          import subprocess
+          import urllib.error
+          import urllib.request
+
+          supabase_url = os.environ["SUPABASE_URL"].rstrip("/")
+          service_key = os.environ["SERVICE_KEY"]
+          environment = os.environ["RESTORE_ENV"]
+          file_path = os.environ["RESTORE_FILE_PATH"]
+          run_url = os.environ["GITHUB_RUN_URL"]
+          log_id = os.environ.get("RESTORE_LOG_ID", "").strip()
+
+          payload = {
+              "backup_type": "snapshot",
+              "environment": environment,
+              "status": "completed",
+              "triggered_by": "manual",
+              "completed_at": subprocess.check_output(
+                  ["date", "-u", "+%Y-%m-%dT%H:%M:%SZ"], text=True
+              ).strip(),
+              "file_path": file_path,
+              "github_run_url": run_url,
+              "error_message": f"RESTORE from: {file_path}",
+          }
+
+          headers = {
+              "Authorization": f"Bearer {service_key}",
+              "apikey": service_key,
+              "Content-Type": "application/json",
+          }
+
+          def request(method, url, body=None):
+              data = json.dumps(body).encode("utf-8") if body is not None else None
+              req = urllib.request.Request(url, data=data, method=method, headers=headers)
+              with urllib.request.urlopen(req) as resp:
+                  return resp.status
+
+          try:
+              if log_id:
+                  url = f"{supabase_url}/rest/v1/backup_logs?id=eq.{log_id}"
+                  status = request("PATCH", url, {k: v for k, v in payload.items() if k != "backup_type"})
+                  print(f"Updated backup_log {log_id} (HTTP {status})")
+              else:
+                  url = f"{supabase_url}/rest/v1/backup_logs"
+                  status = request("POST", url, payload)
+                  print(f"Inserted restore audit row (HTTP {status})")
+          except urllib.error.HTTPError as err:
+              body = err.read().decode("utf-8", errors="replace")
+              print(f"Audit log skipped (HTTP {err.code}): {body}")
+          PY
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SERVICE_KEY: ${{ env.SERVICE_KEY }}
+          RESTORE_ENV: ${{ github.event.inputs.environment }}
+          RESTORE_FILE_PATH: ${{ github.event.inputs.backup_file_path }}
+          RESTORE_LOG_ID: ${{ github.event.inputs.backup_log_id }}
+          GITHUB_RUN_URL: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
 
       - name: Restore succeeded
-        if: success()
+        if: steps.restore.outcome == 'success'
         run: |
-          echo "✅ Restore completed. The public schema of '${{ github.event.inputs.environment }}' has been replaced with the contents of '${{ github.event.inputs.backup_file_path }}'."
+          echo "Restore completed. The public schema of '${{ github.event.inputs.environment }}' was replaced from '${{ github.event.inputs.backup_file_path }}'."
 
       - name: Restore failed
-        if: failure()
+        if: failure() && steps.restore.outcome != 'success'
         run: |
-          echo "❌ Restore FAILED. The database may be in a partial state."
-          echo "   Re-run this workflow with a known-good backup file to recover."
+          echo "Restore FAILED. The database may be in a partial state."
+          echo "Re-run this workflow with a known-good backup file to recover."

@@ -583,7 +583,8 @@
     "backupEmpty": "אין גיבויים עדיין. הפעל את הגיבוי הראשון שלך למעלה.",
     "backupRestore": "שחזור DB",
     "backupRestoring": "מפעיל שחזור…",
-    "backupRestoreTriggered": "שחזור הופעל! בדקו ב-GitHub Actions.",
+    "backupRestoreTriggered": "שחזור הופעל",
+    "backupRestoreTriggeredHint": "פתח GitHub Actions → Restore Database from Backup. רענן את הדף בעוד 2–3 דקות.",
     "backupRestoreFailed": "הפעלת השחזור נכשלה. בדקו GITHUB_PAT.",
     "backupRestoreConfirm": "⚠️ סכנה: שחזור סביבת {env} מהגיבוי:\n{file}\n\nפעולה זו תמחק ותחליף את כל הנתונים ב-public schema. האם אתם בטוחים לחלוטין?"
   },

@@ -182,7 +182,7 @@ export default async function AdminBackupsPage() {
                         ) : null}
                       </td>
                       <td className="px-4 py-2.5">
-                        <div className="flex flex-nowrap items-center gap-1.5">
+                        <div className="flex flex-nowrap items-start gap-1.5">
                           {log.status === "completed" && log.file_path ? (
                             <>
                               <BackupDownloadButton filePath={log.file_path} />

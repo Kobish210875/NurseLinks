@@ -583,7 +583,8 @@
     "backupEmpty": "No backups yet. Trigger your first backup above.",
     "backupRestore": "Restore DB",
     "backupRestoring": "Triggering restore…",
-    "backupRestoreTriggered": "Restore triggered! Check GitHub Actions.",
+    "backupRestoreTriggered": "Restore started",
+    "backupRestoreTriggeredHint": "Open GitHub Actions → Restore Database from Backup. Refresh this page in 2–3 minutes.",
     "backupRestoreFailed": "Failed to trigger restore. Check GITHUB_PAT.",
     "backupRestoreConfirm": "⚠️ DANGER: Restore {env} database from:\n{file}\n\nThis will DROP and OVERWRITE all public schema data. Are you absolutely sure?"
   },
