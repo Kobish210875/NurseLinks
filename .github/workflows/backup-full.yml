@@ -60,6 +60,11 @@ jobs:
       - name: Install PostgreSQL client
         run: sudo apt-get install -y --no-install-recommends postgresql-client
 
+      - name: Test database connection
+        run: |
+          set -euo pipefail
+          psql "$DB_URL" -v ON_ERROR_STOP=1 -c "select current_database(), count(*) from information_schema.tables where table_schema = 'public';"
+
       # ── create a "running" log entry and capture its id ─────────────────────
       - name: Insert backup_log (running)
         id: log
@@ -84,6 +89,7 @@ jobs:
       # ── pg_dump ──────────────────────────────────────────────────────────────
       - name: Dump database
         run: |
+          set -euo pipefail
           # Uses the direct connection (port 5432), not the pooler.
           # SUPABASE_PROD_DB_URL format: postgresql://postgres:PASSWORD@db.REF.supabase.co:5432/postgres
           TIMESTAMP=$(date -u +%Y%m%dT%H%M%SZ)
@@ -96,13 +102,22 @@ jobs:
             --no-owner \
             --no-acl \
             --format=plain \
-            --verbose \
             2>pg_dump.log \
           | gzip > "${FILENAME}"
 
-          TABLE_COUNT=$(grep -c "^CREATE TABLE" pg_dump.log || true)
+          FILE_SIZE=$(stat --format='%s' "${FILENAME}")
+          TABLE_COUNT=$(gzip -dc "${FILENAME}" | grep -c '^CREATE TABLE ' || true)
+
+          if [ "$FILE_SIZE" -lt 500 ] || [ "$TABLE_COUNT" -eq 0 ]; then
+            echo "Backup looks empty (size=${FILE_SIZE} bytes, tables=${TABLE_COUNT})."
+            echo "--- pg_dump.log ---"
+            cat pg_dump.log || true
+            exit 1
+          fi
+
+          echo "Dump OK: ${FILE_SIZE} bytes, ${TABLE_COUNT} tables"
           echo "TABLE_COUNT=${TABLE_COUNT}" >> "$GITHUB_ENV"
-          echo "FILE_SIZE=$(stat --format='%s' ${FILENAME})" >> "$GITHUB_ENV"
+          echo "FILE_SIZE=${FILE_SIZE}" >> "$GITHUB_ENV"
 
       # ── upload to Supabase Storage ───────────────────────────────────────────
       - name: Upload to Supabase Storage
