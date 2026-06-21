@@ -110,12 +110,7 @@ jobs:
         run: |
           set -euo pipefail
           source /tmp/pg-connection.env
-          psql -v ON_ERROR_STOP=1 -c "
-            DROP SCHEMA IF EXISTS public CASCADE;
-            CREATE SCHEMA public;
-            GRANT ALL ON SCHEMA public TO postgres;
-            GRANT ALL ON SCHEMA public TO public;
-          "
+          psql -v ON_ERROR_STOP=1 -c "DROP SCHEMA IF EXISTS public CASCADE;"
 
       - name: Restore from backup
         id: restore
@@ -124,7 +119,7 @@ jobs:
           source /tmp/pg-connection.env
           set +e
           gunzip -c "${FILENAME}" \
-            | sed '/^\\restrict /d; /^\\unrestrict /d' \
+            | sed '/^\\restrict /d; /^\\unrestrict /d; /^CREATE SCHEMA public;/d' \
             | psql -v ON_ERROR_STOP=1 2>&1 | tee restore.log
           RESTORE_EXIT=${PIPESTATUS[1]}
           set -e
