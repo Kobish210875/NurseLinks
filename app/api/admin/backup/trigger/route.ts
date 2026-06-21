@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { assertBackupEnvironmentAllowed } from "@/lib/admin/backup-environment";
 import { requireAdmin } from "@/lib/auth/admin";
 
 const GITHUB_REPO = "Kobish210875/NurseLinks";
@@ -22,7 +23,17 @@ export async function POST(req: Request) {
 
   const body = (await req.json()) as { type?: string; environment?: string };
   const backupType = body.type === "full" ? "full" : "incremental";
-  const environment = body.environment === "prod" ? "prod" : "dev";
+
+  let environment: "dev" | "prod";
+  try {
+    environment = assertBackupEnvironmentAllowed(body.environment ?? "dev");
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "invalid environment" },
+      { status: 403 },
+    );
+  }
+
   const workflow = backupType === "full" ? FULL_WORKFLOW : INCREMENTAL_WORKFLOW;
 
   const ghRes = await fetch(

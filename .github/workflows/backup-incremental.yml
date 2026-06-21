@@ -30,9 +30,19 @@ jobs:
             echo "name=prod" >> "$GITHUB_OUTPUT"
             echo "triggered_by=schedule" >> "$GITHUB_OUTPUT"
           else
-            echo "name=${{ github.event.inputs.environment }}" >> "$GITHUB_OUTPUT"
+            INPUT="${{ github.event.inputs.environment }}"
+            if [ "$INPUT" != "dev" ] && [ "$INPUT" != "prod" ]; then
+              echo "Invalid or missing environment input: '$INPUT' (expected dev or prod)"
+              exit 1
+            fi
+            echo "name=$INPUT" >> "$GITHUB_OUTPUT"
             echo "triggered_by=manual" >> "$GITHUB_OUTPUT"
           fi
+
+      - name: Log target environment
+        run: |
+          echo "Backup target environment: ${{ steps.env.outputs.name }}"
+          echo "Triggered by: ${{ steps.env.outputs.triggered_by }}"
 
       # ── pick the right secrets ───────────────────────────────────────────────
       - name: Export environment-specific secrets

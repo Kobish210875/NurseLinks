@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { assertBackupEnvironmentAllowed } from "@/lib/admin/backup-environment";
 import { requireAdmin } from "@/lib/auth/admin";
 
 const GITHUB_REPO = "Kobish210875/NurseLinks";
@@ -25,10 +26,20 @@ export async function POST(req: Request) {
     backup_log_id?: string;
   };
 
-  if (!body.environment || !body.backup_file_path) {
+  if (!body.backup_file_path) {
     return NextResponse.json(
-      { error: "environment and backup_file_path are required" },
+      { error: "backup_file_path is required" },
       { status: 400 },
+    );
+  }
+
+  let environment: "dev" | "prod";
+  try {
+    environment = assertBackupEnvironmentAllowed(body.environment ?? "dev");
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "invalid environment" },
+      { status: 403 },
     );
   }
 
@@ -45,7 +56,7 @@ export async function POST(req: Request) {
       body: JSON.stringify({
         ref: "main",
         inputs: {
-          environment: body.environment,
+          environment,
           backup_file_path: body.backup_file_path,
           backup_log_id: body.backup_log_id ?? "",
           confirm: "RESTORE",

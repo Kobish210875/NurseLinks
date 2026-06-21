@@ -567,6 +567,8 @@
     "backupTriggerFailed": "הפעלת הגיבוי נכשלה. ודאו ש-GITHUB_PAT מוגדר ב-Vercel.",
     "backupTriggerConfirm": "להפעיל גיבוי {type} לסביבת {env}?",
     "backupTriggerHint": "הגיבוי רץ ב-GitHub Actions. רעננו את הדף בעוד דקה לראות תוצאות.",
+    "backupTriggerHintDev": "מגבה את מסד הנתונים DEV בלבד. רץ ב-GitHub Actions — רעננו בעוד דקה.",
+    "backupTriggerHintProd": "מגבה את מסד הנתונים PRODUCTION. רץ ב-GitHub Actions — רעננו בעוד דקה.",
     "backupHistoryTitle": "היסטוריית גיבויים",
     "backupHistoryHint": "100 הגיבויים האחרונים משתי הסביבות.",
     "backupRefresh": "רענון",

@@ -567,6 +567,8 @@
     "backupTriggerFailed": "Failed to trigger backup. Check that GITHUB_PAT is set in Vercel.",
     "backupTriggerConfirm": "Trigger {type} backup for {env}?",
     "backupTriggerHint": "The backup runs in GitHub Actions. Refresh this page after a minute to see the result.",
+    "backupTriggerHintDev": "Backs up the DEV database only. Runs in GitHub Actions — refresh after a minute.",
+    "backupTriggerHintProd": "Backs up the PRODUCTION database. Runs in GitHub Actions — refresh after a minute.",
     "backupHistoryTitle": "Backup history",
     "backupHistoryHint": "Last 100 backups across both environments.",
     "backupRefresh": "Refresh",

@@ -1,7 +1,7 @@
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
-import AdminNavTabs from "@/components/admin/AdminNavTabs";
 import { requireAdmin } from "@/lib/auth/admin";
+import { getBackupEnvironmentForApp } from "@/lib/admin/backup-environment";
 import { getBackupLogs, type BackupLogRow } from "@/lib/admin/backups";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
@@ -51,6 +51,7 @@ export default async function AdminBackupsPage() {
   const locale = await getLocale();
   const t = createT(getMessages(locale));
   const { logs, error } = await getBackupLogs();
+  const backupEnvironment = getBackupEnvironmentForApp();
 
   return (
     <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
@@ -59,15 +60,12 @@ export default async function AdminBackupsPage() {
         <div className="mx-auto flex h-full w-full min-w-0 max-w-[1128px] flex-col gap-3 overflow-hidden px-4 max-md:block max-md:h-auto max-md:overflow-x-clip max-md:pb-[calc(var(--mobile-bottom-nav-offset)+1.5rem)]">
 
           {/* Header */}
-          <div className="shrink-0 flex flex-col gap-3">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-primary">
-                {t("admin.badge")}
-              </p>
-              <h1 className="text-2xl font-bold text-foreground">{t("admin.backupTitle")}</h1>
-              <p className="mt-1 text-sm text-muted-foreground">{t("admin.backupSubtitle")}</p>
-            </div>
-            <AdminNavTabs />
+          <div className="shrink-0">
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">
+              {t("admin.badge")}
+            </p>
+            <h1 className="text-2xl font-bold text-foreground">{t("admin.backupTitle")}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{t("admin.backupSubtitle")}</p>
           </div>
 
           {error ? (
@@ -76,20 +74,27 @@ export default async function AdminBackupsPage() {
             </p>
           ) : null}
 
-          {/* Trigger cards */}
-          <section className="feed-card shrink-0 grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
-            {(["dev", "prod"] as const).map((env) => (
-              <div key={env} className="flex flex-col gap-3 rounded-lg border border-border p-4">
-                <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">
-                  {env === "dev" ? t("admin.backupEnvDev") : t("admin.backupEnvProd")}
-                </h2>
-                <div className="flex flex-wrap gap-2">
-                  <BackupTriggerButton backupType="full" environment={env} />
-                  <BackupTriggerButton backupType="incremental" environment={env} />
-                </div>
-                <p className="text-xs text-muted-foreground">{t("admin.backupTriggerHint")}</p>
+          {/* Trigger card — only the environment matching this deployment */}
+          <section className="feed-card shrink-0 p-4">
+            <div className="flex flex-col gap-3 rounded-lg border border-border p-4">
+              <h2 className="text-sm font-bold text-foreground uppercase tracking-wide">
+                {backupEnvironment === "dev"
+                  ? t("admin.backupEnvDev")
+                  : t("admin.backupEnvProd")}
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                <BackupTriggerButton backupType="full" environment={backupEnvironment} />
+                <BackupTriggerButton
+                  backupType="incremental"
+                  environment={backupEnvironment}
+                />
               </div>
-            ))}
+              <p className="text-xs text-muted-foreground">
+                {backupEnvironment === "dev"
+                  ? t("admin.backupTriggerHintDev")
+                  : t("admin.backupTriggerHintProd")}
+              </p>
+            </div>
           </section>
 
           {/* History table */}
