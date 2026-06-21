@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useT } from "@/components/i18n/LocaleProvider";
 
 type BackupEnv = "dev" | "prod";
@@ -114,6 +114,12 @@ export function BackupRestoreButton({
   const [state, setState] = useState<"idle" | "loading" | "ok" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
 
+  useEffect(() => {
+    if (state !== "ok") return;
+    const timer = window.setTimeout(() => setState("idle"), 10000);
+    return () => window.clearTimeout(timer);
+  }, [state]);
+
   async function handleRestore() {
     if (state === "loading") return;
     const confirmMsg = t("admin.backupRestoreConfirm")
@@ -152,18 +158,14 @@ export function BackupRestoreButton({
       <button
         type="button"
         onClick={handleRestore}
-        disabled={state === "loading" || state === "ok"}
+        disabled={state === "loading"}
         className="inline-flex shrink-0 items-center whitespace-nowrap rounded-lg border border-red-200 px-2 py-1 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
         title={state === "error" && errorMsg ? errorMsg : undefined}
       >
-        {state === "loading"
-          ? t("admin.backupRestoring")
-          : state === "ok"
-            ? t("admin.backupRestoreTriggered")
-            : t("admin.backupRestore")}
+        {state === "loading" ? t("admin.backupRestoring") : t("admin.backupRestore")}
       </button>
       {state === "ok" ? (
-        <p className="max-w-[11rem] text-[11px] leading-snug text-green-700">
+        <p className="max-w-[12rem] text-[11px] leading-snug text-green-700">
           {t("admin.backupRestoreTriggeredHint")}
         </p>
       ) : null}
