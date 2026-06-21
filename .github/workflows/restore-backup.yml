@@ -185,7 +185,7 @@ jobs:
           echo "Restore completed. The public schema of '${{ github.event.inputs.environment }}' was replaced from '${{ github.event.inputs.backup_file_path }}'."
 
       - name: Restore failed
-        if: failure() && steps.restore.outcome != 'success'
+        if: steps.restore.outcome != 'success'
         run: |
           echo "Restore FAILED. The database may be in a partial state."
           echo "Re-run this workflow with a known-good backup file to recover."

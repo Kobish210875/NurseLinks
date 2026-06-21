@@ -67,8 +67,8 @@ create policy "Admins can insert backup logs"
   to authenticated
   with check (public.is_admin(auth.uid()));
 
--- service_role (GitHub Actions) bypasses RLS for update — no policy needed.
-
+-- service_role (GitHub Actions) bypasses RLS — needs table grants for REST PATCH.
+grant select, insert, update, delete on public.backup_logs to service_role;
 grant select, insert on public.backup_logs to authenticated;
 
 -- ─── storage bucket ──────────────────────────────────────────────────────────
