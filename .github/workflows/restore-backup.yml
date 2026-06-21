@@ -100,6 +100,13 @@ jobs:
           source /tmp/pg-connection.env
           gunzip -c "${FILENAME}" | psql -v ON_ERROR_STOP=1
 
+      - name: Repair auth profile trigger and missing profiles
+        if: steps.restore.outcome == 'success'
+        run: |
+          set -euo pipefail
+          source /tmp/pg-connection.env
+          psql -v ON_ERROR_STOP=1 -f supabase/post-restore-public-schema.sql
+
       # Audit log only — must not fail the restore job
       - name: Log restore to backup_logs
         if: steps.restore.outcome == 'success'
