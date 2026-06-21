@@ -73,3 +73,11 @@ grant select on all tables in schema public to anon;
 grant usage on all sequences in schema public to authenticated, anon;
 
 grant select, insert, update, delete on public.backup_logs to service_role;
+
+-- Restored dumps may predate snapshot backups (backup_type was full/incremental only).
+alter table public.backup_logs
+  drop constraint if exists backup_logs_backup_type_check;
+
+alter table public.backup_logs
+  add constraint backup_logs_backup_type_check
+  check (backup_type in ('snapshot', 'full', 'incremental'));

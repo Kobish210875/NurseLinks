@@ -68,20 +68,13 @@ jobs:
         id: log
         run: |
           RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-          LOG_ID=$(curl -fsSL -X POST \
-            "${SUPABASE_URL}/rest/v1/backup_logs" \
-            -H "Authorization: Bearer ${SERVICE_KEY}" \
-            -H "apikey: ${SERVICE_KEY}" \
-            -H "Content-Type: application/json" \
-            -H "Prefer: return=representation" \
-            -d "{
-              \"backup_type\": \"snapshot\",
-              \"environment\": \"${{ steps.target.outputs.environment }}\",
-              \"status\": \"running\",
-              \"triggered_by\": \"manual\",
-              \"github_run_url\": \"${RUN_URL}\"
-            }" \
-            | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['id'])")
+          LOG_ID=$(bash .github/scripts/insert-backup-log.sh "{
+            \"backup_type\": \"snapshot\",
+            \"environment\": \"${{ steps.target.outputs.environment }}\",
+            \"status\": \"running\",
+            \"triggered_by\": \"manual\",
+            \"github_run_url\": \"${RUN_URL}\"
+          }")
           echo "id=${LOG_ID}" >> "$GITHUB_OUTPUT"
 
       - name: Configure PostgreSQL connection (IPv4)
@@ -223,9 +216,9 @@ jobs:
 
       - name: Delete backups older than 72 hours
         if: success()
-        run: bash .github/scripts/cleanup-old-backups.sh "${{ matrix.environment }}" 72
+        run: bash .github/scripts/cleanup-old-backups.sh "${{ steps.target.outputs.environment }}" 72
         env:
-          CLEANUP_ENV: ${{ matrix.environment }}
+          CLEANUP_ENV: ${{ steps.target.outputs.environment }}
           RETENTION_HOURS: "72"
           SUPABASE_URL: ${{ env.SUPABASE_URL }}
           SERVICE_KEY: ${{ env.SERVICE_KEY }}
