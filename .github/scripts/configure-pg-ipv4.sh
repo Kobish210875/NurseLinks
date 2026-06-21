@@ -3,10 +3,8 @@
 # Write libpq env vars to a file later steps can source.
 set -euo pipefail
 
-PG_ENV_FILE="/tmp/pg-connection.env"
-
-if [ -z "${DB_URL:-}" ] || [ -z "${SUPABASE_URL:-}" ]; then
-  echo "DB_URL and SUPABASE_URL must be set."
+if [ -z "${SUPABASE_URL:-}" ]; then
+  echo "SUPABASE_URL must be set."
   exit 1
 fi
 
@@ -14,20 +12,55 @@ python3 - <<'PY'
 import os
 import shlex
 import subprocess
-from urllib.parse import urlparse, unquote
+from urllib.parse import unquote
 
-db_url = os.environ["DB_URL"]
+db_url = os.environ.get("DB_URL", "").strip()
+db_password = os.environ.get("DB_PASSWORD", "").strip()
 supabase_url = os.environ["SUPABASE_URL"]
 env_file = "/tmp/pg-connection.env"
 
-parsed = urlparse(db_url)
-user = parsed.username or "postgres"
-database = (parsed.path or "/postgres").lstrip("/") or "postgres"
-port = parsed.port or 5432
-password = unquote(parsed.password or "")
 
+def parse_db_url(url: str) -> tuple[str, str, int, str]:
+    if not url.startswith("postgresql://"):
+        raise SystemExit("DB_URL must start with postgresql://")
+
+    rest = url[len("postgresql://") :]
+    marker = "@db."
+    idx = rest.find(marker)
+    if idx == -1:
+        raise SystemExit("DB_URL must contain @db.<project-ref>.supabase.co")
+
+    user_pass = rest[:idx]
+    host_path = rest[idx + 1 :]
+
+    if ":" not in user_pass:
+        raise SystemExit("DB_URL must use postgres:PASSWORD@db....")
+
+    user, password = user_pass.split(":", 1)
+    host_part, _, path_part = host_path.partition("/")
+    database = path_part or "postgres"
+
+    if ":" in host_part:
+        _, port_text = host_part.rsplit(":", 1)
+        port = int(port_text)
+    else:
+        port = 5432
+
+    return user or "postgres", unquote(password), port, database or "postgres"
+
+
+if db_url:
+    user, url_password, port, database = parse_db_url(db_url)
+else:
+    user, port, database = "postgres", 5432, "postgres"
+    url_password = ""
+
+password = db_password or url_password
 if not password:
-    raise SystemExit("DB_URL is missing a password.")
+    raise SystemExit(
+        "Database password missing. Add GitHub secret SUPABASE_DEV_DB_PASSWORD "
+        "(plain text) or include the password in SUPABASE_DEV_DB_URL."
+    )
 
 project_ref = supabase_url.removeprefix("https://").split(".supabase.co", 1)[0]
 db_host = f"db.{project_ref}.supabase.co"

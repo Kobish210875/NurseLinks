@@ -51,10 +51,12 @@ jobs:
         run: |
           if [ "${{ github.event.inputs.environment }}" = "prod" ]; then
             echo "DB_URL=${{ secrets.SUPABASE_PROD_DB_URL }}"                >> "$GITHUB_ENV"
+            echo "DB_PASSWORD=${{ secrets.SUPABASE_PROD_DB_PASSWORD }}"        >> "$GITHUB_ENV"
             echo "SUPABASE_URL=${{ secrets.SUPABASE_PROD_URL }}"             >> "$GITHUB_ENV"
             echo "SERVICE_KEY=${{ secrets.SUPABASE_PROD_SERVICE_ROLE_KEY }}" >> "$GITHUB_ENV"
           else
             echo "DB_URL=${{ secrets.SUPABASE_DEV_DB_URL }}"                 >> "$GITHUB_ENV"
+            echo "DB_PASSWORD=${{ secrets.SUPABASE_DEV_DB_PASSWORD }}"       >> "$GITHUB_ENV"
             echo "SUPABASE_URL=${{ secrets.SUPABASE_DEV_URL }}"              >> "$GITHUB_ENV"
             echo "SERVICE_KEY=${{ secrets.SUPABASE_DEV_SERVICE_ROLE_KEY }}"  >> "$GITHUB_ENV"
           fi
