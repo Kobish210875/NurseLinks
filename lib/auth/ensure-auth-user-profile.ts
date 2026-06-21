@@ -20,27 +20,35 @@ export async function ensureAuthUserProfile(
   supabase: SupabaseClient<Database>,
   user: User,
 ): Promise<EnsureProfileResult> {
-  const profileWithDeletedAt = await supabase
+  const admin = createAdminClient();
+  const profileClient = admin ?? supabase;
+
+  const profileWithDeletedAt = await profileClient
     .from("profiles")
     .select("id, deleted_at")
     .eq("id", user.id)
     .maybeSingle<{ id: string; deleted_at: string | null }>();
 
   if (profileWithDeletedAt.error?.message.toLowerCase().includes("deleted_at")) {
-    const { data: legacyProfile, error } = await supabase
+    const { data: legacyProfile, error } = await profileClient
       .from("profiles")
       .select("id")
       .eq("id", user.id)
       .maybeSingle<{ id: string }>();
 
     if (error) {
-      return "failed";
-    }
-    if (legacyProfile) {
+      console.error("[auth] ensureAuthUserProfile legacy select:", error.message);
+      if (!admin) {
+        return "failed";
+      }
+    } else if (legacyProfile) {
       return "ok";
     }
   } else if (profileWithDeletedAt.error) {
-    return "failed";
+    console.error("[auth] ensureAuthUserProfile select:", profileWithDeletedAt.error.message);
+    if (!admin) {
+      return "failed";
+    }
   } else if (profileWithDeletedAt.data?.deleted_at) {
     return "deleted";
   } else if (profileWithDeletedAt.data) {
@@ -48,8 +56,8 @@ export async function ensureAuthUserProfile(
   }
 
   const { fullName, headline } = getUserProfileDefaults(user);
-  const profileClient = createAdminClient() ?? supabase;
-  const { error } = await profileClient.from("profiles").upsert(
+  const writeClient = admin ?? supabase;
+  const { error } = await writeClient.from("profiles").upsert(
     [
       {
         id: user.id,
@@ -59,6 +67,10 @@ export async function ensureAuthUserProfile(
     ] as never,
     { onConflict: "id" },
   );
+
+  if (error) {
+    console.error("[auth] ensureAuthUserProfile upsert:", error.message);
+  }
 
   return error ? "failed" : "ok";
 }

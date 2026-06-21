@@ -45,3 +45,15 @@ left join public.profiles p on p.id = u.id
 where p.id is null
   and u.deleted_at is null
 on conflict (id) do nothing;
+
+-- Snapshot backups use pg_dump --no-acl, so PostgREST roles lose table access.
+grant usage on schema public to postgres, anon, authenticated, service_role;
+
+grant all on all tables in schema public to postgres, service_role;
+grant all on all functions in schema public to postgres, service_role;
+grant all on all sequences in schema public to postgres, service_role;
+
+grant select, insert, update, delete on all tables in schema public to authenticated;
+grant select on all tables in schema public to anon;
+
+grant usage on all sequences in schema public to authenticated, anon;
