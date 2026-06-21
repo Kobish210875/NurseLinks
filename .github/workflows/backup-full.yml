@@ -62,19 +62,7 @@ jobs:
             echo "SERVICE_KEY=${{ secrets.SUPABASE_DEV_SERVICE_ROLE_KEY }}"  >> "$GITHUB_ENV"
           fi
 
-      - name: Install PostgreSQL client
-        run: sudo apt-get install -y --no-install-recommends postgresql-client
-
-      - name: Configure PostgreSQL connection (IPv4)
-        run: bash .github/scripts/configure-pg-ipv4.sh
-
-      - name: Test database connection
-        run: |
-          set -euo pipefail
-          source /tmp/pg-connection.env
-          psql -v ON_ERROR_STOP=1 -c "select current_database(), count(*) from information_schema.tables where table_schema = 'public';"
-
-      # ── create a "running" log entry and capture its id ─────────────────────
+      # ── create a "running" log entry early so every trigger appears in history ─
       - name: Insert backup_log (running)
         id: log
         run: |
@@ -94,6 +82,18 @@ jobs:
             }" \
             | python3 -c "import sys,json; print(json.load(sys.stdin)[0]['id'])")
           echo "id=${LOG_ID}" >> "$GITHUB_OUTPUT"
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get install -y --no-install-recommends postgresql-client
+
+      - name: Configure PostgreSQL connection (IPv4)
+        run: bash .github/scripts/configure-pg-ipv4.sh
+
+      - name: Test database connection
+        run: |
+          set -euo pipefail
+          source /tmp/pg-connection.env
+          psql -v ON_ERROR_STOP=1 -c "select current_database(), count(*) from information_schema.tables where table_schema = 'public';"
 
       # ── pg_dump ──────────────────────────────────────────────────────────────
       - name: Dump database
@@ -174,5 +174,5 @@ jobs:
             -d "{
               \"status\": \"failed\",
               \"completed_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
-              \"error_message\": \"pg_dump or upload failed — see the GitHub Actions log for details.\"
+              \"error_message\": \"Backup workflow failed — see the GitHub Actions log for details.\"
             }" || true

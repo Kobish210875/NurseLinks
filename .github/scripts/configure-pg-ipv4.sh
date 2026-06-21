@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 # GitHub-hosted runners often cannot reach Supabase over IPv6.
 # Write libpq env vars to a file later steps can source.
+#
+# Required GitHub secrets per environment:
+#   SUPABASE_*_URL, SUPABASE_*_SERVICE_ROLE_KEY, SUPABASE_*_DB_PASSWORD
+# Optional fallback:
+#   SUPABASE_*_DB_URL (postgresql://postgres:PASSWORD@db.REF.supabase.co:5432/postgres)
 set -euo pipefail
 
 if [ -z "${SUPABASE_URL:-}" ]; then
@@ -19,12 +24,23 @@ db_password = os.environ.get("DB_PASSWORD", "").strip()
 supabase_url = os.environ["SUPABASE_URL"]
 env_file = "/tmp/pg-connection.env"
 
+user = "postgres"
+port = 5432
+database = "postgres"
+url_password = ""
+
 
 def parse_db_url(url: str) -> tuple[str, str, int, str]:
-    if not url.startswith("postgresql://"):
-        raise SystemExit("DB_URL must start with postgresql://")
+    for prefix in ("postgresql://", "postgres://"):
+        if url.startswith(prefix):
+            rest = url[len(prefix) :]
+            break
+    else:
+        raise SystemExit(
+            "DB_URL must start with postgresql:// or postgres://. "
+            "Recommended: set SUPABASE_*_DB_PASSWORD instead and leave DB_URL unset."
+        )
 
-    rest = url[len("postgresql://") :]
     marker = "@db."
     idx = rest.find(marker)
     if idx == -1:
@@ -36,30 +52,27 @@ def parse_db_url(url: str) -> tuple[str, str, int, str]:
     if ":" not in user_pass:
         raise SystemExit("DB_URL must use postgres:PASSWORD@db....")
 
-    user, password = user_pass.split(":", 1)
+    parsed_user, password = user_pass.split(":", 1)
     host_part, _, path_part = host_path.partition("/")
-    database = path_part or "postgres"
+    parsed_database = path_part or "postgres"
 
     if ":" in host_part:
         _, port_text = host_part.rsplit(":", 1)
-        port = int(port_text)
+        parsed_port = int(port_text)
     else:
-        port = 5432
+        parsed_port = 5432
 
-    return user or "postgres", unquote(password), port, database or "postgres"
+    return parsed_user or "postgres", unquote(password), parsed_port, parsed_database or "postgres"
 
 
-if db_url:
+if db_url.startswith(("postgresql://", "postgres://")):
     user, url_password, port, database = parse_db_url(db_url)
-else:
-    user, port, database = "postgres", 5432, "postgres"
-    url_password = ""
 
 password = db_password or url_password
 if not password:
     raise SystemExit(
         "Database password missing. Add GitHub secret SUPABASE_DEV_DB_PASSWORD "
-        "(plain text) or include the password in SUPABASE_DEV_DB_URL."
+        "(plain text, recommended) or a full SUPABASE_DEV_DB_URL."
     )
 
 project_ref = supabase_url.removeprefix("https://").split(".supabase.co", 1)[0]
