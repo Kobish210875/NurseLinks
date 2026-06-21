@@ -3,7 +3,7 @@
 set -euo pipefail
 
 ENVIRONMENT="${1:-}"
-RETENTION_HOURS="${2:-48}"
+RETENTION_HOURS="${2:-72}"
 
 if [ -z "${ENVIRONMENT}" ] || { [ "${ENVIRONMENT}" != "dev" ] && [ "${ENVIRONMENT}" != "prod" ]; }; then
   echo "Usage: cleanup-old-backups.sh <dev|prod> [retention_hours]"

@@ -1,10 +1,10 @@
 name: Database Snapshot Backup
 
-# Scheduled: DEV + PROD every 2 hours. Manual: one environment from admin UI or GitHub UI.
-# Files older than 48 hours are deleted after each successful backup.
+# Scheduled: PROD every 4 hours. DEV is manual only (admin UI / GitHub UI).
+# Files older than 72 hours (3 days) are deleted after each successful backup.
 on:
   schedule:
-    - cron: "0 */2 * * *"
+    - cron: "0 */4 * * *"
   workflow_dispatch:
     inputs:
       environment:
@@ -18,7 +18,7 @@ on:
 
 jobs:
   backup:
-    if: github.event_name == 'schedule' || github.event.inputs.environment == matrix.environment
+    if: (github.event_name == 'schedule' && matrix.environment == 'prod') || (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == matrix.environment)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -208,12 +208,12 @@ jobs:
           LOG_ID: ${{ steps.log.outputs.id }}
           ROW_COUNTS_JSON: ${{ steps.counts.outputs.json }}
 
-      - name: Delete backups older than 48 hours
+      - name: Delete backups older than 72 hours
         if: success()
-        run: bash .github/scripts/cleanup-old-backups.sh "${{ matrix.environment }}" 48
+        run: bash .github/scripts/cleanup-old-backups.sh "${{ matrix.environment }}" 72
         env:
           CLEANUP_ENV: ${{ matrix.environment }}
-          RETENTION_HOURS: "48"
+          RETENTION_HOURS: "72"
           SUPABASE_URL: ${{ env.SUPABASE_URL }}
           SERVICE_KEY: ${{ env.SERVICE_KEY }}
 
