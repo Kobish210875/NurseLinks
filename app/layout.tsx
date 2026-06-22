@@ -6,6 +6,7 @@ import { CurrentUserProvider } from "@/components/nav/CurrentUserProvider";
 import MessagingDockShell from "@/components/messages/MessagingDockShell";
 import MobileBottomNav from "@/components/nav/MobileBottomNav";
 import MobileShellEffects from "@/components/nav/MobileShellEffects";
+import InstallPwaHint from "@/components/pwa/InstallPwaHint";
 import { NavCountsProvider } from "@/components/nav/NavCountsProvider";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import DevEnvironmentBanner from "@/components/dev/DevEnvironmentBanner";
@@ -26,6 +27,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   interactiveWidget: "overlays-content",
+  themeColor: "#2b6cb0",
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -42,6 +44,14 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description,
     applicationName: "NurseLinks",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: "NurseLinks",
+    },
+    formatDetection: {
+      telephone: false,
+    },
     openGraph: {
       type: "website",
       locale: locale === "he" ? "he_IL" : "en_US",
@@ -100,6 +110,7 @@ async function RootUserShell({ children }: { children: React.ReactNode }) {
           {children}
         </>
       )}
+      <InstallPwaHint />
     </CurrentUserProvider>
   );
 }

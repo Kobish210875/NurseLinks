@@ -2,6 +2,11 @@
   "meta": {
     "description": "הפלטפורמה שמחברת אחים ואחיות לקהילות מקצועיות, ידע ומשאבים, קשר עם קולגות והזדמנויות עבודה בקריירת הסיעוד."
   },
+  "pwa": {
+    "installTitle": "הוסיפו את NurseLinks למסך הבית",
+    "installSteps": "ב-Safari: לחצו על כפתור השיתוף (□↑) ובחרו \"הוסף למסך הבית\".",
+    "installDismiss": "הבנתי"
+  },
   "dev": {
     "banner": "מצב פיתוח",
     "previewBanner": "PREVIEW — נתוני dev (לא production)"

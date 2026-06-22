@@ -2,6 +2,11 @@
   "meta": {
     "description": "The platform connecting nurses to professional communities, knowledge, colleagues, and career opportunities."
   },
+  "pwa": {
+    "installTitle": "Add NurseLinks to your Home Screen",
+    "installSteps": "In Safari: tap Share (□↑) and choose \"Add to Home Screen\".",
+    "installDismiss": "Got it"
+  },
   "dev": {
     "banner": "DEV MODE",
     "previewBanner": "PREVIEW — dev data (not production)"
