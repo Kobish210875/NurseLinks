@@ -1,6 +1,9 @@
 /** Hebrew letters (א–ת), spaces, hyphen, apostrophe, geresh/gershayim, period. */
 const HEBREW_NAME_CHARS = /^[\u05D0-\u05EA\s\-'׳״.]+$/u;
 
+/** Strip characters that are not allowed in Hebrew name search. */
+const NON_HEBREW_NAME_SEARCH_CHARS = /[^\u05D0-\u05EA\s\-'׳״.]/gu;
+
 const MAX_NAME_PART_LEN = 40;
 
 export type HebrewNameValidationError = "empty" | "too-long" | "invalid";
@@ -39,4 +42,21 @@ export function isHebrewDisplayName(value: string, maxLen = MAX_NAME_PART_LEN * 
     return false;
   }
   return parts.every((part) => validateHebrewNamePart(part) === null);
+}
+
+/** Remove Latin/Cyrillic and other non-Hebrew characters from a live search input. */
+export function sanitizeHebrewNameSearchInput(value: string): string {
+  return value.replace(NON_HEBREW_NAME_SEARCH_CHARS, "");
+}
+
+/** Returns false when the query contains disallowed characters (e.g. English letters). */
+export function isHebrewNameSearchQuery(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return true;
+  }
+  if (/[A-Za-z\u0400-\u04FF]/.test(trimmed)) {
+    return false;
+  }
+  return HEBREW_NAME_CHARS.test(trimmed);
 }

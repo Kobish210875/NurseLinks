@@ -9,6 +9,7 @@ import {
   formatProfileHeadline,
 } from "@/lib/profile/display-professional";
 import type { NetworkMember, NetworkRecommendation } from "@/lib/network/types";
+import { sanitizeHebrewNameSearchInput } from "@/lib/validation/hebrew-name";
 import FeedPostsScroll from "@/components/feed/FeedPostsScroll";
 import MemberRow from "./MemberRow";
 
@@ -150,7 +151,7 @@ export default function NetworkPanel({
           id={networkSearchId}
           type="search"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => setQuery(sanitizeHebrewNameSearchInput(e.target.value))}
           placeholder={t("network.searchPlaceholder")}
           className="network-search-input box-border w-full min-w-0 rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm"
         />
@@ -263,7 +264,7 @@ export default function NetworkPanel({
                   id={connectionsFilterId}
                   type="search"
                   value={friendsFilter}
-                  onChange={(e) => setFriendsFilter(e.target.value)}
+                  onChange={(e) => setFriendsFilter(sanitizeHebrewNameSearchInput(e.target.value))}
                   placeholder={t("network.connectionsFilterPlaceholder")}
                   className="network-search-input box-border w-full min-w-0 rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm"
                 />

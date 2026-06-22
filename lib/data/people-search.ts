@@ -1,6 +1,7 @@
 import { getInitials } from "@/lib/auth/initials";
 import { getAcceptedConnections } from "@/lib/data/connections";
 import { resolveWorkplaceSlug } from "@/lib/profile/workplace";
+import { isHebrewNameSearchQuery } from "@/lib/validation/hebrew-name";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -70,7 +71,7 @@ export async function searchPeopleByNamePrefix(
   callerIsAdmin = false,
 ): Promise<PeopleSearchHit[]> {
   const trimmed = query.trim();
-  if (trimmed.length < 2) {
+  if (trimmed.length < 2 || !isHebrewNameSearchQuery(trimmed)) {
     return [];
   }
 

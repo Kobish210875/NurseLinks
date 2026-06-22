@@ -1,5 +1,6 @@
 import { getInitials } from "@/lib/auth/initials";
 import { resolveWorkplaceSlug } from "@/lib/profile/workplace";
+import { isHebrewNameSearchQuery } from "@/lib/validation/hebrew-name";
 import type {
   ConnectionStatus,
   NetworkMember,
@@ -259,7 +260,7 @@ export async function searchPeople(
   callerIsAdmin = false,
 ): Promise<NetworkMember[]> {
   const trimmed = query.trim();
-  if (trimmed.length < 2) {
+  if (trimmed.length < 2 || !isHebrewNameSearchQuery(trimmed)) {
     return [];
   }
 

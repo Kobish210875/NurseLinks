@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useT } from "@/components/i18n/LocaleProvider";
 import type { PeopleSearchHit } from "@/lib/data/people-search";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
+import { sanitizeHebrewNameSearchInput } from "@/lib/validation/hebrew-name";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 const DEBOUNCE_MS = 200;
@@ -258,7 +259,7 @@ export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProp
         aria-autocomplete="list"
         placeholder={t("nav.searchPlaceholder")}
         onChange={(e) => {
-          setQuery(e.target.value);
+          setQuery(sanitizeHebrewNameSearchInput(e.target.value));
           setIsOpen(true);
           setActiveIndex(-1);
         }}
