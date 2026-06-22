@@ -37,7 +37,6 @@ function normalizeCvDraft(raw: unknown): CvDraft {
   }
   const o = raw as Record<string, unknown>;
   return {
-    bio: typeof o.bio === "string" ? truncateProfileText(o.bio) : undefined,
     experience: typeof o.experience === "string" ? truncateProfileText(o.experience) : undefined,
     education: typeof o.education === "string" ? truncateProfileText(o.education) : undefined,
     certifications:
@@ -51,8 +50,7 @@ function normalizeCvDraft(raw: unknown): CvDraft {
 
 function cvHasContent(cv: CvDraft) {
   return Boolean(
-    cv.bio?.trim() ||
-      cv.experience?.trim() ||
+    cv.experience?.trim() ||
       cv.education?.trim() ||
       cv.certifications?.trim(),
   );

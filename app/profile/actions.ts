@@ -74,7 +74,6 @@ export async function uploadAvatar(formData: FormData) {
 }
 
 export type CvDraft = {
-  bio?: string;
   experience?: string;
   education?: string;
   certifications?: string;
@@ -94,7 +93,6 @@ export async function saveProfile(formData: FormData) {
   const profession = truncateHeadline(getRequiredString(formData, "profession"));
   const institutionSlug = getRequiredString(formData, "workplaceInstitution");
   const cityInput = getRequiredString(formData, "city");
-  const bio = truncateProfileText(getRequiredString(formData, "bio"));
   const experience = truncateProfileText(getRequiredString(formData, "experience"));
   const education = truncateProfileText(getRequiredString(formData, "education"));
   const certifications = truncateProfileText(getRequiredString(formData, "certifications"));
@@ -117,7 +115,7 @@ export async function saveProfile(formData: FormData) {
   }
 
   const cvDraft = mergeCvDraftWithWorkplace(
-    { bio, experience, education, certifications },
+    { experience, education, certifications },
     workplaceInstitutionSlug,
   );
 

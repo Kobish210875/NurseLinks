@@ -118,7 +118,6 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
     {};
 
   const hasCv =
-    cvDraft.bio?.trim() ||
     cvDraft.experience?.trim() ||
     cvDraft.education?.trim() ||
     cvDraft.certifications?.trim();
@@ -184,7 +183,6 @@ function buildUser(
     initials: getInitials(fullName),
     isAdmin,
     cvDraft: {
-      bio: cvDraft.bio ? truncateProfileText(cvDraft.bio) : undefined,
       experience: cvDraft.experience ? truncateProfileText(cvDraft.experience) : undefined,
       education: cvDraft.education ? truncateProfileText(cvDraft.education) : undefined,
       certifications: cvDraft.certifications

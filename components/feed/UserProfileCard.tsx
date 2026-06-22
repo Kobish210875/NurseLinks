@@ -18,7 +18,6 @@ function getProfileCompletionPercent(user: CurrentUser) {
     user.headline,
     user.workplaceInstitutionSlug,
     user.city,
-    user.cvDraft.bio,
     user.cvDraft.experience,
     user.cvDraft.education,
     user.cvDraft.certifications,

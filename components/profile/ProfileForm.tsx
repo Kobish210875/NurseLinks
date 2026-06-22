@@ -27,7 +27,6 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
   const professionId = useId();
   const cityId = useId();
   const institutionId = useId();
-  const bioId = useId();
   const experienceId = useId();
   const educationId = useId();
   const certificationsId = useId();
@@ -133,7 +132,6 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
 
         {(
           [
-            ["bio", bioId, "profile.bio", cvDraft.bio],
             ["experience", experienceId, "profile.experience", cvDraft.experience],
             ["education", educationId, "profile.education", cvDraft.education],
             ["certifications", certificationsId, "profile.certifications", cvDraft.certifications],

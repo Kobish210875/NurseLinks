@@ -38,7 +38,6 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
   const { cvDraft } = profile;
 
   const cvSections = [
-    ["bio", "profile.bio", cvDraft.bio],
     ["experience", "profile.experience", cvDraft.experience],
     ["education", "profile.education", cvDraft.education],
     ["certifications", "profile.certifications", cvDraft.certifications],
