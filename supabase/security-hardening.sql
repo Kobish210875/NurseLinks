@@ -5,15 +5,16 @@
 -- ============================================================
 -- 1. Restrict is_admin() to self-check only
 -- ============================================================
--- Before: any logged-in user could call is_admin('<someone-elses-uuid>')
--- and discover whether that person is an admin.
--- After: only a no-arg version exists; it only checks the caller.
+-- Many RLS policies already depend on is_admin(uuid), so we cannot
+-- drop or rename the function. Instead we keep the same signature but
+-- rewrite the body so it ALWAYS checks auth.uid() — the caller —
+-- and completely ignores any uuid argument that is passed in.
+--
+-- Result: is_admin('any-uuid-you-like') now returns whether YOU are
+-- an admin, not whether that other user is. The probing attack no
+-- longer works while all existing policies continue to function.
 
--- Drop the old parameterised overload completely so there is no ambiguity.
-drop function if exists public.is_admin(uuid);
-
--- Create the self-only version.
-create or replace function public.is_admin()
+create or replace function public.is_admin(target_user_id uuid default auth.uid())
 returns boolean
 language sql
 stable
@@ -23,12 +24,12 @@ as $$
   select exists (
     select 1
     from public.admin_users au
-    where au.user_id = auth.uid()
+    where au.user_id = auth.uid()   -- always the caller, never the argument
   );
 $$;
 
--- Grant the new no-arg version to authenticated users.
-grant execute on function public.is_admin() to authenticated;
+-- authenticated already has execute; this is a no-op but kept for clarity.
+grant execute on function public.is_admin(uuid) to authenticated;
 
 -- ============================================================
 -- 2. Tighten profiles RLS: hide internal moderation columns
