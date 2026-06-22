@@ -78,30 +78,34 @@ export default function MobileBottomNav() {
 
   return (
     <nav
-      className="mobile-bottom-nav fixed inset-x-0 bottom-0 z-[60] border-t border-border bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="mobile-bottom-nav fixed inset-x-0 bottom-0 z-[60] overflow-visible border-t border-border bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
       aria-label={t("nav.mobileBottomAria")}
       dir="rtl"
     >
-      <ul className="mx-auto grid h-14 max-w-lg grid-cols-5" dir="rtl">
+      <ul className="mx-auto grid h-12 w-full max-w-none grid-cols-5 overflow-visible" dir="rtl">
         {items.map((item) => {
           const active = item.match(pathname, searchParams);
           const count = badgeCount(item.badge);
+          const showBadge = count > 0 && item.badge;
 
           return (
-            <li key={item.href}>
+            <li key={item.href} className="min-w-0 overflow-visible">
               <Link
                 href={item.href}
-                className={`relative flex h-full flex-col items-center justify-center gap-0.5 px-1 text-center text-[13px] font-semibold leading-snug transition ${
+                className={`relative flex h-full min-h-12 min-w-0 flex-col items-center justify-center overflow-visible px-0.5 py-1 text-center transition ${
                   active
-                    ? "text-foreground after:absolute after:inset-x-2 after:top-0 after:h-0.5 after:rounded-full after:bg-foreground"
+                    ? "text-foreground after:absolute after:inset-x-1 after:top-0 after:h-0.5 after:rounded-full after:bg-foreground"
                     : "text-muted-foreground hover:text-primary"
                 }`}
               >
-                <span className="inline-flex max-w-full items-center justify-center gap-1.5">
-                  <span className="truncate">{item.label}</span>
-                  {count > 0 && item.badge ? (
-                    <NavUnreadDot ariaLabel={badgeLabel(item.badge, count)} />
-                  ) : null}
+                {showBadge ? (
+                  <NavUnreadDot
+                    className="absolute top-1 z-10 start-1.5"
+                    ariaLabel={badgeLabel(item.badge, count)}
+                  />
+                ) : null}
+                <span className="max-w-full truncate text-[11px] font-semibold leading-tight">
+                  {item.label}
                 </span>
               </Link>
             </li>

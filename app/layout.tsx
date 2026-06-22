@@ -9,6 +9,10 @@ import MobileShellEffects from "@/components/nav/MobileShellEffects";
 import InstallPwaHint from "@/components/pwa/InstallPwaHint";
 import { NavCountsProvider } from "@/components/nav/NavCountsProvider";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
+import { getPendingInvitationCount } from "@/lib/data/connections";
+import { getNavJobsUnreadCount } from "@/lib/data/jobs";
+import { getUnreadMessageCount } from "@/lib/data/messages";
+import { createClient } from "@/lib/supabase/server";
 import DevEnvironmentBanner from "@/components/dev/DevEnvironmentBanner";
 import { getAppEnvironment, isDevLikeApp } from "@/lib/env/app-environment";
 import { getDirection } from "@/lib/i18n/config";
@@ -81,37 +85,54 @@ export async function generateMetadata(): Promise<Metadata> {
  */
 async function RootUserShell({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
+  let navCounts = {
+    pendingInvitations: 0,
+    unreadMessages: 0,
+    unreadJobs: 0,
+  };
+
+  if (user) {
+    const supabase = await createClient();
+    const [pendingInvitations, unreadMessages, unreadJobs] = await Promise.all([
+      getPendingInvitationCount(supabase, user.id),
+      getUnreadMessageCount(supabase, user.id),
+      getNavJobsUnreadCount(supabase, user.id),
+    ]);
+    navCounts = { pendingInvitations, unreadMessages, unreadJobs };
+  }
 
   return (
-    <CurrentUserProvider
-      user={
-        user
-          ? {
-              id: user.id,
-              avatarUrl: user.avatarUrl,
-              initials: user.initials,
-              fullName: user.fullName,
-              isAdmin: user.isAdmin,
-            }
-          : null
-      }
-    >
-      {user ? (
-        <MessagingDockShell>
-          <MobileShellEffects />
-          {children}
-          <Suspense fallback={null}>
-            <MobileBottomNav />
-          </Suspense>
-        </MessagingDockShell>
-      ) : (
-        <>
-          <MobileShellEffects />
-          {children}
-        </>
-      )}
-      <InstallPwaHint />
-    </CurrentUserProvider>
+    <NavCountsProvider {...navCounts} enablePolling={Boolean(user)}>
+      <CurrentUserProvider
+        user={
+          user
+            ? {
+                id: user.id,
+                avatarUrl: user.avatarUrl,
+                initials: user.initials,
+                fullName: user.fullName,
+                isAdmin: user.isAdmin,
+              }
+            : null
+        }
+      >
+        {user ? (
+          <MessagingDockShell>
+            <MobileShellEffects />
+            {children}
+            <Suspense fallback={null}>
+              <MobileBottomNav />
+            </Suspense>
+          </MessagingDockShell>
+        ) : (
+          <>
+            <MobileShellEffects />
+            {children}
+          </>
+        )}
+        <InstallPwaHint />
+      </CurrentUserProvider>
+    </NavCountsProvider>
   );
 }
 
@@ -139,26 +160,9 @@ export default async function RootLayout({
           />
         ) : null}
         <LocaleProvider locale={locale} messages={messages}>
-          {/*
-           * enablePolling is always true; NavCountsPoller calls /api/sync/nav
-           * and stops itself permanently on 401 (logged-out). No server-side
-           * user check needed here.
-           */}
-          <NavCountsProvider
-            pendingInvitations={0}
-            unreadMessages={0}
-            unreadJobs={0}
-            enablePolling={true}
-          >
-            {/*
-             * RootUserShell is the only async boundary in this layout.
-             * Wrapping it in Suspense lets the html/body/providers above
-             * stream to the browser before the Supabase auth call completes.
-             */}
-            <Suspense fallback={null}>
-              <RootUserShell>{children}</RootUserShell>
-            </Suspense>
-          </NavCountsProvider>
+          <Suspense fallback={null}>
+            <RootUserShell>{children}</RootUserShell>
+          </Suspense>
         </LocaleProvider>
       </body>
     </html>
