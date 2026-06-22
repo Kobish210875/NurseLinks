@@ -61,38 +61,37 @@ function Read-RecoveryEnv {
     return $vars
 }
 
-function Db-Host([string]$ref) { "db.$ref.supabase.co" }
-
-function Invoke-Psql([string]$hostRef, [string]$pass, [string]$file) {
-    $prev = $env:PGPASSWORD
-    $env:PGPASSWORD = $pass
-    Write-Host "  psql -> $(Split-Path $file -Leaf)" -ForegroundColor DarkCyan
-    & psql -h (Db-Host $hostRef) -p 5432 -U postgres -d postgres `
-        --no-password --file=$file --no-psqlrc --set=ON_ERROR_STOP=1
-    if ($LASTEXITCODE -ne 0) { throw "psql failed: $file" }
-    $env:PGPASSWORD = $prev
-}
-
-function Invoke-PsqlPipe([string]$hostRef, [string]$pass, [string]$inputFile) {
-    $prev = $env:PGPASSWORD
-    $env:PGPASSWORD = $pass
-    Write-Host "  psql <- $(Split-Path $inputFile -Leaf)" -ForegroundColor DarkCyan
-    Get-Content $inputFile -Raw | & psql -h (Db-Host $hostRef) -p 5432 -U postgres -d postgres `
-        --no-password --no-psqlrc --set=ON_ERROR_STOP=1
-    if ($LASTEXITCODE -ne 0) { throw "psql pipe failed: $inputFile" }
-    $env:PGPASSWORD = $prev
-}
-
 $cfg = Read-RecoveryEnv
 $ref = $cfg["PROJECT_REF"]
 $pass = $cfg["DB_PASSWORD"]
+$poolerHost = $cfg["DB_POOLER_HOST"]
 if (-not $ref -or -not $pass) { throw "PROJECT_REF and DB_PASSWORD required" }
+if (-not $poolerHost) { throw "DB_POOLER_HOST is required. Get it from Supabase Dashboard -> Connect -> Session pooler hostname." }
 
+$dbHost = $poolerHost
+$dbUser = "postgres.$ref"
+
+function Invoke-Psql([string]$file) {
+    Write-Host "  psql -> $(Split-Path $file -Leaf)" -ForegroundColor DarkCyan
+    & psql -h $dbHost -p 5432 -U $dbUser -d postgres `
+        --no-password --file=$file --no-psqlrc --set=ON_ERROR_STOP=1
+    if ($LASTEXITCODE -ne 0) { throw "psql failed: $file" }
+}
+
+function Invoke-PsqlPipe([string]$inputFile) {
+    Write-Host "  psql <- $(Split-Path $inputFile -Leaf)" -ForegroundColor DarkCyan
+    Get-Content $inputFile -Raw | & psql -h $dbHost -p 5432 -U $dbUser -d postgres `
+        --no-password --no-psqlrc --set=ON_ERROR_STOP=1
+    if ($LASTEXITCODE -ne 0) { throw "psql pipe failed: $inputFile" }
+}
+
+$env:PGPASSWORD = $pass
 $env:PGSSLMODE = "require"
 
 Write-Host ""
 Write-Host "=== NurseLinks FULL RESTORE ===" -ForegroundColor Red
 Write-Host "  Target project: $ref"
+Write-Host "  Host:           $dbHost (pooler)"
 Write-Host "  Archive:        $archive"
 Write-Host ""
 Write-Host "This will OVERWRITE auth + public data on the target project." -ForegroundColor Red
@@ -100,15 +99,12 @@ Write-Host ""
 
 if (-not $SkipAuth -and (Test-Path $authSql)) {
     Write-Host "1/4  Restore auth (users + identities)..." -ForegroundColor Yellow
-    Invoke-Psql $ref $pass $cleanSql
-    $prev = $env:PGPASSWORD
-    $env:PGPASSWORD = $pass
-    & psql -h (Db-Host $ref) -p 5432 -U postgres -d postgres --no-password `
+    Invoke-Psql $cleanSql
+    & psql -h $dbHost -p 5432 -U $dbUser -d postgres --no-password `
         --file=$authSql --no-psqlrc --quiet 2>&1 | Where-Object {
             $_ -notmatch "already exists|duplicate key|does not exist"
         }
     if ($LASTEXITCODE -ne 0) { throw "auth restore failed" }
-    $env:PGPASSWORD = $prev
     Write-Host "     auth restored" -ForegroundColor Green
 } elseif ($SkipAuth) {
     Write-Host "1/4  Skipped auth (-SkipAuth)" -ForegroundColor DarkYellow
@@ -117,9 +113,7 @@ if (-not $SkipAuth -and (Test-Path $authSql)) {
 }
 
 Write-Host "2/4  Restore public schema..." -ForegroundColor Yellow
-$prev = $env:PGPASSWORD
-$env:PGPASSWORD = $pass
-& psql -h (Db-Host $ref) -p 5432 -U postgres -d postgres --no-password `
+& psql -h $dbHost -p 5432 -U $dbUser -d postgres --no-password `
     --command="DROP SCHEMA IF EXISTS public CASCADE;" --no-psqlrc --set=ON_ERROR_STOP=1
 if ($LASTEXITCODE -ne 0) { throw "DROP SCHEMA public failed" }
 
@@ -142,14 +136,13 @@ if (Test-Path $publicSql) {
     -replace '(?m)^\\unrestrict .*\r?\n', '' |
     Set-Content -Path $tempSql -Encoding utf8
 
-Invoke-PsqlPipe $ref $pass $tempSql
+Invoke-PsqlPipe $tempSql
 Remove-Item -Force $tempSql -ErrorAction SilentlyContinue
-$env:PGPASSWORD = $prev
 Write-Host "     public schema restored" -ForegroundColor Green
 
 if (-not $SkipPostRestore -and (Test-Path $postRestore)) {
     Write-Host "3/4  Post-restore repair (triggers, grants, profiles)..." -ForegroundColor Yellow
-    Invoke-Psql $ref $pass $postRestore
+    Invoke-Psql $postRestore
     Write-Host "     post-restore complete" -ForegroundColor Green
 } else {
     Write-Host "3/4  Skipped post-restore" -ForegroundColor DarkYellow

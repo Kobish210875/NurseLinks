@@ -43,20 +43,23 @@ function Read-RecoveryEnv {
     return $vars
 }
 
-function Db-Host([string]$ref) { "db.$ref.supabase.co" }
-
 $cfg = Read-RecoveryEnv
 $ref = $cfg["PROJECT_REF"]
 $pass = $cfg["DB_PASSWORD"]
+$poolerHost = $cfg["DB_POOLER_HOST"]
+if (-not $poolerHost) { throw "DB_POOLER_HOST is required in env.recovery.local" }
+$dbHost = $poolerHost
+$dbUser = "postgres.$ref"
 $env:PGPASSWORD = $pass
 $env:PGSSLMODE = "require"
 
 Write-Host "=== Restore public snapshot ===" -ForegroundColor Red
 Write-Host "  Project:  $ref"
+Write-Host "  Host:     $dbHost (pooler)"
 Write-Host "  Snapshot: $snapshot"
 Write-Host ""
 
-& psql -h (Db-Host $ref) -p 5432 -U postgres -d postgres --no-password `
+& psql -h $dbHost -p 5432 -U $dbUser -d postgres --no-password `
     --command="DROP SCHEMA IF EXISTS public CASCADE;" --no-psqlrc --set=ON_ERROR_STOP=1
 if ($LASTEXITCODE -ne 0) { throw "DROP SCHEMA failed" }
 
@@ -75,13 +78,13 @@ if ($snapshot.Path.EndsWith(".gz")) {
     -replace '(?m)^\\unrestrict .*\r?\n', '' |
     Set-Content -Path $tempSql -Encoding utf8
 
-& psql -h (Db-Host $ref) -p 5432 -U postgres -d postgres --no-password `
+& psql -h $dbHost -p 5432 -U $dbUser -d postgres --no-password `
     --file=$tempSql --no-psqlrc --set=ON_ERROR_STOP=1
 if ($LASTEXITCODE -ne 0) { throw "Snapshot restore failed" }
 Remove-Item -Force $tempSql -ErrorAction SilentlyContinue
 
 if (Test-Path $postRestore) {
-    & psql -h (Db-Host $ref) -p 5432 -U postgres -d postgres --no-password `
+    & psql -h $dbHost -p 5432 -U $dbUser -d postgres --no-password `
         --file=$postRestore --no-psqlrc --set=ON_ERROR_STOP=1
     if ($LASTEXITCODE -ne 0) { throw "post-restore-public-schema.sql failed" }
 }

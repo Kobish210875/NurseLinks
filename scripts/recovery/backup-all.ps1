@@ -43,13 +43,18 @@ function Read-RecoveryEnv {
     return $vars
 }
 
-function Db-Host([string]$ref) { "db.$ref.supabase.co" }
-
 $cfg = Read-RecoveryEnv
 $ref = $cfg["PROJECT_REF"]
 $pass = $cfg["DB_PASSWORD"]
+$poolerHost = $cfg["DB_POOLER_HOST"]
 $envName = if ($cfg["ENVIRONMENT"]) { $cfg["ENVIRONMENT"] } else { "prod" }
 if (-not $ref -or -not $pass) { throw "PROJECT_REF and DB_PASSWORD required in env.recovery.local" }
+if (-not $poolerHost) { throw "DB_POOLER_HOST is required. Get it from Supabase Dashboard -> Connect -> Session pooler hostname." }
+
+# Use the session pooler (IPv4, same as GitHub Actions).
+# Pooler user format: postgres.<project-ref>
+$dbHost = $poolerHost
+$dbUser = "postgres.$ref"
 
 $root = if ($ArchiveRoot) { $ArchiveRoot } else { Join-Path $PSScriptRoot "archives" }
 $stamp = (Get-Date).ToUniversalTime().ToString("yyyyMMdd'T'HHmmss'Z'")
@@ -65,15 +70,15 @@ $manifestPath = Join-Path $archive "manifest.json"
 Write-Host ""
 Write-Host "=== NurseLinks full backup ===" -ForegroundColor Cyan
 Write-Host "  Project: $ref ($envName)"
+Write-Host "  Host:    $dbHost (pooler)"
 Write-Host "  Archive: $archive"
 Write-Host ""
 
 $env:PGPASSWORD = $pass
 $env:PGSSLMODE = "require"
-$dbHost = Db-Host $ref
 
 Write-Host "1/3  Dump public schema..." -ForegroundColor Yellow
-& pg_dump -h $dbHost -p 5432 -U postgres -d postgres `
+& pg_dump -h $dbHost -p 5432 -U $dbUser -d postgres `
     --schema=public --no-owner --no-acl --format=plain `
     --file=$publicSql `
     2> "$archive\pg_dump-public.log"
@@ -87,7 +92,7 @@ if (Get-Command gzip -ErrorAction SilentlyContinue) {
 
 if (-not $SkipAuth) {
     Write-Host "2/3  Dump auth (users + identities)..." -ForegroundColor Yellow
-    & pg_dump -h $dbHost -p 5432 -U postgres -d postgres `
+    & pg_dump -h $dbHost -p 5432 -U $dbUser -d postgres `
         --data-only --schema=auth `
         --table=auth.users --table=auth.identities `
         --no-owner --no-acl `
