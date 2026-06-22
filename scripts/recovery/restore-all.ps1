@@ -80,13 +80,15 @@ function Invoke-Psql([string]$file) {
 
 function Invoke-PsqlPipe([string]$inputFile) {
     Write-Host "  psql <- $(Split-Path $inputFile -Leaf)" -ForegroundColor DarkCyan
-    Get-Content $inputFile -Raw | & psql -h $dbHost -p 5432 -U $dbUser -d postgres `
-        --no-password --no-psqlrc --set=ON_ERROR_STOP=1
+    # Use --file so psql reads directly (avoids PowerShell pipe encoding issues).
+    & psql -h $dbHost -p 5432 -U $dbUser -d postgres `
+        --no-password --no-psqlrc --set=ON_ERROR_STOP=1 --file=$inputFile
     if ($LASTEXITCODE -ne 0) { throw "psql pipe failed: $inputFile" }
 }
 
 $env:PGPASSWORD = $pass
 $env:PGSSLMODE = "require"
+$env:PGCLIENTENCODING = "UTF8"
 
 Write-Host ""
 Write-Host "=== NurseLinks FULL RESTORE ===" -ForegroundColor Red
@@ -146,13 +148,15 @@ if (Test-Path $publicSql) {
 #   - \restrict / \unrestrict (pg_dump 17 artefacts)
 #   - CREATE SCHEMA public (we already created it above)
 #   - CREATE EXTENSION pgcrypto / pg_trgm (already enabled above)
-(Get-Content $tempSql -Raw) `
+$content = [System.IO.File]::ReadAllText($tempSql, [System.Text.Encoding]::UTF8)
+$content = $content `
     -replace '(?m)^\\restrict .*\r?\n', '' `
     -replace '(?m)^\\unrestrict .*\r?\n', '' `
     -replace '(?mi)^CREATE SCHEMA public\s*;\r?\n', '' `
     -replace '(?mi)^CREATE EXTENSION\s+IF NOT EXISTS\s+(pgcrypto|pg_trgm)\b[^\r\n]*\r?\n', '' `
-    -replace '(?mi)^CREATE EXTENSION\s+(pgcrypto|pg_trgm)\b[^\r\n]*\r?\n', '' |
-    Set-Content -Path $tempSql -Encoding utf8
+    -replace '(?mi)^CREATE EXTENSION\s+(pgcrypto|pg_trgm)\b[^\r\n]*\r?\n', ''
+# Write UTF-8 without BOM so psql reads Hebrew/Unicode correctly.
+[System.IO.File]::WriteAllText($tempSql, $content, (New-Object System.Text.UTF8Encoding $false))
 
 Invoke-PsqlPipe $tempSql
 Remove-Item -Force $tempSql -ErrorAction SilentlyContinue
