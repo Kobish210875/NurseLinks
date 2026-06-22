@@ -1,6 +1,7 @@
 name: Database Snapshot Backup (PROD schedule)
 
 # PROD every 4 hours. Separate file avoids GitHub push-event bugs on the manual workflow.
+run-name: Scheduled PROD snapshot
 on:
   schedule:
     - cron: "0 */4 * * *"

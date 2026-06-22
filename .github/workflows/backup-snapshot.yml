@@ -3,10 +3,8 @@ name: Database Snapshot Backup
 # Manual DEV/PROD snapshots from admin UI or GitHub UI.
 # From GitHub UI: pick branch "develop" for DEV, "main" for PROD (Use workflow from).
 # PROD schedule lives in backup-snapshot-schedule.yml (every 4 hours).
-run-name: Snapshot ${{ github.event.inputs.environment || 'noop' }} (${{ github.ref_name }})
+run-name: Manual snapshot — ${{ github.event.inputs.environment || 'prod' }} (${{ github.ref_name }})
 on:
-  push:
-    branches: [main, develop]
   workflow_dispatch:
     inputs:
       environment:
@@ -19,16 +17,7 @@ on:
           - prod
 
 jobs:
-  # GitHub sometimes registers phantom "push" runs for workflow_dispatch-only
-  # workflows (0 real jobs, immediate failure). This no-op keeps those harmless.
-  ci-push-noop:
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Push event — snapshot backup runs on schedule (PROD) or manual dispatch only."
-
   backup:
-    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 

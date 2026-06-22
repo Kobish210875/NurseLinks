@@ -2,6 +2,7 @@ name: Database Snapshot Backup (DEV schedule)
 
 # DEV daily at 02:00 UTC.
 # Manual DEV/PROD snapshots use backup-snapshot.yml instead.
+run-name: Scheduled DEV snapshot
 on:
   schedule:
     - cron: "0 2 * * *"

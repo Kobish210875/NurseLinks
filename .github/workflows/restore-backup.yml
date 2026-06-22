@@ -1,14 +1,13 @@
 name: Restore Database from Backup
 
-# MANUAL ONLY — never runs on a schedule.
+# MANUAL ONLY — never runs on a schedule or on git push.
 # Triggered from the admin UI (Restore button) or directly from GitHub.
 #
 # ⚠️  WARNING: This drops and recreates the public schema.
 #              All existing data in public.* will be overwritten.
 #              Run this only after confirming with the team.
+run-name: Restore — ${{ github.event.inputs.environment || 'dev' }} — ${{ github.event.inputs.backup_file_path }}
 on:
-  push:
-    branches: [main, develop]
   workflow_dispatch:
     inputs:
       environment:
@@ -36,14 +35,7 @@ on:
         type: string
 
 jobs:
-  ci-push-noop:
-    if: github.event_name == 'push'
-    runs-on: ubuntu-latest
-    steps:
-      - run: echo "Push event — restore runs via manual dispatch or admin UI only."
-
   restore:
-    if: github.event_name != 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 

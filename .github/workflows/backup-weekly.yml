@@ -1,6 +1,7 @@
 name: Weekly Full Backup (PROD + DEV)
 
 # Every Sunday at 03:00 UTC.
+run-name: Weekly full backup — ${{ github.event.inputs.environment || 'both' }}
 # Dumps public schema + auth.users/identities (logins) for both environments.
 # Stored in Supabase Storage under {env}/weekly-TIMESTAMP.sql.gz
 # and {env}/auth-TIMESTAMP.sql.gz — kept for 28 days (672 hours).
