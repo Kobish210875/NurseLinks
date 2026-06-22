@@ -1,0 +1,207 @@
+================================================================================
+  NURSELINKS — MANUAL OPERATIONS REFERENCE
+  Live site: https://nurselinks.net
+  Last updated: June 2026
+================================================================================
+
+Keep this file with your recovery kit alongside:
+  - BACKUP-AUTOMATION.txt   (what runs automatically and when)
+  - RECOVERY-SCENARIOS.txt  (what to do in each disaster scenario)
+
+All commands are run from the repo root:
+  C:\Users\Kshmaryahu.SHIFT4CORP\NurseLinks\
+
+================================================================================
+SECTION 1 — WIPE ALL DATA (pre-launch / full reset)
+================================================================================
+
+Use this when: going live for the first time, or doing a full test reset.
+
+STEP 1 — Empty the database
+  - Open Supabase Dashboard -> SQL Editor -> select PROD project
+  - Paste and run the file: supabase/pre-launch-cleanup.sql
+  - Expected output at the end:
+      auth.users:  1 (admin only)
+      profiles:    1 (admin only)
+      posts:       0
+      jobs:        0
+      ...
+      All checks passed. Committing cleanup.
+  - If it says ABORT or rolls back -> do NOT proceed, check the error first.
+
+STEP 2 — Empty all storage buckets (avatars, post-images, job-applications)
+  npm run storage:empty
+
+  Preview only (no files deleted):
+  npm run storage:empty:dry
+
+  Single bucket only:
+  node scripts/recovery/empty-storage.mjs --bucket avatars
+
+STEP 3 — Take a clean baseline backup (do this immediately after wiping)
+  npm run recovery:backup
+  -> Creates a new folder in scripts/recovery/archives/
+  -> Copy the archive to OneDrive or external drive for off-site safety.
+
+================================================================================
+SECTION 2 — LOCAL FULL BACKUP (run weekly / before major changes)
+================================================================================
+
+Run:
+  npm run recovery:backup
+
+What it creates in scripts/recovery/archives/prod-full-YYYYMMDDTHHMMSSZ/:
+  public-schema.sql   All tables, rows, indexes (posts, profiles, jobs, etc.)
+  auth-data.sql       Login accounts (auth.users + auth.identities)
+  storage/            All files from avatars, post-images, job-applications
+  manifest.json       Summary with row counts and file list
+
+Verify the archive:
+  npm run recovery:verify
+
+How often: weekly (Sunday is a good habit).
+Where to store: copy the archive folder to OneDrive / external drive.
+
+================================================================================
+SECTION 3 — RECOVER FROM LOCAL BACKUP
+================================================================================
+
+Use this when: total wipe, login accounts missing, storage files missing.
+
+STEP 1 — See what archives are available
+  Get-ChildItem scripts/recovery/archives | Sort-Object LastWriteTime -Descending
+
+  Current archives:
+    scripts/recovery/archives/prod-full-20260622T084843Z  (latest - 11:49 AM)
+    scripts/recovery/archives/prod-full-20260622T083655Z
+    scripts/recovery/archives/prod-full-20260622T082559Z
+    scripts/recovery/archives/prod-full-20260622T081921Z
+
+STEP 2 — Run the restore
+  npm run recovery:restore
+
+  When prompted:
+    ArchivePath: scripts/recovery/archives/prod-full-20260622T084843Z
+    Confirm:     RESTORE
+
+  What the script does:
+    1/5  Restore auth.users + auth.identities (login accounts)
+    2/5  Drop public schema, recreate, enable pg_trgm + pgcrypto
+    3/5  Replay public-schema.sql (tables, data, indexes)
+    4/5  Post-restore repair (triggers, grants, missing profiles)
+    5/5  Re-apply security hardening (is_admin, RLS policies)
+
+  NOTE: Storage files are NOT restored automatically unless the archive
+        has a storage/ folder. If you need storage files, the script
+        will upload them from the archive automatically when present.
+
+STEP 3 — After restore completes
+  - LOG OUT of the site and back in (session must refresh)
+  - Check: feed loads, jobs load, messages load
+  - Check: /admin/backups shows history
+  - Check: your profile photo appears
+
+STEP 4 — Skip parts if needed
+  Skip auth restore (keep existing logins):
+    npm run recovery:restore -- -SkipAuth
+
+  Skip storage restore:
+    npm run recovery:restore -- -SkipStorage
+
+  Skip both:
+    npm run recovery:restore -- -SkipAuth -SkipStorage
+
+================================================================================
+SECTION 4 — RECOVER FROM CLOUD SNAPSHOT (GitHub Actions)
+================================================================================
+
+Use this when: bad migration / wrong data in the last few hours.
+This restores the PUBLIC SCHEMA only (not auth.users or storage files).
+
+FROM GITHUB UI:
+  1. Go to: https://github.com/Kobish210875/NurseLinks/actions
+  2. Click: Restore Database from Backup
+  3. Click: Run workflow
+  4. Fill in:
+       Environment:        prod  (or dev)
+       backup_file_path:   prod/prod-snapshot-20260622T080000Z.sql.gz
+       confirm:            RESTORE
+  5. Click: Run workflow (green button)
+
+WHERE TO FIND snapshot file names:
+  - Supabase Dashboard -> Storage -> backups bucket -> prod/ folder
+  - Or: Admin -> Backups page in the app (file_path column)
+
+FROM THE APP (admin only):
+  Admin -> Backups -> find the snapshot row -> click Restore
+
+================================================================================
+SECTION 5 — TRIGGER A MANUAL SNAPSHOT (cloud, public schema only)
+================================================================================
+
+FROM GITHUB UI:
+  1. Go to: https://github.com/Kobish210875/NurseLinks/actions
+  2. Click: Database Snapshot Backup
+  3. Click: Run workflow
+  4. Select environment: prod or dev
+  5. Click: Run workflow
+
+FROM THE APP (admin only):
+  Admin -> Backups -> Trigger Backup button
+
+================================================================================
+SECTION 6 — APPLY SECURITY HARDENING (after any restore)
+================================================================================
+
+The DROP SCHEMA CASCADE during restore wipes all hardened functions and RLS
+policies. Always run this after a restore if the security script was not
+applied automatically.
+
+  - Open Supabase Dashboard -> SQL Editor -> select PROD
+  - Paste and run: supabase/security-hardening.sql
+  - Then log out and back in on the site.
+
+What it does:
+  - is_admin() only checks the caller (not probeable by other users)
+  - profiles_public view hides internal moderation columns
+  - Non-admins cannot read suspension_reason of other users
+  - admin_users RLS policy updated
+
+================================================================================
+SECTION 7 — AUTOMATED BACKUP SCHEDULE (for reference)
+================================================================================
+
+These run without any action from you:
+
+  Every 4 hours     PROD snapshot (public schema)        7 days retention
+  Daily 02:00 UTC   DEV snapshot (public schema)         3 days retention
+  Sunday 03:00 UTC  Weekly full PROD + DEV               28 days retention
+                    (public schema + auth.users)
+
+Monitor at:
+  GitHub -> Actions -> look for "Scheduled PROD snapshot" / "Scheduled DEV snapshot"
+  App    -> Admin -> Backups
+
+================================================================================
+SECTION 8 — SECRETS REQUIRED IN GITHUB
+================================================================================
+
+GitHub -> NurseLinks repo -> Settings -> Secrets and variables -> Actions
+
+PROD (5 secrets):
+  SUPABASE_PROD_DB_URL
+  SUPABASE_PROD_DB_PASSWORD
+  SUPABASE_PROD_DB_POOLER_HOST    <- get from Supabase -> Connect -> Session pooler
+  SUPABASE_PROD_URL
+  SUPABASE_PROD_SERVICE_ROLE_KEY
+
+DEV (5 secrets):
+  SUPABASE_DEV_DB_URL
+  SUPABASE_DEV_DB_PASSWORD
+  SUPABASE_DEV_DB_POOLER_HOST
+  SUPABASE_DEV_URL
+  SUPABASE_DEV_SERVICE_ROLE_KEY
+
+================================================================================
+  END OF MANUAL OPERATIONS REFERENCE
+================================================================================
