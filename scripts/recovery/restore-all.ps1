@@ -142,10 +142,16 @@ if (Test-Path $publicSql) {
     throw "No public schema file found"
 }
 
-# pg_dump 17 may emit \restrict lines that break plain psql replay
+# Strip lines that conflict with the schema/extension setup we already ran:
+#   - \restrict / \unrestrict (pg_dump 17 artefacts)
+#   - CREATE SCHEMA public (we already created it above)
+#   - CREATE EXTENSION pgcrypto / pg_trgm (already enabled above)
 (Get-Content $tempSql -Raw) `
     -replace '(?m)^\\restrict .*\r?\n', '' `
-    -replace '(?m)^\\unrestrict .*\r?\n', '' |
+    -replace '(?m)^\\unrestrict .*\r?\n', '' `
+    -replace '(?mi)^CREATE SCHEMA public\s*;\r?\n', '' `
+    -replace '(?mi)^CREATE EXTENSION\s+IF NOT EXISTS\s+(pgcrypto|pg_trgm)\b[^\r\n]*\r?\n', '' `
+    -replace '(?mi)^CREATE EXTENSION\s+(pgcrypto|pg_trgm)\b[^\r\n]*\r?\n', '' |
     Set-Content -Path $tempSql -Encoding utf8
 
 Invoke-PsqlPipe $tempSql
