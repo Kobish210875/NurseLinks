@@ -1,0 +1,430 @@
+================================================================================
+  NURSELINKS — DISASTER RECOVERY SCENARIOS
+  Live site: https://nurselinks.net
+  Last updated: June 2026
+================================================================================
+
+Keep this file with your off-site backup archive (OneDrive, external drive).
+It covers every failure you can realistically face and exactly what to do.
+
+────────────────────────────────────────────────────────────────────────────────
+QUICK REFERENCE
+────────────────────────────────────────────────────────────────────────────────
+
+  What broke?                            Jump to
+  ─────────────────────────────────────  ──────────
+  Site shows error / blank page          SCENARIO 1
+  Bad migration / wrong data             SCENARIO 2
+  Users can't log in                     SCENARIO 3
+  Profile / post data missing            SCENARIO 4
+  Photos or CVs broken / missing         SCENARIO 5
+  Admin backups page broken              SCENARIO 6
+  Total wipe — everything gone           SCENARIO 7
+  New user signs up — no profile         SCENARIO 8
+  Vercel deploy broke                    SCENARIO 9
+  GitHub Actions backup failing          SCENARIO 10
+  Need to test restore safely            SCENARIO 11
+
+────────────────────────────────────────────────────────────────────────────────
+BEFORE YOU START — ALWAYS CHECK THIS FIRST
+────────────────────────────────────────────────────────────────────────────────
+
+1. Is Supabase itself down?
+   → https://status.supabase.com
+   → If yes, wait. Do nothing to the DB.
+
+2. Is Vercel down?
+   → https://www.vercel-status.com
+   → If yes, wait. Do nothing.
+
+3. Is it code or data?
+   → If the site broke right after a deploy → SCENARIO 9 (rollback code first).
+   → If data looks wrong but site loads → SCENARIO 2 or 4.
+
+4. Do you have a recent backup?
+   → Check /admin/backups on the live site (if it loads).
+   → Or open scripts/recovery/archives/ on your laptop.
+   → PROD auto-snapshots every 4 hours, kept 3 days.
+
+────────────────────────────────────────────────────────────────────────────────
+SCENARIO 1 — SITE SHOWS ERROR / BLANK PAGE
+────────────────────────────────────────────────────────────────────────────────
+
+Symptoms: 500 error, white page, "Application error", Hebrew error toast.
+
+Steps:
+  1. Open Vercel dashboard → NurseLinks project → Functions tab.
+     Look for runtime errors in the last 5 minutes.
+
+  2. Open Supabase dashboard → your PROD project → Logs → API.
+     Look for 5xx errors or connection failures.
+
+  3. Check if it broke right after a deploy:
+     → See SCENARIO 9.
+
+  4. If Supabase shows "project paused" (free plan):
+     → Supabase dashboard → Resume project.
+     → Wait ~2 minutes, reload site.
+
+  5. If env vars were changed accidentally:
+     → Vercel → Settings → Environment Variables
+     → Restore NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY,
+       SUPABASE_SERVICE_ROLE_KEY
+     → Redeploy.
+
+Data loss: None expected.
+
+────────────────────────────────────────────────────────────────────────────────
+SCENARIO 2 — BAD MIGRATION / WRONG DATA IN DATABASE
+────────────────────────────────────────────────────────────────────────────────
+
+Symptoms: You ran a SQL script and something went wrong. Columns missing,
+wrong values, broken constraints. Users report data problems.
+
+Steps:
+  1. Stop making it worse — do not run more SQL until recovered.
+
+  2. Go to https://nurselinks.net/admin/backups
+     → Pick the newest "completed" snapshot BEFORE the bad change.
+     → Click Restore.
+     → GitHub Actions will run (~5 min). Watch it go green.
+
+  3. After restore, run in Supabase SQL Editor:
+     → supabase/post-restore-public-schema.sql
+
+  4. Smoke-test: load feed, open a profile, check a job posting.
+
+  OR — if admin page is broken, run locally:
+     npm run recovery:snapshot -- `
+       -SnapshotPath "path\to\prod-snapshot-....sql.gz" `
+       -Confirm RESTORE
+
+Data loss: Everything created AFTER the chosen snapshot (up to 4 hours).
+Auth / logins: NOT affected (auth.users is not in snapshots).
+Storage files: NOT affected (photos/CVs survive restore).
+
+────────────────────────────────────────────────────────────────────────────────
+SCENARIO 3 — USERS CANNOT LOG IN
+────────────────────────────────────────────────────────────────────────────────
+
+Symptoms: Login page accepts email/password but redirects to login again.
+Or: "Invalid login credentials" for everyone.
+Or: User signs in but sees empty profile / gets kicked out.
+
+CASE A — Happened right after a restore:
+  The auth trigger (handle_new_user) may be broken.
+  → Run in Supabase SQL Editor:
+       supabase/post-restore-public-schema.sql
+  → This rebuilds the trigger and backfills missing profiles.
+
+CASE B — handle_new_user trigger is broken (not after a restore):
+  → Run in Supabase SQL Editor:
+       supabase/post-restore-public-schema.sql
+     (safe to run anytime, idempotent)
+
+CASE C — Auth emails (confirm, reset) not arriving:
+  → Supabase dashboard → Authentication → Email Templates.
+  → Check SMTP settings if you have custom email configured.
+  → Check Resend dashboard for bounces.
+
+CASE D — Everyone locked out including admin:
+  → Go to Supabase dashboard → Authentication → Users.
+  → Find your admin email, click "Send magic link" or reset password.
+  → Log in via magic link, then fix the issue.
+
+CASE E — Supabase auth schema wiped (extreme):
+  → Only a full restore from local archive helps.
+  → See SCENARIO 7.
+
+Data loss: None for cases A–D.
+
+────────────────────────────────────────────────────────────────────────────────
+SCENARIO 4 — PROFILE / POSTS / JOBS DATA MISSING OR WRONG
+────────────────────────────────────────────────────────────────────────────────
+
+Symptoms: Users report their profile is empty, posts are gone,
+job applications disappeared, messages missing.
+
+CASE A — Happened after a restore:
+  → Users who signed up or posted AFTER the snapshot time are affected.
+  → Their auth account still exists (they can log in).
+  → Their profile gets a stub (name from signup email).
+  → Their posts/messages/applications from after the snapshot are gone.
+  → This is expected behavior — nothing to fix technically.
+  → Notify affected users manually.
+
+CASE B — Data missing without a restore:
+  → Check Supabase dashboard → Table Editor → profiles / posts / jobs.
+  → Look at row counts. If dramatically low, something deleted rows.
+  → Restore from latest good snapshot (see SCENARIO 2).
+
+CASE C — One user's data gone:
+  → Check if they deleted their own profile (cascades everything).
+  → Check Supabase → Authentication → Users — is the auth account there?
+  → If yes: restore their profile manually from SQL editor using data
+     from a snapshot download (Download button in /admin/backups).
+  → If no: user deleted their account fully, data is gone by design.
+
+Data loss: Depends on snapshot age (max 4 hours for PROD).
+
+────────────────────────────────────────────────────────────────────────────────
+SCENARIO 5 — PHOTOS OR CVS BROKEN / MISSING
+────────────────────────────────────────────────────────────────────────────────
+
+Symptoms: Profile photos show broken image icon. Post images 404.
+CV download links fail.
+
+IMPORTANT: Storage files (avatars, post-images, job-applications buckets)
+are NOT included in GitHub snapshot backups. They only exist in:
+  a) Supabase Storage (live)
+  b) Your local recovery archive (scripts/recovery/archives/)
+
+CASE A — Happened after a snapshot restore:
+  → The DB (URLs) was restored, but storage buckets were not touched.
+  → If files still exist in Supabase Storage → they should still work.
+  → If the URLs in the DB now point to old/wrong paths:
+     → Run in SQL Editor:
+          UPDATE public.profiles
+          SET avatar_url = NULL
+          WHERE avatar_url NOT LIKE '%supabase.co%';
+       (replace with correct project URL if needed)
+
+CASE B — Files deleted from Supabase Storage accidentally:
+  → If you have a local archive:
+       npm run recovery:restore -- `
+         -ArchivePath "path\to\archive" `
+         -Confirm RESTORE `
+         -SkipAuth -SkipStorage:$false
+     Or just storage:
+       node scripts/recovery/restore-storage.mjs --dir "path\to\archive\storage"
+  → If no local archive → files are unrecoverable.
+
+CASE C — Supabase Storage bucket policies broken:
+  → Run in SQL Editor:
+       supabase/storage.sql         (avatars)
+       supabase/post-images.sql     (post images)
+     (these scripts are idempotent)
+
+Data loss: Unrecoverable if no local archive and files deleted from Supabase.
+Prevention: Run monthly backup with:  npm run recovery:backup
+
+────────────────────────────────────────────────────────────────────────────────
+SCENARIO 6 — ADMIN BACKUPS PAGE BROKEN
+────────────────────────────────────────────────────────────────────────────────
+
+Symptoms: /admin/backups shows error, spinning, or "Could not load backup history".
+
+CASE A — backup_logs table missing (fresh DB or post-restore):
+  → Run in Supabase SQL Editor:
+       supabase/backup-logs.sql
+       supabase/backup-logs-snapshot-type.sql
+       supabase/backup-logs-operation.sql
+
+CASE B — service_role lost table access (after a restore):
+  → Run in Supabase SQL Editor:
+       supabase/post-restore-public-schema.sql
+
+CASE C — GITHUB_PAT expired or missing:
+  → GitHub → Settings → Developer settings → Personal access tokens (classic)
+  → Create new token with scopes: repo, workflow
+  → Vercel → Settings → Environment Variables → GITHUB_PAT → update value
+  → Redeploy Vercel.
+
+CASE D — Backup workflow itself failing:
+  → See SCENARIO 10.
+
+────────────────────────────────────────────────────────────────────────────────
+SCENARIO 7 — TOTAL WIPE — EVERYTHING GONE
+────────────────────────────────────────────────────────────────────────────────
+
+Symptoms: Supabase project deleted, or auth + public schema both gone,
+or project accidentally reset.
+
+This is the worst case. You need your LOCAL archive.
+
+Requirements:
+  - env.recovery.local filled in for the target project
+  - A local archive from scripts/recovery/archives/
+  - PostgreSQL client tools (psql, pg_dump) installed
+
+Steps:
+  1. If Supabase project is deleted:
+     → Create a new Supabase project (same region recommended).
+     → Run ALL schema SQL files in order (see supabase/README.md).
+     → Update env.recovery.local with the new project's credentials.
+     → Update Vercel env vars with the new project's URL and keys.
+     → Redeploy Vercel.
+
+  2. Run full restore:
+       npm run recovery:restore -- `
+         -ArchivePath "scripts\recovery\archives\prod-full-TIMESTAMP" `
+         -Confirm RESTORE
+
+     This restores in order:
+       a) auth.users + auth.identities (logins + passwords)
+       b) public.* schema (all app data)
+       c) post-restore-public-schema.sql (triggers, grants, profiles)
+       d) storage files (avatars, post images, CVs)
+
+  3. Verify the archive first:
+       npm run recovery:verify -- -ArchivePath "path\to\archive"
+
+  4. Update Supabase auth redirect URLs in dashboard:
+       Authentication → URL Configuration:
+         Site URL: https://nurselinks.net
+         Redirect URLs: https://nurselinks.net/auth/confirm
+                        https://nurselinks.net/auth/confirm?**
+                        https://nurselinks.net/reset-password
+
+  5. Trigger a fresh PROD snapshot from /admin/backups immediately.
+
+Data loss: Everything created AFTER the archive was made.
+(Monthly backup → max 1 month data loss in worst case.
+ Use monthly backup + GitHub 4h snapshots together for best coverage.)
+
+────────────────────────────────────────────────────────────────────────────────
+SCENARIO 8 — NEW USER SIGNS UP BUT HAS NO PROFILE (blank app)
+────────────────────────────────────────────────────────────────────────────────
+
+Symptoms: New user registers, email confirms, logs in — but profile page
+is blank or throws an error.
+
+Cause: The handle_new_user trigger on auth.users is broken or missing.
+
+Fix:
+  → Run in Supabase SQL Editor:
+       supabase/post-restore-public-schema.sql
+  → This recreates the trigger (idempotent, safe to run anytime).
+  → For the affected user specifically:
+       INSERT INTO public.profiles (id, full_name)
+       SELECT id, split_part(email, '@', 1)
+       FROM auth.users
+       WHERE email = 'affected@email.com'
+       ON CONFLICT (id) DO NOTHING;
+
+────────────────────────────────────────────────────────────────────────────────
+SCENARIO 9 — VERCEL DEPLOY BROKE THE SITE
+────────────────────────────────────────────────────────────────────────────────
+
+Symptoms: Site was working, you deployed, now it's broken.
+
+Steps:
+  1. Vercel dashboard → Deployments tab.
+  2. Find the last GOOD deployment (green checkmark).
+  3. Click the three dots → Redeploy (or "Promote to Production").
+  4. Site should be back within ~1 minute.
+
+If a BAD migration ran with the deploy:
+  → Roll back the Vercel deploy first (above).
+  → Then fix the DB: see SCENARIO 2.
+
+Data loss: None from rollback. If a migration deleted data → SCENARIO 2.
+
+────────────────────────────────────────────────────────────────────────────────
+SCENARIO 10 — GITHUB ACTIONS BACKUP WORKFLOW FAILING
+────────────────────────────────────────────────────────────────────────────────
+
+Symptoms: /admin/backups shows "failed" rows or no new rows for 4+ hours.
+
+Steps:
+  1. Go to GitHub → Actions → Database Snapshot Backup.
+  2. Open the failed run. Expand each step to find the first red one.
+
+  COMMON CAUSES:
+
+  A. "Insert backup_log (running)" fails (HTTP 4xx):
+     → backup_logs table missing or schema outdated.
+     → Run in Supabase SQL Editor:
+            supabase/backup-logs.sql
+            supabase/backup-logs-snapshot-type.sql
+            supabase/backup-logs-operation.sql
+            supabase/post-restore-public-schema.sql
+     → Re-run the workflow.
+
+  B. "Configure PostgreSQL connection" fails:
+     → SUPABASE_*_DB_PASSWORD or SUPABASE_*_DB_POOLER_HOST secret is wrong.
+     → GitHub → repo Settings → Secrets → Actions → fix the secret.
+
+  C. "Dump database" fails (pg_dump error):
+     → Check pg_dump.log in the step output for the actual error.
+     → Usually a connectivity issue — retry the workflow.
+
+  D. "Upload to Supabase Storage" fails (HTTP 4xx/5xx):
+     → Storage bucket "backups" may be missing.
+     → Run: supabase/backup-logs.sql  (creates the bucket).
+     → Or Supabase dashboard → Storage → create "backups" bucket (private).
+
+  E. Workflow not running at all (no runs in 4h for PROD):
+     → GitHub Actions may be paused. GitHub → Actions → enable workflows.
+     → Or the cron in backup-snapshot-schedule.yml is wrong — check it.
+
+────────────────────────────────────────────────────────────────────────────────
+SCENARIO 11 — WANT TO TEST A RESTORE SAFELY (WITHOUT TOUCHING PROD)
+────────────────────────────────────────────────────────────────────────────────
+
+Never test a restore on production. Use DEV.
+
+Steps:
+  1. Create a copy of env.recovery.local pointing to your DEV project:
+       PROJECT_REF=your-dev-ref
+       SUPABASE_URL=https://your-dev-ref.supabase.co
+       DB_PASSWORD=dev-db-password
+       SERVICE_ROLE_KEY=dev-service-role-key
+       ENVIRONMENT=dev
+
+  2. Run the restore against DEV:
+       npm run recovery:restore -- `
+         -ArchivePath "scripts\recovery\archives\prod-full-TIMESTAMP" `
+         -Confirm RESTORE
+
+  3. Verify DEV looks correct.
+  4. Restore env.recovery.local back to PROD values when done.
+
+Alternatively, test a snapshot restore:
+  → Admin UI → /admin/backups → switch to DEV environment
+  → Pick a PROD snapshot → Restore (restores into DEV project)
+
+────────────────────────────────────────────────────────────────────────────────
+PREVENTION CHECKLIST
+────────────────────────────────────────────────────────────────────────────────
+
+MONTHLY (add to calendar):
+  [ ] Run: npm run recovery:backup
+  [ ] Verify: npm run recovery:verify -- -ArchivePath <latest archive>
+  [ ] Copy archive folder to OneDrive / external drive
+  [ ] Check /admin/backups — all PROD rows should be "completed"
+
+ALWAYS HAVE THESE SAVED OFFLINE (password manager):
+  [ ] Supabase PROD project ref, DB password, service role key
+  [ ] Vercel project URL + all env var values
+  [ ] GitHub repo URL + PAT token
+  [ ] Your admin email + password (for Supabase dashboard)
+
+AFTER ANY DATABASE CHANGE:
+  [ ] Test on DEV first (npm run clone:dev to copy prod → dev)
+  [ ] Trigger a manual PROD snapshot from /admin/backups before deploying
+  [ ] Keep the snapshot URL handy during the deployment window
+
+────────────────────────────────────────────────────────────────────────────────
+KEY FILE LOCATIONS
+────────────────────────────────────────────────────────────────────────────────
+
+scripts/recovery/backup-all.ps1            Full backup script (DB + auth + storage)
+scripts/recovery/restore-all.ps1           Full restore script
+scripts/recovery/restore-snapshot.ps1      Restore public schema only
+scripts/recovery/verify-archive.ps1        Check archive integrity
+scripts/recovery/env.recovery.example      Credentials template (copy → .local)
+scripts/recovery/README.md                 Short technical README
+
+supabase/post-restore-public-schema.sql    Run after EVERY restore
+supabase/backup-logs.sql                   Creates backup_logs table + bucket
+supabase/dev-emergency-login-bootstrap.sql Last resort: rebuild login on DEV
+
+.github/workflows/backup-snapshot.yml      Manual PROD/DEV snapshot workflow
+.github/workflows/backup-snapshot-schedule.yml   PROD every-4h cron
+.github/workflows/restore-backup.yml       Restore via GitHub Actions
+
+================================================================================
+END OF RECOVERY SCENARIOS
+Save this file. Print it. Keep it with your backup archive.
+================================================================================

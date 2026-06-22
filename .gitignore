@@ -34,6 +34,8 @@ yarn-error.log*
 .env*
 !.env.example
 env.clone.local
+env.recovery.local
+scripts/recovery/archives/
 
 # vercel
 .vercel
