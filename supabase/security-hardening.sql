@@ -53,8 +53,8 @@ as
     full_name,
     headline,
     avatar_url,
-    license_number,   -- visible on own profile only via app logic
-    bio,
+    city,
+    license_number,
     created_at,
     updated_at
   from public.profiles;
