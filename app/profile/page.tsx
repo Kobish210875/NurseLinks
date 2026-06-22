@@ -45,7 +45,7 @@ async function ProfileContent({ searchParams }: ProfilePageProps) {
     <main id="profile-page-top" className="mx-auto max-w-[1128px] space-y-6 px-4 py-8">
       <ProfileForm user={user} saved={params.saved === "1"} error={errorMessage} />
       <ProfileChangePasswordSection />
-      <DeleteAccountSection />
+      {!user.isAdmin ? <DeleteAccountSection /> : null}
     </main>
   );
 }

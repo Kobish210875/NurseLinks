@@ -12,6 +12,7 @@ import {
   mergeCvDraftWithWorkplace,
 } from "@/lib/profile/workplace";
 import { truncateHeadline, truncateProfileText } from "@/lib/profile/field-limits";
+import { isCurrentUserAdmin } from "@/lib/auth/admin";
 import { updateProfile, type ProfileUpdate } from "@/lib/supabase/profiles";
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
 
@@ -165,6 +166,9 @@ export async function deleteAccount() {
 
   if (!user) {
     redirect("/");
+  }
+  if (await isCurrentUserAdmin()) {
+    redirect("/profile");
   }
   if (!admin) {
     redirect("/profile?error=delete-not-configured");
