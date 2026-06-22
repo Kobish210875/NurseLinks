@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import CopyLinkButton from "@/components/install/CopyLinkButton";
 import NurseLinkWordmark from "@/components/NurseLinkWordmark";
+import { createInstallGuideQrDataUrl } from "@/lib/install/qr-code";
 import { getSiteUrl } from "@/lib/site-url";
 import { createT, getMessages } from "@/lib/i18n/messages";
 
@@ -40,10 +41,11 @@ function StepCard({ number, title, body }: { number: number; title: string; body
   );
 }
 
-export default function InstallGuidePage() {
+export default async function InstallGuidePage() {
   const t = createT(getMessages("he"));
   const siteUrl = getSiteUrl();
   const guideUrl = `${siteUrl}/install`;
+  const qrDataUrl = await createInstallGuideQrDataUrl(guideUrl);
 
   const steps = [
     { title: t("installGuide.step1Title"), body: t("installGuide.step1Body") },
@@ -63,6 +65,20 @@ export default function InstallGuidePage() {
           <p className="text-sm font-medium text-primary">{t("installGuide.badge")}</p>
           <h1 className="text-2xl font-bold leading-snug text-foreground">{t("installGuide.title")}</h1>
           <p className="text-sm leading-relaxed text-muted-foreground">{t("installGuide.intro")}</p>
+        </section>
+
+        <section className="feed-card flex flex-col items-center gap-3 p-5 text-center">
+          <h2 className="text-base font-bold text-foreground">{t("installGuide.qrTitle")}</h2>
+          <p className="text-sm leading-relaxed text-muted-foreground">{t("installGuide.qrBody")}</p>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={qrDataUrl}
+            alt={t("installGuide.qrAlt")}
+            width={280}
+            height={280}
+            className="rounded-xl border border-border bg-white p-2"
+          />
+          <p className="break-all text-xs text-muted-foreground">{guideUrl}</p>
         </section>
 
         <ol className="space-y-3" aria-label={t("installGuide.stepsAria")}>
