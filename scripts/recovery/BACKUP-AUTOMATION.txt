@@ -1,0 +1,241 @@
+================================================================================
+  NURSELINKS — COMPLETE BACKUP AUTOMATION
+  Live site: https://nurselinks.net
+  Last updated: June 2026
+================================================================================
+
+Keep this file with your recovery kit (same folder as RECOVERY-SCENARIOS.txt).
+It describes every automated backup, what it covers, where files live, and how
+to verify things are working before inviting users.
+
+────────────────────────────────────────────────────────────────────────────────
+COMPLETE BACKUP AUTOMATION — FINAL STATE
+────────────────────────────────────────────────────────────────────────────────
+
+  Schedule              | What runs                    | Retention
+  ──────────────────────┼──────────────────────────────┼──────────────────────
+  Every 4 hours         | PROD snapshot (public DB)    | 7 days (168 hours)
+  Daily 02:00 UTC       | DEV snapshot (public DB)     | 3 days (72 hours)
+  Sunday 03:00 UTC      | Weekly full (PROD + DEV)     | 28 days (672 hours)
+  Manual (GitHub UI)    | DEV or PROD snapshot         | 7d PROD / 3d DEV
+  Manual (GitHub UI)    | Weekly full (PROD and/or DEV)| 28 days
+  Weekly (your PC)      | Local full archive           | You decide (off-site)
+
+  All scheduled GitHub Actions workflows run from the main branch only.
+
+────────────────────────────────────────────────────────────────────────────────
+WHAT EACH BACKUP COVERS
+────────────────────────────────────────────────────────────────────────────────
+
+  Backup type              | Public data | Login accounts | Photos / CVs
+  (posts, jobs, profiles)  | (auth.users)| (Storage files)
+  ─────────────────────────┼─────────────┼────────────────┼──────────────
+  PROD snapshot (4h)       |     YES     |      NO        |     NO
+  DEV snapshot (daily)     |     YES     |      NO        |     NO
+  Weekly full (Sunday)     |     YES     |      YES       |     NO
+  Local full (your PC)     |     YES     |      YES       |     YES
+
+  Public data = everything in the public schema (profiles, posts, jobs,
+  messages, backup_logs, etc.).
+
+  Login accounts = auth.users and auth.identities (email/password logins).
+  Regular snapshots do NOT include these. The Sunday weekly backup does.
+
+  Photos / CVs = Supabase Storage (avatars, post images, job CVs).
+  GitHub Actions does NOT back these up automatically.
+  They normally survive a database restore because Storage is separate.
+  For a full wipe scenario, use the local backup (npm run recovery:backup).
+
+────────────────────────────────────────────────────────────────────────────────
+GITHUB ACTIONS WORKFLOWS (5 total)
+────────────────────────────────────────────────────────────────────────────────
+
+  GitHub -> Actions -> you should see:
+
+  1. Database Snapshot Backup
+     File:   .github/workflows/backup-snapshot.yml
+     When:   Manual only (admin UI or GitHub "Run workflow")
+     What:   Public schema snapshot for DEV or PROD
+     Branch: Use "main" for PROD, "develop" for DEV (when running from UI)
+
+  2. Database Snapshot Backup (PROD schedule)
+     File:   .github/workflows/backup-snapshot-schedule.yml
+     When:   Every 4 hours (cron: 0 */4 * * *)
+     What:   PROD public schema
+     Files:  prod/prod-snapshot-YYYYMMDDTHHMMSSZ.sql.gz
+
+  3. Database Snapshot Backup (DEV schedule)
+     File:   .github/workflows/backup-dev-schedule.yml
+     When:   Daily at 02:00 UTC (cron: 0 2 * * *)
+     What:   DEV public schema
+     Files:  dev/dev-snapshot-YYYYMMDDTHHMMSSZ.sql.gz
+
+  4. Weekly Full Backup (PROD + DEV)
+     File:   .github/workflows/backup-weekly.yml
+     When:   Every Sunday 03:00 UTC (cron: 0 3 * * 0)
+             Also manual: Run workflow -> choose both / prod / dev
+     What:   Public schema + auth.users/identities for each environment
+     Files:  {env}/{env}-weekly-YYYYMMDDTHHMMSSZ.sql.gz
+             {env}/{env}-auth-YYYYMMDDTHHMMSSZ.sql.gz
+
+  5. Restore Database from Backup
+     File:   .github/workflows/restore-backup.yml
+     When:   Manual only (disaster recovery)
+     What:   Restores public schema from a snapshot file in Storage
+
+────────────────────────────────────────────────────────────────────────────────
+WHERE BACKUPS ARE STORED
+────────────────────────────────────────────────────────────────────────────────
+
+  Cloud (automatic):
+    Supabase Storage bucket: backups
+    PROD path prefix:        prod/
+    DEV path prefix:         dev/
+
+    Example files:
+      prod/prod-snapshot-20260622T080000Z.sql.gz
+      prod/prod-weekly-20260622T030000Z.sql.gz
+      prod/prod-auth-20260622T030000Z.sql.gz
+      dev/dev-snapshot-20260622T020000Z.sql.gz
+
+  Local (manual weekly habit):
+    Folder: scripts/recovery/archives/
+    Created by: npm run recovery:backup
+    Contains: public.sql, auth-data.sql, storage/ (all buckets)
+    Config:   scripts/recovery/env.recovery.local (never commit this file)
+
+  Backup log (audit trail):
+    Table: public.backup_logs (in each Supabase project)
+    View in app: Admin -> Backups page
+
+────────────────────────────────────────────────────────────────────────────────
+RETENTION POLICY (how long old files are kept)
+────────────────────────────────────────────────────────────────────────────────
+
+  Type                    | PROD              | DEV
+  ────────────────────────┼───────────────────┼──────────────────
+  Snapshot (*-snapshot-*) | 7 days (168 h)    | 3 days (72 h)
+  Weekly public (*-weekly-*) | 28 days (672 h) | 28 days (672 h)
+  Weekly auth (*-auth-*)  | 28 days (672 h)   | 28 days (672 h)
+
+  Cleanup runs automatically after each successful backup.
+  Snapshot and weekly files are deleted independently (filename pattern filter)
+  so a weekly backup never deletes a recent 4-hour snapshot.
+
+────────────────────────────────────────────────────────────────────────────────
+LOCAL WEEKLY BACKUP (recommended Sunday habit)
+────────────────────────────────────────────────────────────────────────────────
+
+  This is your "sleep well" archive — the only backup that includes Storage files.
+
+  Setup (one time):
+    1. Copy scripts/recovery/env.recovery.example
+       to scripts/recovery/env.recovery.local
+    2. Fill in PROD credentials (SUPABASE_URL, SERVICE_ROLE_KEY, DB_PASSWORD,
+       DB_POOLER_HOST, etc.)
+    3. Save the file (do not commit it — it is in .gitignore)
+
+  Run:
+    npm run recovery:backup
+
+  Verify:
+    npm run recovery:verify
+
+  Restore (disaster only):
+    npm run recovery:restore
+
+  Recommended schedule:
+    Once a week (Sunday is fine). Copy the archive folder to OneDrive or an
+    external drive. You do not need to run this daily — cloud snapshots cover
+    frequent public-schema recovery.
+
+────────────────────────────────────────────────────────────────────────────────
+REQUIRED GITHUB SECRETS
+────────────────────────────────────────────────────────────────────────────────
+
+  GitHub -> NurseLinks repo -> Settings -> Secrets and variables -> Actions
+
+  PROD (5 secrets):
+    SUPABASE_PROD_DB_URL
+    SUPABASE_PROD_DB_PASSWORD
+    SUPABASE_PROD_DB_POOLER_HOST
+    SUPABASE_PROD_URL
+    SUPABASE_PROD_SERVICE_ROLE_KEY
+
+  DEV (5 secrets):
+    SUPABASE_DEV_DB_URL
+    SUPABASE_DEV_DB_PASSWORD
+    SUPABASE_DEV_DB_POOLER_HOST
+    SUPABASE_DEV_URL
+    SUPABASE_DEV_SERVICE_ROLE_KEY
+
+  DB_POOLER_HOST is required because GitHub Actions connects over IPv4 via the
+  Supabase session pooler (not the direct db.<ref>.supabase.co host).
+
+────────────────────────────────────────────────────────────────────────────────
+HOW TO TEST BEFORE GOING LIVE
+────────────────────────────────────────────────────────────────────────────────
+
+  1. Check workflows appear in GitHub Actions (all 5 listed above).
+
+  2. Run weekly backup manually (do not wait for Sunday):
+     Actions -> Weekly Full Backup (PROD + DEV) -> Run workflow -> both
+     Confirm both matrix jobs succeed (prod + dev).
+
+  3. Run a manual PROD snapshot:
+     Actions -> Database Snapshot Backup -> Run workflow -> prod, branch main
+     Or use the Admin -> Backups page in the app.
+
+  4. Confirm files in Supabase Storage:
+     Supabase dashboard -> Storage -> backups bucket
+     Look for recent prod/ and dev/ files.
+
+  5. Confirm backup_logs in the app:
+     Admin -> Backups -> recent "completed" entries with file sizes.
+
+  6. Run local backup once:
+     npm run recovery:backup
+     npm run recovery:verify
+     Copy archive off-site.
+
+────────────────────────────────────────────────────────────────────────────────
+RECOVERY OBJECTIVES (what to expect)
+────────────────────────────────────────────────────────────────────────────────
+
+  RPO (Recovery Point Objective) — how much data you might lose:
+    PROD public data:  up to 4 hours (worst case between scheduled snapshots)
+    Login accounts:    up to 7 days (weekly auth dump; use local if fresher)
+    Storage files:     up to 7 days (local weekly archive only)
+
+  RTO (Recovery Time Objective) — how long to get back online:
+    Public schema only:  ~15-30 min (GitHub restore workflow or local script)
+    Full restore:        ~1-2 hours (auth + public + storage + verification)
+
+  For step-by-step recovery per failure type, see RECOVERY-SCENARIOS.txt.
+
+────────────────────────────────────────────────────────────────────────────────
+TWO LAYERS — WHEN TO USE WHICH
+────────────────────────────────────────────────────────────────────────────────
+
+  Layer 1 — Cloud (GitHub Actions, automatic)
+    Use for:  Quick rollback of bad data, daily protection, no PC needed
+    Best for: "Something broke in the database in the last few hours"
+    Restore:  Admin UI or restore-backup.yml workflow
+
+  Layer 2 — Local archive (your PC, weekly)
+    Use for:  Total disaster, auth restore, storage files missing
+    Best for: "Everything is gone" or "users can't log in after restore"
+    Restore:  npm run recovery:restore (see RECOVERY-SCENARIOS.txt)
+
+────────────────────────────────────────────────────────────────────────────────
+QUICK COMMANDS
+────────────────────────────────────────────────────────────────────────────────
+
+  npm run recovery:backup    Create full local archive (public + auth + storage)
+  npm run recovery:verify    Check latest archive integrity
+  npm run recovery:restore   Full restore from local archive (DESTRUCTIVE)
+  npm run recovery:snapshot  Restore public schema only from local archive
+
+================================================================================
+  END OF BACKUP AUTOMATION REFERENCE
+================================================================================

@@ -4,7 +4,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 const authRoutes = ["/", "/login", "/register"];
-const protectedPrefixes = ["/home", "/profile", "/network", "/messages", "/jobs", "/hospitals"];
+const protectedPrefixes = ["/home", "/profile", "/network", "/messages", "/jobs", "/hospitals", "/admin"];
 
 function isAuthRoute(pathname: string) {
   return authRoutes.includes(pathname);
@@ -103,5 +103,7 @@ export const config = {
     "/jobs/:path*",
     "/hospitals",
     "/hospitals/:path*",
+    "/admin",
+    "/admin/:path*",
   ],
 };

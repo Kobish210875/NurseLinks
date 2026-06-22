@@ -37,6 +37,9 @@ env.clone.local
 env.recovery.local
 scripts/recovery/archives/
 
+# Migration dumps contain real PII (emails, hashes, phone numbers)
+supabase/migration-dumps/
+
 # vercel
 .vercel
 
