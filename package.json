@@ -13,6 +13,8 @@
     "recovery:verify": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/recovery/verify-archive.ps1",
     "storage:empty": "node scripts/recovery/empty-storage.mjs",
     "storage:empty:dry": "node scripts/recovery/empty-storage.mjs --dry-run",
+    "admin:clear-profile": "node scripts/recovery/clear-admin-profile.mjs",
+    "admin:clear-profile:dry": "node scripts/recovery/clear-admin-profile.mjs --dry-run",
     "sql:list": "node scripts/list-supabase-sql.mjs",
     "sql:bundle": "node scripts/build-combined-sql.mjs",
     "build": "next build",
