@@ -490,6 +490,22 @@ export type Database = {
         Args: { target_id: string };
         Returns: Json;
       };
+      search_profiles_by_name: {
+        Args: {
+          name_pattern: string;
+          result_limit?: number;
+          exclude_admin?: boolean;
+        };
+        Returns: {
+          id: string;
+          full_name: string;
+          headline: string | null;
+          workplace_institution_slug: string | null;
+          avatar_url: string | null;
+          cv_draft: Json | null;
+          deleted_at: string | null;
+        }[];
+      };
       is_admin: {
         Args: { target_user_id: string };
         Returns: boolean;

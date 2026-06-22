@@ -1,4 +1,5 @@
 import { getInitials } from "@/lib/auth/initials";
+import { searchProfilesByName } from "@/lib/data/profile-name-search";
 import { resolveWorkplaceSlug } from "@/lib/profile/workplace";
 import { isHebrewNameSearchQuery } from "@/lib/validation/hebrew-name";
 import type {
@@ -51,10 +52,6 @@ function parseRecommendationSource(value: unknown): RecommendationSource {
     return value;
   }
   return "mutual";
-}
-
-function escapeIlike(value: string) {
-  return value.replace(/[%_\\]/g, "\\$&");
 }
 
 export function resolveConnectionStatus(
@@ -265,44 +262,17 @@ export async function searchPeople(
   }
 
   const rows = connectionRows ?? (await loadConnectionRows(supabase, userId));
-  const pattern = `%${escapeIlike(trimmed)}%`;
 
-  // Admins are hidden from regular users but visible when the caller is admin.
-  let q = supabase
-    .from("profiles")
-    .select("id, full_name, headline, workplace_institution_slug, avatar_url, cv_draft, deleted_at")
-    .neq("id", userId)
-    .is("deleted_at", null)
-    .ilike("full_name", pattern)
-    .order("full_name", { ascending: true })
-    .limit(limit);
-  if (!callerIsAdmin) {
-    q = q.not("id", "in", `(select user_id from admin_users)`);
-  }
-
-  let { data: profilesRaw, error: searchError } = await q;
-
-  const searchMsg = searchError?.message?.toLowerCase() ?? "";
-  if (searchMsg.includes("workplace_institution_slug") || searchMsg.includes("deleted_at") || searchMsg.includes("admin_users")) {
-    let fallbackQ = supabase
-      .from("profiles")
-      .select("id, full_name, headline, avatar_url, cv_draft")
-      .neq("id", userId)
-      .ilike("full_name", pattern)
-      .order("full_name", { ascending: true })
-      .limit(limit);
-    if (!callerIsAdmin) {
-      fallbackQ = fallbackQ.not("id", "in", `(select user_id from admin_users)`);
-    }
-    const fallback = await fallbackQ;
-    profilesRaw = fallback.data;
-  }
-
-  const profiles = (profilesRaw ?? []) as ProfileRow[];
+  const profiles = await searchProfilesByName(
+    supabase,
+    userId,
+    trimmed,
+    limit,
+    callerIsAdmin,
+  );
 
   return profiles
-    .filter((p) => !p.deleted_at)
-    .map((p) => toMember(p, resolveConnectionStatus(userId, p.id, rows)));
+    .map((p) => toMember(p as ProfileRow, resolveConnectionStatus(userId, p.id, rows)));
 }
 
 async function loadDismissedRecommendationIds(
