@@ -63,6 +63,6 @@ Write-Host ""
 if ($ok) {
     Write-Host "Archive looks usable." -ForegroundColor Green
 } else {
-    Write-Host "Archive has problems — run a fresh backup." -ForegroundColor Red
+    Write-Host "Archive has problems - run a fresh backup." -ForegroundColor Red
     exit 1
 }

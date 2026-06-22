@@ -1,5 +1,5 @@
 ##############################################################################
-# NurseLinks — Full disaster-recovery RESTORE (from local archive)
+# NurseLinks - Full disaster-recovery RESTORE (from local archive)
 #
 # Restores:
 #   1. auth.users + auth.identities (optional, default on)
@@ -7,7 +7,7 @@
 #   3. post-restore-public-schema.sql (triggers, grants, missing profiles)
 #   4. storage buckets from archive
 #
-# ⚠️  OVERWRITES the target Supabase project in env.recovery.local
+#   OVERWRITES the target Supabase project in env.recovery.local
 #
 # Run from repo root:
 #   npm run recovery:restore -- -ArchivePath scripts/recovery/archives/prod-full-... -Confirm RESTORE
@@ -48,7 +48,7 @@ if (-not (Test-Path $publicSql) -and -not (Test-Path $publicGz)) {
 function Read-RecoveryEnv {
     $path = Join-Path $PSScriptRoot "..\..\env.recovery.local"
     if (-not (Test-Path $path)) {
-        throw "Missing env.recovery.local — copy scripts/recovery/env.recovery.example"
+        throw "Missing env.recovery.local - copy scripts/recovery/env.recovery.example"
     }
     $vars = @{}
     foreach ($line in Get-Content $path) {
@@ -66,7 +66,7 @@ function Db-Host([string]$ref) { "db.$ref.supabase.co" }
 function Invoke-Psql([string]$hostRef, [string]$pass, [string]$file) {
     $prev = $env:PGPASSWORD
     $env:PGPASSWORD = $pass
-    Write-Host "  psql → $(Split-Path $file -Leaf)" -ForegroundColor DarkCyan
+    Write-Host "  psql -> $(Split-Path $file -Leaf)" -ForegroundColor DarkCyan
     & psql -h (Db-Host $hostRef) -p 5432 -U postgres -d postgres `
         --no-password --file=$file --no-psqlrc --set=ON_ERROR_STOP=1
     if ($LASTEXITCODE -ne 0) { throw "psql failed: $file" }
@@ -76,7 +76,7 @@ function Invoke-Psql([string]$hostRef, [string]$pass, [string]$file) {
 function Invoke-PsqlPipe([string]$hostRef, [string]$pass, [string]$inputFile) {
     $prev = $env:PGPASSWORD
     $env:PGPASSWORD = $pass
-    Write-Host "  psql ← $(Split-Path $inputFile -Leaf)" -ForegroundColor DarkCyan
+    Write-Host "  psql <- $(Split-Path $inputFile -Leaf)" -ForegroundColor DarkCyan
     Get-Content $inputFile -Raw | & psql -h (Db-Host $hostRef) -p 5432 -U postgres -d postgres `
         --no-password --no-psqlrc --set=ON_ERROR_STOP=1
     if ($LASTEXITCODE -ne 0) { throw "psql pipe failed: $inputFile" }
@@ -113,7 +113,7 @@ if (-not $SkipAuth -and (Test-Path $authSql)) {
 } elseif ($SkipAuth) {
     Write-Host "1/4  Skipped auth (-SkipAuth)" -ForegroundColor DarkYellow
 } else {
-    Write-Host "1/4  No auth-data.sql — keeping existing auth.users" -ForegroundColor DarkYellow
+    Write-Host "1/4  No auth-data.sql - keeping existing auth.users" -ForegroundColor DarkYellow
 }
 
 Write-Host "2/4  Restore public schema..." -ForegroundColor Yellow
@@ -128,7 +128,7 @@ if (Test-Path $publicSql) {
     Copy-Item $publicSql $tempSql
 } elseif (Test-Path $publicGz) {
     if (-not (Get-Command gzip -ErrorAction SilentlyContinue)) {
-        throw "Archive has .sql.gz only — install gzip (Git for Windows) or re-backup as plain .sql"
+        throw "Archive has .sql.gz only - install gzip (Git for Windows) or re-backup as plain .sql"
     }
     cmd /c "gzip -dc `"$publicGz`" > `"$tempSql`""
     if ($LASTEXITCODE -ne 0) { throw "gunzip failed" }

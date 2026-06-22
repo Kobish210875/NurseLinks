@@ -1,5 +1,5 @@
 ##############################################################################
-# NurseLinks — Full disaster-recovery BACKUP (local archive)
+# NurseLinks - Full disaster-recovery BACKUP (local archive)
 #
 # Backs up:
 #   - public schema (all app tables + data)
@@ -7,7 +7,7 @@
 #   - storage buckets: avatars, post-images, job-applications
 #
 # Setup:
-#   copy scripts/recovery/env.recovery.example → env.recovery.local
+#   copy scripts/recovery/env.recovery.example -> env.recovery.local
 #
 # Run from repo root:
 #   npm run recovery:backup
@@ -30,7 +30,7 @@ if (Test-Path $pgBin) { $env:PATH = "$pgBin;$env:PATH" }
 function Read-RecoveryEnv {
     $path = Join-Path $PSScriptRoot "..\..\env.recovery.local"
     if (-not (Test-Path $path)) {
-        throw "Missing env.recovery.local — copy scripts/recovery/env.recovery.example"
+        throw "Missing env.recovery.local - copy scripts/recovery/env.recovery.example"
     }
     $vars = @{}
     foreach ($line in Get-Content $path) {
@@ -77,7 +77,7 @@ Write-Host "1/3  Dump public schema..." -ForegroundColor Yellow
     --schema=public --no-owner --no-acl --format=plain `
     --file=$publicSql `
     2> "$archive\pg_dump-public.log"
-if ($LASTEXITCODE -ne 0) { throw "pg_dump public failed — see pg_dump-public.log" }
+if ($LASTEXITCODE -ne 0) { throw "pg_dump public failed - see pg_dump-public.log" }
 $publicSize = (Get-Item $publicSql).Length
 Write-Host "     public-schema.sql ($publicSize bytes)" -ForegroundColor Green
 if (Get-Command gzip -ErrorAction SilentlyContinue) {
