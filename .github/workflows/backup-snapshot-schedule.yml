@@ -178,9 +178,9 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           LOCAL_BACKUP_FILE: ${{ env.FILENAME }}
 
-      - name: Delete backups older than 72 hours
+      - name: Delete PROD snapshots older than 168 hours (7 days)
         if: success()
-        run: bash .github/scripts/cleanup-old-backups.sh prod 72
+        run: bash .github/scripts/cleanup-old-backups.sh prod 168 snapshot
         env:
           SUPABASE_URL: ${{ env.SUPABASE_URL }}
           SERVICE_KEY: ${{ env.SERVICE_KEY }}

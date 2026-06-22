@@ -4,9 +4,12 @@ set -euo pipefail
 
 ENVIRONMENT="${1:-}"
 RETENTION_HOURS="${2:-72}"
+# Optional: only delete files whose names CONTAIN this string (e.g. "snapshot", "weekly").
+# Leave empty to delete all .sql.gz files under the environment prefix.
+FILE_PATTERN="${3:-}"
 
 if [ -z "${ENVIRONMENT}" ] || { [ "${ENVIRONMENT}" != "dev" ] && [ "${ENVIRONMENT}" != "prod" ]; }; then
-  echo "Usage: cleanup-old-backups.sh <dev|prod> [retention_hours]"
+  echo "Usage: cleanup-old-backups.sh <dev|prod> [retention_hours] [file_pattern]"
   exit 1
 fi
 
@@ -17,6 +20,7 @@ fi
 
 export CLEANUP_ENV="${ENVIRONMENT}"
 export RETENTION_HOURS="${RETENTION_HOURS}"
+export FILE_PATTERN="${FILE_PATTERN}"
 
 python3 - <<'PY'
 import json
@@ -29,6 +33,7 @@ from datetime import datetime, timedelta, timezone
 
 environment = os.environ["CLEANUP_ENV"]
 retention_hours = int(os.environ["RETENTION_HOURS"])
+file_pattern = os.environ.get("FILE_PATTERN", "").strip()
 supabase_url = os.environ["SUPABASE_URL"].rstrip("/")
 service_key = os.environ["SERVICE_KEY"]
 cutoff = datetime.now(timezone.utc) - timedelta(hours=retention_hours)
@@ -115,6 +120,9 @@ for obj in objects:
     name = obj.get("name") or ""
     if not name.endswith(".sql.gz"):
         continue
+    # If a pattern is specified, only delete files whose name contains it.
+    if file_pattern and file_pattern not in name:
+        continue
     path = f"{prefix}{name}"
     ts = parse_timestamp(name)
     if ts is None:
@@ -126,8 +134,9 @@ for obj in objects:
     if ts < cutoff:
         to_delete.append(path)
 
+pattern_label = f" matching '{file_pattern}'" if file_pattern else ""
 print(f"Retention: {retention_hours}h (cutoff {cutoff.isoformat()})")
-print(f"Found {len(objects)} object(s) under {prefix}, deleting {len(to_delete)} older file(s).")
+print(f"Found {len(objects)} object(s) under {prefix}{pattern_label}, deleting {len(to_delete)} older file(s).")
 
 delete_storage(to_delete)
 cutoff_iso = cutoff.strftime("%Y-%m-%dT%H:%M:%SZ")

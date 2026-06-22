@@ -1,0 +1,219 @@
+name: Weekly Full Backup (PROD + DEV)
+
+# Every Sunday at 03:00 UTC.
+# Dumps public schema + auth.users/identities (logins) for both environments.
+# Stored in Supabase Storage under {env}/weekly-TIMESTAMP.sql.gz
+# and {env}/auth-TIMESTAMP.sql.gz — kept for 28 days (672 hours).
+#
+# This fills the gap that regular 4h snapshots don't cover:
+#   - auth.users (login accounts) are included here.
+#   - Weekly cadence gives a stable restore point even after a bad week.
+on:
+  schedule:
+    - cron: "0 3 * * 0"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment (leave empty to run both)"
+        required: false
+        default: "both"
+        type: choice
+        options:
+          - both
+          - prod
+          - dev
+
+jobs:
+  weekly-backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: [prod, dev]
+
+    steps:
+      - name: Check if this environment should run
+        id: should_run
+        run: |
+          TARGET="${{ github.event.inputs.environment || 'both' }}"
+          ENV="${{ matrix.environment }}"
+          if [ "$TARGET" = "both" ] || [ "$TARGET" = "$ENV" ]; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout repository
+        if: steps.should_run.outputs.run == 'true'
+        uses: actions/checkout@v4
+
+      - name: Export environment-specific secrets
+        if: steps.should_run.outputs.run == 'true'
+        run: |
+          if [ "${{ matrix.environment }}" = "prod" ]; then
+            echo "DB_URL=${{ secrets.SUPABASE_PROD_DB_URL }}"                >> "$GITHUB_ENV"
+            echo "DB_PASSWORD=${{ secrets.SUPABASE_PROD_DB_PASSWORD }}"      >> "$GITHUB_ENV"
+            echo "DB_POOLER_HOST=${{ secrets.SUPABASE_PROD_DB_POOLER_HOST }}" >> "$GITHUB_ENV"
+            echo "SUPABASE_URL=${{ secrets.SUPABASE_PROD_URL }}"             >> "$GITHUB_ENV"
+            echo "SERVICE_KEY=${{ secrets.SUPABASE_PROD_SERVICE_ROLE_KEY }}" >> "$GITHUB_ENV"
+          else
+            echo "DB_URL=${{ secrets.SUPABASE_DEV_DB_URL }}"                 >> "$GITHUB_ENV"
+            echo "DB_PASSWORD=${{ secrets.SUPABASE_DEV_DB_PASSWORD }}"       >> "$GITHUB_ENV"
+            echo "DB_POOLER_HOST=${{ secrets.SUPABASE_DEV_DB_POOLER_HOST }}" >> "$GITHUB_ENV"
+            echo "SUPABASE_URL=${{ secrets.SUPABASE_DEV_URL }}"              >> "$GITHUB_ENV"
+            echo "SERVICE_KEY=${{ secrets.SUPABASE_DEV_SERVICE_ROLE_KEY }}"  >> "$GITHUB_ENV"
+          fi
+
+      - name: Configure PostgreSQL connection (IPv4)
+        if: steps.should_run.outputs.run == 'true'
+        run: bash .github/scripts/configure-pg-ipv4.sh
+
+      - name: Install matching PostgreSQL client
+        if: steps.should_run.outputs.run == 'true'
+        run: bash .github/scripts/install-pg-client.sh
+
+      - name: Test database connection
+        if: steps.should_run.outputs.run == 'true'
+        run: |
+          set -euo pipefail
+          source /tmp/pg-connection.env
+          psql -v ON_ERROR_STOP=1 -c "select current_database(), count(*) from information_schema.tables where table_schema = 'public';"
+
+      - name: Dump public schema
+        if: steps.should_run.outputs.run == 'true'
+        run: |
+          set -euo pipefail
+          source /tmp/pg-connection.env
+          PG_DUMP="${PG_BIN_DIR:-}/pg_dump"
+          if [ ! -x "$PG_DUMP" ]; then PG_DUMP=$(command -v pg_dump); fi
+
+          ENV="${{ matrix.environment }}"
+          TIMESTAMP=$(date -u +%Y%m%dT%H%M%SZ)
+          PUBLIC_FILENAME="${ENV}-weekly-${TIMESTAMP}.sql.gz"
+          PUBLIC_PATH="${ENV}/${PUBLIC_FILENAME}"
+
+          if ! "$PG_DUMP" \
+            --schema=public --no-owner --no-acl --format=plain \
+            2>pg_dump_public.log \
+          | gzip > "${PUBLIC_FILENAME}"; then
+            echo "--- pg_dump public failed ---"
+            cat pg_dump_public.log || true
+            exit 1
+          fi
+
+          FILE_SIZE=$(stat --format='%s' "${PUBLIC_FILENAME}")
+          TABLE_COUNT=$(gzip -dc "${PUBLIC_FILENAME}" | grep -c '^CREATE TABLE ' || true)
+
+          if [ "$FILE_SIZE" -lt 500 ] || [ "$TABLE_COUNT" -eq 0 ]; then
+            echo "Public dump looks empty (size=${FILE_SIZE}, tables=${TABLE_COUNT})."
+            exit 1
+          fi
+
+          echo "Public dump OK: ${FILE_SIZE} bytes, ${TABLE_COUNT} tables"
+          echo "PUBLIC_FILENAME=${PUBLIC_FILENAME}" >> "$GITHUB_ENV"
+          echo "PUBLIC_PATH=${PUBLIC_PATH}"         >> "$GITHUB_ENV"
+          echo "PUBLIC_SIZE=${FILE_SIZE}"           >> "$GITHUB_ENV"
+          echo "TABLE_COUNT=${TABLE_COUNT}"         >> "$GITHUB_ENV"
+          echo "TIMESTAMP=${TIMESTAMP}"             >> "$GITHUB_ENV"
+
+      - name: Dump auth (users + identities)
+        if: steps.should_run.outputs.run == 'true'
+        run: |
+          set -euo pipefail
+          source /tmp/pg-connection.env
+          PG_DUMP="${PG_BIN_DIR:-}/pg_dump"
+          if [ ! -x "$PG_DUMP" ]; then PG_DUMP=$(command -v pg_dump); fi
+
+          ENV="${{ matrix.environment }}"
+          # Re-use the timestamp written to GITHUB_ENV by the public dump step.
+          AUTH_FILENAME="${ENV}-auth-${TIMESTAMP}.sql.gz"
+          AUTH_PATH="${ENV}/${AUTH_FILENAME}"
+
+          if ! "$PG_DUMP" \
+            --data-only --schema=auth \
+            --table=auth.users --table=auth.identities \
+            --no-owner --no-acl --format=plain \
+            2>pg_dump_auth.log \
+          | gzip > "${AUTH_FILENAME}"; then
+            echo "--- pg_dump auth failed ---"
+            cat pg_dump_auth.log || true
+            exit 1
+          fi
+
+          AUTH_SIZE=$(stat --format='%s' "${AUTH_FILENAME}")
+          USER_COUNT=$(gzip -dc "${AUTH_FILENAME}" | grep -c '^[0-9a-f]' || true)
+          echo "Auth dump OK: ${AUTH_SIZE} bytes (~${USER_COUNT} user rows)"
+          echo "AUTH_FILENAME=${AUTH_FILENAME}" >> "$GITHUB_ENV"
+          echo "AUTH_PATH=${AUTH_PATH}"         >> "$GITHUB_ENV"
+          echo "AUTH_SIZE=${AUTH_SIZE}"         >> "$GITHUB_ENV"
+
+      - name: Upload public schema to Supabase Storage
+        if: steps.should_run.outputs.run == 'true'
+        run: |
+          HTTP_STATUS=$(curl -s -o upload_resp.txt -w "%{http_code}" \
+            -X POST \
+            "${SUPABASE_URL}/storage/v1/object/backups/${PUBLIC_PATH}" \
+            -H "Authorization: Bearer ${SERVICE_KEY}" \
+            -H "Content-Type: application/gzip" \
+            --data-binary "@${PUBLIC_FILENAME}")
+          if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 300 ]; then
+            echo "Upload failed (HTTP ${HTTP_STATUS}):"
+            cat upload_resp.txt
+            exit 1
+          fi
+          echo "Public schema uploaded (HTTP ${HTTP_STATUS})"
+
+      - name: Upload auth dump to Supabase Storage
+        if: steps.should_run.outputs.run == 'true'
+        run: |
+          HTTP_STATUS=$(curl -s -o upload_resp.txt -w "%{http_code}" \
+            -X POST \
+            "${SUPABASE_URL}/storage/v1/object/backups/${AUTH_PATH}" \
+            -H "Authorization: Bearer ${SERVICE_KEY}" \
+            -H "Content-Type: application/gzip" \
+            --data-binary "@${AUTH_FILENAME}")
+          if [ "$HTTP_STATUS" -lt 200 ] || [ "$HTTP_STATUS" -ge 300 ]; then
+            echo "Auth upload failed (HTTP ${HTTP_STATUS}):"
+            cat upload_resp.txt
+            exit 1
+          fi
+          echo "Auth dump uploaded (HTTP ${HTTP_STATUS})"
+
+      - name: Insert backup_log for weekly public snapshot
+        if: steps.should_run.outputs.run == 'true'
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SERVICE_KEY: ${{ env.SERVICE_KEY }}
+          BACKUP_STARTED_AT: ${{ github.run_started_at }}
+        run: |
+          set -euo pipefail
+          RUN_URL="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          STARTED_AT="${BACKUP_STARTED_AT:-$(date -u +%Y-%m-%dT%H:%M:%SZ)}"
+          bash .github/scripts/insert-backup-log.sh "{
+            \"backup_type\": \"snapshot\",
+            \"operation\": \"backup\",
+            \"environment\": \"${{ matrix.environment }}\",
+            \"status\": \"completed\",
+            \"triggered_by\": \"schedule\",
+            \"started_at\": \"${STARTED_AT}\",
+            \"completed_at\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\",
+            \"file_path\": \"${PUBLIC_PATH}\",
+            \"file_size_bytes\": ${PUBLIC_SIZE},
+            \"tables_dumped\": ${TABLE_COUNT},
+            \"github_run_url\": \"${RUN_URL}\"
+          }" || echo "backup_log insert non-fatal — continuing"
+
+      - name: Delete weekly public files older than 28 days
+        if: steps.should_run.outputs.run == 'true'
+        run: bash .github/scripts/cleanup-old-backups.sh "${{ matrix.environment }}" 672 weekly
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SERVICE_KEY: ${{ env.SERVICE_KEY }}
+
+      - name: Delete weekly auth files older than 28 days
+        if: steps.should_run.outputs.run == 'true'
+        run: bash .github/scripts/cleanup-old-backups.sh "${{ matrix.environment }}" 672 auth
+        env:
+          SUPABASE_URL: ${{ env.SUPABASE_URL }}
+          SERVICE_KEY: ${{ env.SERVICE_KEY }}
