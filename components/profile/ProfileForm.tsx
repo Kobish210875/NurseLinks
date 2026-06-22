@@ -10,8 +10,10 @@ import {
   truncateHeadline,
 } from "@/lib/profile/field-limits";
 import { useEffect, useId, useRef, useState } from "react";
-import InstitutionSelect from "./InstitutionSelect";
+import NursingEducationSelect from "./NursingEducationSelect";
 import ProfileAvatar from "./ProfileAvatar";
+import WorkExperienceSection from "./WorkExperienceSection";
+import { normalizeWorkExperiences } from "@/lib/profile/work-experience";
 
 const fieldClassName =
   "w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/15";
@@ -26,11 +28,10 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
   const t = useT();
   const professionId = useId();
   const cityId = useId();
-  const institutionId = useId();
-  const experienceId = useId();
-  const educationId = useId();
   const certificationsId = useId();
   const { cvDraft } = user;
+  const workExperiences = normalizeWorkExperiences(cvDraft.workExperiences);
+  const educationLevel = cvDraft.educationLevel ?? "";
   const [formKey, setFormKey] = useState(0);
   const [isDirty, setIsDirty] = useState(false);
   const savedHandledRef = useRef(false);
@@ -94,7 +95,7 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
       <div className="feed-card space-y-5 p-6">
-        <h2 className="text-sm font-semibold text-foreground">{t("profile.sectionBasic")}</h2>
+        <h2 className="text-sm font-semibold text-foreground">{t("profile.sectionPersonal")}</h2>
 
         <div className="grid gap-1.5">
           <label htmlFor={professionId} className="text-sm font-medium text-foreground">
@@ -111,17 +112,6 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
           />
         </div>
 
-        <InstitutionSelect
-          defaultSlug={user.workplaceInstitutionSlug}
-          triggerId={institutionId}
-          onChange={markDirty}
-        />
-
-      </div>
-
-      <div className="feed-card space-y-5 p-6">
-        <h2 className="text-sm font-semibold text-foreground">{t("profile.sectionCv")}</h2>
-
         <CityCombobox
           defaultCityHe={user.city ?? ""}
           required={false}
@@ -130,27 +120,35 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
           onChange={markDirty}
         />
 
-        {(
-          [
-            ["experience", experienceId, "profile.experience", cvDraft.experience],
-            ["education", educationId, "profile.education", cvDraft.education],
-            ["certifications", certificationsId, "profile.certifications", cvDraft.certifications],
-          ] as const
-        ).map(([name, inputId, labelKey, defaultValue]) => (
-          <div key={name} className="grid gap-1.5">
-            <label htmlFor={inputId} className="text-sm font-medium text-foreground">
-              {t(labelKey)}
-            </label>
-            <textarea
-              id={inputId}
-              name={name}
-              rows={4}
-              maxLength={PROFILE_CV_TEXT_MAX_LENGTH}
-              defaultValue={defaultValue ?? ""}
-              className={`${fieldClassName} break-words`}
-            />
-          </div>
-        ))}
+        <div className="grid gap-1.5">
+          <label className="text-sm font-medium text-foreground">{t("profile.education")}</label>
+          <NursingEducationSelect
+            defaultValue={educationLevel}
+            placeholder={t("profile.educationPlaceholder")}
+            onChange={markDirty}
+          />
+        </div>
+
+        <div className="grid gap-1.5">
+          <label htmlFor={certificationsId} className="text-sm font-medium text-foreground">
+            {t("profile.certifications")}
+          </label>
+          <textarea
+            id={certificationsId}
+            name="certifications"
+            rows={4}
+            maxLength={PROFILE_CV_TEXT_MAX_LENGTH}
+            defaultValue={cvDraft.certifications ?? ""}
+            className={`${fieldClassName} break-words`}
+          />
+        </div>
+      </div>
+
+      <div className="feed-card space-y-5 p-6">
+        <div className="grid gap-1.5">
+          <span className="text-sm font-medium text-foreground">{t("profile.experience")}</span>
+          <WorkExperienceSection defaultEntries={workExperiences} onChange={markDirty} />
+        </div>
       </div>
 
       <div className="flex gap-3">

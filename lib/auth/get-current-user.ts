@@ -2,8 +2,10 @@ import type { CvDraft } from "@/app/profile/actions";
 import { AUTH_SESSION_TIMEOUT_MS } from "@/lib/auth/auth-timeouts";
 import { hasSupabaseAuthCookie } from "@/lib/auth/has-auth-cookie";
 import { isTimeoutError, withTimeout } from "@/lib/async/with-timeout";
+import { isValidNursingEducationValue } from "@/lib/data/nursing-education-options";
 import { resolveWorkplaceSlug } from "@/lib/profile/workplace";
 import { truncateHeadline, truncateProfileText } from "@/lib/profile/field-limits";
+import { normalizeWorkExperiences } from "@/lib/profile/work-experience";
 import { createClient } from "@/lib/supabase/server";
 import { cache } from "react";
 import { getInitials } from "./initials";
@@ -18,12 +20,7 @@ export type CurrentUser = {
   avatarUrl: string | null;
   initials: string;
   isAdmin: boolean;
-  cvDraft: {
-    bio?: string;
-    experience?: string;
-    education?: string;
-    certifications?: string;
-  };
+  cvDraft: CvDraft;
 };
 
 export const getCurrentUser = cache(async function getCurrentUser(): Promise<CurrentUser | null> {
@@ -120,6 +117,8 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
   const hasCv =
     cvDraft.experience?.trim() ||
     cvDraft.education?.trim() ||
+    cvDraft.educationLevel?.trim() ||
+    (cvDraft.workExperiences?.length ?? 0) > 0 ||
     cvDraft.certifications?.trim();
 
   const adminCheckPromise = withTimeout(
@@ -156,6 +155,22 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
   return buildUser(user, profile, fullName, cvDraft, metadata, isAdmin);
 });
 
+function normalizeUserCvDraft(raw: CvDraft): CvDraft {
+  const educationLevel =
+    typeof raw.educationLevel === "string" && isValidNursingEducationValue(raw.educationLevel)
+      ? raw.educationLevel
+      : undefined;
+  const workExperiences = normalizeWorkExperiences(raw.workExperiences);
+
+  return {
+    experience: raw.experience ? truncateProfileText(raw.experience) : undefined,
+    education: raw.education ? truncateProfileText(raw.education) : undefined,
+    educationLevel,
+    workExperiences: workExperiences.length > 0 ? workExperiences : undefined,
+    certifications: raw.certifications ? truncateProfileText(raw.certifications) : undefined,
+  };
+}
+
 function buildUser(
   user: { id: string; email?: string },
   profile: {
@@ -188,12 +203,6 @@ function buildUser(
     avatarUrl: profile?.avatar_url ?? null,
     initials: getInitials(fullName),
     isAdmin,
-    cvDraft: {
-      experience: cvDraft.experience ? truncateProfileText(cvDraft.experience) : undefined,
-      education: cvDraft.education ? truncateProfileText(cvDraft.education) : undefined,
-      certifications: cvDraft.certifications
-        ? truncateProfileText(cvDraft.certifications)
-        : undefined,
-    },
+    cvDraft: normalizeUserCvDraft(cvDraft),
   };
 }

@@ -11,7 +11,9 @@ import {
   isMissingWorkplaceColumnError,
   mergeCvDraftWithWorkplace,
 } from "@/lib/profile/workplace";
+import { isValidNursingEducationValue } from "@/lib/data/nursing-education-options";
 import { truncateHeadline, truncateProfileText } from "@/lib/profile/field-limits";
+import { parseWorkExperiencesJson, deriveWorkplaceInstitutionSlug, type WorkExperienceEntry } from "@/lib/profile/work-experience";
 import { isCurrentUserAdmin } from "@/lib/auth/admin";
 import { updateProfile, type ProfileUpdate } from "@/lib/supabase/profiles";
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
@@ -75,8 +77,12 @@ export async function uploadAvatar(formData: FormData) {
 }
 
 export type CvDraft = {
+  /** @deprecated Legacy free-text field; use workExperiences */
   experience?: string;
+  /** @deprecated Legacy free-text field; use educationLevel */
   education?: string;
+  educationLevel?: string;
+  workExperiences?: WorkExperienceEntry[];
   certifications?: string;
   workplace_institution_slug?: string;
 };
@@ -92,11 +98,20 @@ export async function saveProfile(formData: FormData) {
   }
 
   const profession = truncateHeadline(getRequiredString(formData, "profession"));
-  const institutionSlug = getRequiredString(formData, "workplaceInstitution");
   const cityInput = getRequiredString(formData, "city");
-  const experience = truncateProfileText(getRequiredString(formData, "experience"));
-  const education = truncateProfileText(getRequiredString(formData, "education"));
+  const educationLevelRaw = getRequiredString(formData, "educationLevel");
+  const workExperiencesRaw = getRequiredString(formData, "workExperiences");
   const certifications = truncateProfileText(getRequiredString(formData, "certifications"));
+
+  let educationLevel: string | undefined;
+  if (educationLevelRaw) {
+    if (!isValidNursingEducationValue(educationLevelRaw)) {
+      redirect("/profile?error=invalid-education");
+    }
+    educationLevel = educationLevelRaw;
+  }
+
+  const workExperiences = parseWorkExperiencesJson(workExperiencesRaw);
 
   let city: string | null = null;
   if (cityInput) {
@@ -107,16 +122,17 @@ export async function saveProfile(formData: FormData) {
     city = cityHe;
   }
 
-  let workplaceInstitutionSlug: string | null = null;
-  if (institutionSlug) {
-    if (!isValidProfileInstitutionSlug(institutionSlug)) {
-      redirect("/profile?error=invalid-institution");
-    }
-    workplaceInstitutionSlug = institutionSlug;
+  let workplaceInstitutionSlug: string | null = deriveWorkplaceInstitutionSlug(workExperiences);
+  if (workplaceInstitutionSlug && !isValidProfileInstitutionSlug(workplaceInstitutionSlug)) {
+    redirect("/profile?error=invalid-institution");
   }
 
   const cvDraft = mergeCvDraftWithWorkplace(
-    { experience, education, certifications },
+    {
+      educationLevel,
+      workExperiences: workExperiences.length > 0 ? workExperiences : undefined,
+      certifications: certifications || undefined,
+    },
     workplaceInstitutionSlug,
   );
 

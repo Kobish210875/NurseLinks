@@ -7,6 +7,7 @@ import { useCurrentUser } from "@/components/nav/CurrentUserProvider";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import type { CurrentUser } from "@/lib/auth/get-current-user";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
+import { normalizeWorkExperiences } from "@/lib/profile/work-experience";
 
 type UserProfileCardProps = {
   user: CurrentUser;
@@ -14,12 +15,12 @@ type UserProfileCardProps = {
 };
 
 function getProfileCompletionPercent(user: CurrentUser) {
+  const workExperiences = normalizeWorkExperiences(user.cvDraft.workExperiences);
   const fields = [
     user.headline,
-    user.workplaceInstitutionSlug,
     user.city,
-    user.cvDraft.experience,
-    user.cvDraft.education,
+    workExperiences.length > 0 ? "filled" : user.cvDraft.experience,
+    user.cvDraft.educationLevel ?? user.cvDraft.education,
     user.cvDraft.certifications,
   ];
   const filled = fields.filter((value) => value?.trim()).length;

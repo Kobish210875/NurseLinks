@@ -28,18 +28,20 @@ $pgBin = "C:\Program Files\PostgreSQL\17\bin"
 if (Test-Path $pgBin) { $env:PATH = "$pgBin;$env:PATH" }
 
 function Read-RecoveryEnv {
-    $path = Join-Path $PSScriptRoot "..\..\env.recovery.local"
+    $path = (Resolve-Path (Join-Path $PSScriptRoot "..\..\env.recovery.local")).Path
     if (-not (Test-Path $path)) {
         throw "Missing env.recovery.local - copy scripts/recovery/env.recovery.example"
     }
     $vars = @{}
-    foreach ($line in Get-Content $path) {
+    foreach ($line in Get-Content $path -Encoding UTF8) {
         $t = $line.Trim()
         if (-not $t -or $t.StartsWith("#")) { continue }
         $eq = $t.IndexOf("=")
         if ($eq -lt 1) { continue }
-        $vars[$t.Substring(0, $eq).Trim()] = $t.Substring($eq + 1).Trim()
+        $key = $t.Substring(0, $eq).Trim().Trim([char]0xFEFF)
+        $vars[$key] = $t.Substring($eq + 1).Trim()
     }
+    $script:RecoveryEnvPath = $path
     return $vars
 }
 
@@ -49,7 +51,19 @@ $pass = $cfg["DB_PASSWORD"]
 $poolerHost = $cfg["DB_POOLER_HOST"]
 $envName = if ($cfg["ENVIRONMENT"]) { $cfg["ENVIRONMENT"] } else { "prod" }
 if (-not $ref -or -not $pass) { throw "PROJECT_REF and DB_PASSWORD required in env.recovery.local" }
-if (-not $poolerHost) { throw "DB_POOLER_HOST is required. Get it from Supabase Dashboard -> Connect -> Session pooler hostname." }
+if (-not $poolerHost) {
+    $found = ($cfg.Keys | Sort-Object) -join ", "
+    throw @"
+DB_POOLER_HOST is missing in env.recovery.local.
+File read: $RecoveryEnvPath
+Keys found: $found
+
+Add this line (Supabase Dashboard -> Connect -> Session pooler -> Host):
+  DB_POOLER_HOST=aws-0-eu-central-1.pooler.supabase.com
+
+If you just edited the file in your editor, press Ctrl+S to save it first.
+"@
+}
 
 # Use the session pooler (IPv4, same as GitHub Actions).
 # Pooler user format: postgres.<project-ref>

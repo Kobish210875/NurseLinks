@@ -4,11 +4,14 @@ import Link from "next/link";
 import { removeConnection, sendConnectionRequest, cancelConnectionRequest } from "@/app/actions/connections";
 import { useLocale, useT } from "@/components/i18n/LocaleProvider";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
+import WorkExperienceDisplay from "@/components/profile/WorkExperienceDisplay";
+import { getNursingEducationLabel } from "@/lib/data/nursing-education-options";
 import { getCityDisplayName } from "@/lib/data/israeli-cities";
 import type { ProfileView } from "@/lib/data/profile-view";
 import type { ConnectionStatus } from "@/lib/network/types";
 import { formatFeedTimestamp } from "@/lib/i18n/format-feed-time";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
+import { normalizeWorkExperiences } from "@/lib/profile/work-experience";
 import { useEffect, useState, useTransition } from "react";
 
 type ProfileViewCardProps = {
@@ -36,15 +39,16 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
     t("profile.institutionOther"),
   );
   const { cvDraft } = profile;
+  const workExperiences = normalizeWorkExperiences(cvDraft.workExperiences);
+  const educationLabel =
+    getNursingEducationLabel(cvDraft.educationLevel) ?? cvDraft.education?.trim() ?? null;
+  const legacyExperience = cvDraft.experience?.trim() ?? null;
+  const certifications = cvDraft.certifications?.trim() ?? null;
 
-  const cvSections = [
-    ["experience", "profile.experience", cvDraft.experience],
-    ["education", "profile.education", cvDraft.education],
-    ["certifications", "profile.certifications", cvDraft.certifications],
-  ] as const;
-
-  const hasCv = cvSections.some(([, , value]) => value?.trim());
-  const hasCvBlock = hasCv || Boolean(cityLabel);
+  const hasPersonalDetails =
+    Boolean(cityLabel) || Boolean(educationLabel) || Boolean(certifications);
+  const hasWorkExperience = workExperiences.length > 0 || Boolean(legacyExperience);
+  const hasProfileContent = hasPersonalDetails || hasWorkExperience;
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
@@ -151,34 +155,55 @@ export default function ProfileViewCard({ profile, isOwnProfile }: ProfileViewCa
         </div>
       </div>
 
-      <div className="feed-card space-y-5 p-6">
-        <h2 className="text-sm font-semibold text-foreground">{t("profile.sectionCv")}</h2>
+      {(hasPersonalDetails || !hasProfileContent) ? (
+        <div className="feed-card space-y-5 p-6">
+          <h2 className="text-sm font-semibold text-foreground">{t("profile.sectionPersonal")}</h2>
 
-        {!hasCvBlock ? (
-          <p className="text-sm text-muted-foreground">
-            {isOwnProfile ? t("profile.cvEmptyOwn") : t("profile.cvEmptyOther")}
-          </p>
-        ) : (
-          <>
-            {cityLabel ? (
-              <section className="text-start">
-                <h3 className="text-sm font-medium text-foreground">{t("profile.residenceCity")}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{cityLabel}</p>
-              </section>
-            ) : null}
-            {cvSections.map(([key, labelKey, value]) =>
-              value?.trim() ? (
-                <section key={key} className="text-start">
-                  <h3 className="text-sm font-medium text-foreground">{t(labelKey)}</h3>
+          {!hasPersonalDetails ? (
+            <p className="text-sm text-muted-foreground">
+              {isOwnProfile ? t("profile.cvEmptyOwn") : t("profile.cvEmptyOther")}
+            </p>
+          ) : (
+            <>
+              {cityLabel ? (
+                <section className="text-start">
+                  <h3 className="text-sm font-medium text-foreground">{t("profile.residenceCity")}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{cityLabel}</p>
+                </section>
+              ) : null}
+              {educationLabel ? (
+                <section className="text-start">
+                  <h3 className="text-sm font-medium text-foreground">{t("profile.education")}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{educationLabel}</p>
+                </section>
+              ) : null}
+              {certifications ? (
+                <section className="text-start">
+                  <h3 className="text-sm font-medium text-foreground">{t("profile.certifications")}</h3>
                   <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-muted-foreground">
-                    {value}
+                    {certifications}
                   </p>
                 </section>
-              ) : null,
-            )}
-          </>
-        )}
-      </div>
+              ) : null}
+            </>
+          )}
+        </div>
+      ) : null}
+
+      {hasWorkExperience ? (
+        <div className="feed-card p-6">
+          {workExperiences.length > 0 ? (
+            <WorkExperienceDisplay entries={workExperiences} />
+          ) : legacyExperience ? (
+            <section className="text-start">
+              <h3 className="text-sm font-medium text-foreground">{t("profile.experience")}</h3>
+              <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed text-muted-foreground">
+                {legacyExperience}
+              </p>
+            </section>
+          ) : null}
+        </div>
+      ) : null}
     </div>
   );
 }

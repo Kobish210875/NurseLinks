@@ -1,7 +1,9 @@
 import type { CvDraft } from "@/app/profile/actions";
 import { getInitials } from "@/lib/auth/initials";
+import { isValidNursingEducationValue } from "@/lib/data/nursing-education-options";
 import { resolveWorkplaceSlug } from "@/lib/profile/workplace";
 import { truncateHeadline, truncateProfileText } from "@/lib/profile/field-limits";
+import { normalizeWorkExperiences } from "@/lib/profile/work-experience";
 import { resolveConnectionStatus, loadConnectionRows } from "@/lib/data/connections";
 import type { ConnectionStatus } from "@/lib/network/types";
 import type { SupabaseClient } from "@supabase/supabase-js";
@@ -36,9 +38,17 @@ function normalizeCvDraft(raw: unknown): CvDraft {
     return {};
   }
   const o = raw as Record<string, unknown>;
+  const educationLevel =
+    typeof o.educationLevel === "string" && isValidNursingEducationValue(o.educationLevel)
+      ? o.educationLevel
+      : undefined;
+  const workExperiences = normalizeWorkExperiences(o.workExperiences);
+
   return {
     experience: typeof o.experience === "string" ? truncateProfileText(o.experience) : undefined,
     education: typeof o.education === "string" ? truncateProfileText(o.education) : undefined,
+    educationLevel,
+    workExperiences: workExperiences.length > 0 ? workExperiences : undefined,
     certifications:
       typeof o.certifications === "string" ? truncateProfileText(o.certifications) : undefined,
     workplace_institution_slug:
@@ -52,6 +62,8 @@ function cvHasContent(cv: CvDraft) {
   return Boolean(
     cv.experience?.trim() ||
       cv.education?.trim() ||
+      cv.educationLevel?.trim() ||
+      (cv.workExperiences?.length ?? 0) > 0 ||
       cv.certifications?.trim(),
   );
 }
