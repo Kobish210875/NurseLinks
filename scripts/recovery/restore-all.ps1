@@ -80,9 +80,11 @@ function Invoke-Psql([string]$file) {
 
 function Invoke-PsqlPipe([string]$inputFile) {
     Write-Host "  psql <- $(Split-Path $inputFile -Leaf)" -ForegroundColor DarkCyan
-    # Use --file so psql reads directly (avoids PowerShell pipe encoding issues).
+    # ON_ERROR_STOP=0: skip rows that violate FK constraints (e.g. profiles whose
+    # auth.users row is missing from this dump) and continue restoring everything else.
+    # The post-restore script cleans up any orphaned rows afterwards.
     & psql -h $dbHost -p 5432 -U $dbUser -d postgres `
-        --no-password --no-psqlrc --set=ON_ERROR_STOP=1 --file=$inputFile
+        --no-password --no-psqlrc --set=ON_ERROR_STOP=0 --file=$inputFile
     if ($LASTEXITCODE -ne 0) { throw "psql pipe failed: $inputFile" }
 }
 
