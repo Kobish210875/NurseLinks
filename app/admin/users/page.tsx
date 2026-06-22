@@ -115,7 +115,13 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                         {formatDate(user.lastSignInAt, locale)}
                       </td>
                       <td className="px-4 py-2.5">
-                        <AdminDeleteUserButton userId={user.id} userName={user.fullName} />
+                        {user.isAdmin ? (
+                          <span className="rounded-lg border border-primary/30 px-3 py-1.5 text-xs font-semibold text-primary">
+                            {t("admin.badge")}
+                          </span>
+                        ) : (
+                          <AdminDeleteUserButton userId={user.id} userName={user.fullName} />
+                        )}
                       </td>
                     </tr>
                   );

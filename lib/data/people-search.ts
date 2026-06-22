@@ -75,22 +75,25 @@ export async function searchPeopleByNamePrefix(
 
   const pattern = `%${escapeIlike(trimmed)}%`;
 
+  // Exclude admins: join against admin_users so they never appear in search.
   let { data, error } = await supabase
     .from("profiles")
     .select("id, full_name, headline, workplace_institution_slug, avatar_url, cv_draft, deleted_at")
     .neq("id", userId)
     .is("deleted_at", null)
     .ilike("full_name", pattern)
+    .not("id", "in", `(select user_id from admin_users)`)
     .order("full_name", { ascending: true })
     .limit(limit);
 
   const errorMsg = error?.message?.toLowerCase() ?? "";
-  if (errorMsg.includes("workplace_institution_slug") || errorMsg.includes("deleted_at")) {
+  if (errorMsg.includes("workplace_institution_slug") || errorMsg.includes("deleted_at") || errorMsg.includes("admin_users")) {
     const fallback = await supabase
       .from("profiles")
       .select("id, full_name, headline, avatar_url, cv_draft")
       .neq("id", userId)
       .ilike("full_name", pattern)
+      .not("id", "in", `(select user_id from admin_users)`)
       .order("full_name", { ascending: true })
       .limit(limit);
     data = fallback.data;

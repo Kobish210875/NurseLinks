@@ -265,22 +265,25 @@ export async function searchPeople(
   const rows = connectionRows ?? (await loadConnectionRows(supabase, userId));
   const pattern = `%${escapeIlike(trimmed)}%`;
 
+  // Exclude admin users from network search results.
   let { data: profilesRaw, error: searchError } = await supabase
     .from("profiles")
     .select("id, full_name, headline, workplace_institution_slug, avatar_url, cv_draft, deleted_at")
     .neq("id", userId)
     .is("deleted_at", null)
     .ilike("full_name", pattern)
+    .not("id", "in", `(select user_id from admin_users)`)
     .order("full_name", { ascending: true })
     .limit(limit);
 
   const searchMsg = searchError?.message?.toLowerCase() ?? "";
-  if (searchMsg.includes("workplace_institution_slug") || searchMsg.includes("deleted_at")) {
+  if (searchMsg.includes("workplace_institution_slug") || searchMsg.includes("deleted_at") || searchMsg.includes("admin_users")) {
     const fallback = await supabase
       .from("profiles")
       .select("id, full_name, headline, avatar_url, cv_draft")
       .neq("id", userId)
       .ilike("full_name", pattern)
+      .not("id", "in", `(select user_id from admin_users)`)
       .order("full_name", { ascending: true })
       .limit(limit);
     profilesRaw = fallback.data;
@@ -360,6 +363,13 @@ export async function getConnectionRecommendations(
 
   if (dismissedIds.size > 0) {
     data = data.filter((row) => !dismissedIds.has(row.profile_id));
+  }
+
+  // Fetch admin user IDs so we can exclude them from recommendations.
+  const { data: adminRows } = await supabase.from("admin_users").select("user_id");
+  const adminIds = new Set((adminRows ?? []).map((r) => r.user_id));
+  if (adminIds.size > 0) {
+    data = data.filter((row) => !adminIds.has(row.profile_id));
   }
 
   const ids = [...new Set(data.flatMap((row) => [row.profile_id, ...(row.mutual_ids ?? [])]))];

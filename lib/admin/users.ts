@@ -13,6 +13,7 @@ export type AdminUserListItem = {
   lastSignInAt: string | null;
   emailConfirmedAt: string | null;
   deletedAt: string | null;
+  isAdmin: boolean;
 };
 
 export type AdminUsersSummary = {
@@ -62,14 +63,18 @@ export async function getAdminUsers(query = "") {
   }
 
   const ids = authUsers.map((user) => user.id);
-  const { data: profiles } = ids.length
-    ? await admin
-        .from("profiles")
-        .select("id, full_name, headline, deleted_at")
-        .in("id", ids)
-        .returns<ProfileRow[]>()
-    : { data: [] as ProfileRow[] };
+  const [{ data: profiles }, { data: adminRows }] = await Promise.all([
+    ids.length
+      ? admin
+          .from("profiles")
+          .select("id, full_name, headline, deleted_at")
+          .in("id", ids)
+          .returns<ProfileRow[]>()
+      : Promise.resolve({ data: [] as ProfileRow[] }),
+    admin.from("admin_users").select("user_id"),
+  ]);
 
+  const adminUserIds = new Set((adminRows ?? []).map((r) => r.user_id));
   const profilesById = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
   const normalizedQuery = query.trim().toLowerCase();
 
@@ -93,6 +98,7 @@ export async function getAdminUsers(query = "") {
         lastSignInAt: user.last_sign_in_at ?? null,
         emailConfirmedAt: user.email_confirmed_at ?? null,
         deletedAt: profile?.deleted_at ?? null,
+        isAdmin: adminUserIds.has(user.id),
       };
     })
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
