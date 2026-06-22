@@ -334,17 +334,11 @@ export function headlineMatchesInstitution(
   return institution.matchTerms.some((term) => hay.includes(term.toLowerCase()));
 }
 
-/** Profile workplace slug, with legacy headline fallback. */
+/** Whether a profile's current workplace matches an institution (slug only; no headline guess). */
 export function profileMatchesInstitution(
   workplaceInstitutionSlug: string | null | undefined,
-  headline: string | null,
+  _headline: string | null,
   institution: MedicalInstitution,
 ): boolean {
-  if (workplaceInstitutionSlug === institution.slug) {
-    return true;
-  }
-  if (workplaceInstitutionSlug && workplaceInstitutionSlug !== INSTITUTION_OTHER_SLUG) {
-    return false;
-  }
-  return headlineMatchesInstitution(headline, institution);
+  return workplaceInstitutionSlug === institution.slug;
 }

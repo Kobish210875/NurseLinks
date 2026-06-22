@@ -205,11 +205,17 @@ export function getOrganizationLabel(
 export function deriveWorkplaceInstitutionSlug(
   entries: WorkExperienceEntry[],
 ): string | null {
-  if (entries.length === 0) {
-    return null;
-  }
-  const primary = entries.find((entry) => entry.isCurrent) ?? entries[0];
-  return primary.organizationSlug.trim() || null;
+  const current = entries.find((entry) => entry.isCurrent);
+  return current?.organizationSlug.trim() || null;
+}
+
+/** Slug of the organization for the user's current role only (not past jobs). */
+export function currentWorkExperienceOrganizationSlug(
+  workExperiences: unknown,
+): string | null {
+  const entries = normalizeWorkExperiences(workExperiences);
+  const current = entries.find((entry) => entry.isCurrent);
+  return current?.organizationSlug.trim() || null;
 }
 
 export function createEmptyWorkExperience(): WorkExperienceEntry {
