@@ -7,8 +7,12 @@
 -- ============================================================
 -- Before: any logged-in user could call is_admin('<someone-elses-uuid>')
 -- and discover whether that person is an admin.
--- After: the function ignores any argument and only checks the caller.
+-- After: only a no-arg version exists; it only checks the caller.
 
+-- Drop the old parameterised overload completely so there is no ambiguity.
+drop function if exists public.is_admin(uuid);
+
+-- Create the self-only version.
 create or replace function public.is_admin()
 returns boolean
 language sql
@@ -23,12 +27,7 @@ as $$
   );
 $$;
 
--- Revoke the old parameterised version from authenticated users.
--- The overload with a uuid arg still exists for internal use but is no
--- longer callable by clients.
-revoke execute on function public.is_admin(uuid) from authenticated;
-
--- Grant the new no-arg version.
+-- Grant the new no-arg version to authenticated users.
 grant execute on function public.is_admin() to authenticated;
 
 -- ============================================================
