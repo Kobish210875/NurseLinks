@@ -140,7 +140,11 @@ export async function saveProfile(formData: FormData) {
   }
 
   await supabase.auth.updateUser({
-    data: { cv_draft: cvDraft },
+    data: {
+      headline: profession || null,
+      city,
+      cv_draft: cvDraft,
+    },
   });
 
   revalidatePath("/home");

@@ -169,16 +169,22 @@ function buildUser(
   metadata: { headline?: string; city?: string },
   isAdmin: boolean,
 ): CurrentUser {
+  // When a profiles row exists, it is the source of truth. Do not fall back to
+  // auth metadata for cleared fields — metadata may still hold legacy values.
+  const hasProfile = profile !== null;
+
   return {
     id: user.id,
     email: user.email ?? "",
     fullName,
-    headline: truncateHeadline(profile?.headline ?? metadata.headline ?? "") || null,
+    headline: hasProfile
+      ? truncateHeadline(profile?.headline ?? "") || null
+      : truncateHeadline(metadata.headline ?? "") || null,
     workplaceInstitutionSlug: resolveWorkplaceSlug(
       profile?.workplace_institution_slug,
       cvDraft,
     ),
-    city: profile?.city ?? metadata.city ?? null,
+    city: hasProfile ? (profile?.city ?? null) : (metadata.city ?? null),
     avatarUrl: profile?.avatar_url ?? null,
     initials: getInitials(fullName),
     isAdmin,

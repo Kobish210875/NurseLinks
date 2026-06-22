@@ -57,8 +57,11 @@ async function deleteStorageObject(bucket, path) {
     method: "DELETE",
     headers: { apikey: KEY, Authorization: `Bearer ${KEY}` },
   });
-  if (!res.ok && res.status !== 404) {
+  if (!res.ok) {
     const text = await res.text().catch(() => "");
+    if (res.status === 404 || text.includes("not_found") || text.includes("Object not found")) {
+      return false;
+    }
     throw new Error(`DELETE storage/${bucket}/${path} failed (${res.status}): ${text}`);
   }
   return res.status !== 404;
@@ -80,7 +83,7 @@ if (dryRun) {
   console.log(`  - Update profiles set full_name='Admin', headline=null, city=null,`);
   console.log(`            license_number=null, avatar_url=null, cv_draft='{}',`);
   console.log(`            workplace_institution_slug=null  where id='${adminId}'`);
-  console.log(`  - Update auth.users metadata: { full_name: 'Admin' }`);
+  console.log(`  - Update auth.users metadata: { full_name: 'Admin', headline: null, city: null, cv_draft: {} }`);
   console.log("\nRe-run without --dry-run to apply.");
   process.exit(0);
 }
@@ -116,7 +119,12 @@ console.log("  Done.");
 // ── 5. Update auth.users metadata ─────────────────────────────────────────
 console.log("Updating auth metadata...");
 await authAdmin("PUT", `/users/${adminId}`, {
-  user_metadata: { full_name: "Admin" },
+  user_metadata: {
+    full_name: "Admin",
+    headline: null,
+    city: null,
+    cv_draft: {},
+  },
 });
 console.log("  Auth metadata updated.");
 
