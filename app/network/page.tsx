@@ -23,7 +23,7 @@ async function NetworkContent({ query }: { query: string }) {
   }
   const supabase = await createClient();
   const { connections, invitations, sentInvitations, searchResults, recommendations } =
-    await getNetworkPageData(supabase, user.id, query);
+    await getNetworkPageData(supabase, user.id, query, user.isAdmin);
   return (
     <NetworkPanel
       connections={connections}

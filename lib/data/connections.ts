@@ -256,6 +256,7 @@ export async function searchPeople(
   query: string,
   limit = 20,
   connectionRows?: ConnectionRow[],
+  callerIsAdmin = false,
 ): Promise<NetworkMember[]> {
   const trimmed = query.trim();
   if (trimmed.length < 2) {
@@ -265,27 +266,34 @@ export async function searchPeople(
   const rows = connectionRows ?? (await loadConnectionRows(supabase, userId));
   const pattern = `%${escapeIlike(trimmed)}%`;
 
-  // Exclude admin users from network search results.
-  let { data: profilesRaw, error: searchError } = await supabase
+  // Admins are hidden from regular users but visible when the caller is admin.
+  let q = supabase
     .from("profiles")
     .select("id, full_name, headline, workplace_institution_slug, avatar_url, cv_draft, deleted_at")
     .neq("id", userId)
     .is("deleted_at", null)
     .ilike("full_name", pattern)
-    .not("id", "in", `(select user_id from admin_users)`)
     .order("full_name", { ascending: true })
     .limit(limit);
+  if (!callerIsAdmin) {
+    q = q.not("id", "in", `(select user_id from admin_users)`);
+  }
+
+  let { data: profilesRaw, error: searchError } = await q;
 
   const searchMsg = searchError?.message?.toLowerCase() ?? "";
   if (searchMsg.includes("workplace_institution_slug") || searchMsg.includes("deleted_at") || searchMsg.includes("admin_users")) {
-    const fallback = await supabase
+    let fallbackQ = supabase
       .from("profiles")
       .select("id, full_name, headline, avatar_url, cv_draft")
       .neq("id", userId)
       .ilike("full_name", pattern)
-      .not("id", "in", `(select user_id from admin_users)`)
       .order("full_name", { ascending: true })
       .limit(limit);
+    if (!callerIsAdmin) {
+      fallbackQ = fallbackQ.not("id", "in", `(select user_id from admin_users)`);
+    }
+    const fallback = await fallbackQ;
     profilesRaw = fallback.data;
   }
 
@@ -419,6 +427,7 @@ export async function getNetworkPageData(
   supabase: SupabaseClient<Database>,
   userId: string,
   query: string,
+  callerIsAdmin = false,
 ): Promise<NetworkPageData> {
   const connectionRows = await loadConnectionRows(supabase, userId);
   const trimmed = query.trim();
@@ -428,7 +437,7 @@ export async function getNetworkPageData(
     getAcceptedConnections(supabase, userId, connectionRows, 100),
     getPendingInvitations(supabase, userId, connectionRows),
     getPendingSentInvitations(supabase, userId, connectionRows),
-    showSearch ? searchPeople(supabase, userId, trimmed, 20, connectionRows) : Promise.resolve([]),
+    showSearch ? searchPeople(supabase, userId, trimmed, 20, connectionRows, callerIsAdmin) : Promise.resolve([]),
     showSearch
       ? Promise.resolve([])
       : getConnectionRecommendations(supabase, userId, 10, connectionRows),

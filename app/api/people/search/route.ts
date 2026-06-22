@@ -1,4 +1,5 @@
 import { searchPeopleByNamePrefix } from "@/lib/data/people-search";
+import { isCurrentUserAdmin } from "@/lib/auth/admin";
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 
@@ -15,6 +16,7 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q") ?? "";
 
-  const results = await searchPeopleByNamePrefix(supabase, user.id, q, 8);
+  const callerIsAdmin = await isCurrentUserAdmin();
+  const results = await searchPeopleByNamePrefix(supabase, user.id, q, 8, callerIsAdmin);
   return NextResponse.json({ results });
 }

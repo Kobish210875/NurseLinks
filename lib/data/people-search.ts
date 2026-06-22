@@ -67,6 +67,7 @@ export async function searchPeopleByNamePrefix(
   userId: string,
   query: string,
   limit = 8,
+  callerIsAdmin = false,
 ): Promise<PeopleSearchHit[]> {
   const trimmed = query.trim();
   if (trimmed.length < 2) {
@@ -75,27 +76,34 @@ export async function searchPeopleByNamePrefix(
 
   const pattern = `%${escapeIlike(trimmed)}%`;
 
-  // Exclude admins: join against admin_users so they never appear in search.
-  let { data, error } = await supabase
+  // Admins are excluded from results for regular users, but not when the caller is an admin.
+  let q = supabase
     .from("profiles")
     .select("id, full_name, headline, workplace_institution_slug, avatar_url, cv_draft, deleted_at")
     .neq("id", userId)
     .is("deleted_at", null)
     .ilike("full_name", pattern)
-    .not("id", "in", `(select user_id from admin_users)`)
     .order("full_name", { ascending: true })
     .limit(limit);
+  if (!callerIsAdmin) {
+    q = q.not("id", "in", `(select user_id from admin_users)`);
+  }
+
+  let { data, error } = await q;
 
   const errorMsg = error?.message?.toLowerCase() ?? "";
   if (errorMsg.includes("workplace_institution_slug") || errorMsg.includes("deleted_at") || errorMsg.includes("admin_users")) {
-    const fallback = await supabase
+    let fallbackQ = supabase
       .from("profiles")
       .select("id, full_name, headline, avatar_url, cv_draft")
       .neq("id", userId)
       .ilike("full_name", pattern)
-      .not("id", "in", `(select user_id from admin_users)`)
       .order("full_name", { ascending: true })
       .limit(limit);
+    if (!callerIsAdmin) {
+      fallbackQ = fallbackQ.not("id", "in", `(select user_id from admin_users)`);
+    }
+    const fallback = await fallbackQ;
     data = fallback.data;
   }
 

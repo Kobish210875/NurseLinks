@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import AdminDeleteUserButton from "@/components/admin/AdminDeleteUserButton";
@@ -104,7 +105,12 @@ export default async function AdminUsersPage({ searchParams }: AdminUsersPagePro
                   return (
                     <tr key={user.id} className="align-top">
                       <td className="px-4 py-2.5">
-                        <div className="font-semibold text-foreground">{user.fullName}</div>
+                        <Link
+                          href={`/profile/${user.id}`}
+                          className="font-semibold text-foreground hover:text-primary hover:underline transition-colors"
+                        >
+                          {user.fullName}
+                        </Link>
                         <div className="text-xs text-muted-foreground">{user.email}</div>
                       </td>
                       <td className="px-4 py-2.5 text-muted-foreground">{status}</td>
