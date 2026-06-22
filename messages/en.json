@@ -7,6 +7,28 @@
     "installSteps": "In Safari: tap Share (□↑) and choose \"Add to Home Screen\".",
     "installDismiss": "Got it"
   },
+  "installGuide": {
+    "metaTitle": "How to add NurseLinks on iPhone",
+    "metaDescription": "A simple 4-step guide to add NurseLinks to your Home Screen.",
+    "badge": "iPhone guide",
+    "title": "How to add NurseLinks to your Home Screen?",
+    "intro": "In 4 simple steps you can open NurseLinks like an app — with an icon on your Home Screen, free and without the App Store.",
+    "stepsAria": "Installation steps",
+    "step1Title": "Open the site in Safari",
+    "step1Body": "Tap the link you received. If it opened inside WhatsApp — tap ⋯ and choose \"Open in Safari\".",
+    "step2Title": "Tap the Share button",
+    "step2Body": "At the bottom center of the screen — the square with an arrow pointing up (□↑).",
+    "step3Title": "Choose \"Add to Home Screen\"",
+    "step3Body": "Scroll down the list until you see \"Add to Home Screen\".",
+    "step4Title": "Tap \"Add\"",
+    "step4Body": "Top right corner. The NurseLinks icon will appear on your Home Screen.",
+    "safariNoteTitle": "Good to know",
+    "safariNoteBody": "Add to Home Screen only works in Safari. Chrome or in-app browsers won't show this option.",
+    "openSite": "Open NurseLinks",
+    "copyLink": "Copy guide link (to share on WhatsApp)",
+    "copiedLink": "Link copied!",
+    "footer": "Questions? Contact us — we're happy to help."
+  },
   "dev": {
     "banner": "DEV MODE",
     "previewBanner": "PREVIEW — dev data (not production)"
