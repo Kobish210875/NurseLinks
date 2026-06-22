@@ -180,12 +180,24 @@ if (-not $SkipStorage -and (Test-Path $storageDir)) {
     Write-Host "4/4  Skipped storage" -ForegroundColor DarkYellow
 }
 
+# Re-apply security hardening — the DROP SCHEMA CASCADE during restore wipes
+# the hardened is_admin() function, the profiles_public view, and the
+# suspension RLS policy. Always re-run this after a full restore.
+$securitySql = Join-Path $PSScriptRoot "..\..\supabase\security-hardening.sql"
+if (Test-Path $securitySql) {
+    Write-Host "5/5  Re-applying security hardening..." -ForegroundColor Yellow
+    Invoke-Psql $securitySql
+    Write-Host "     Security hardening applied" -ForegroundColor Green
+} else {
+    Write-Host "5/5  supabase/security-hardening.sql not found - run it manually in SQL Editor" -ForegroundColor DarkYellow
+}
+
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host "  Restore complete!" -ForegroundColor Green
 Write-Host ""
 Write-Host "Verify:" -ForegroundColor Yellow
-Write-Host "  - Log in as a known user"
+Write-Host "  - Log OUT and back IN (session must refresh)"
 Write-Host "  - Feed, jobs, messages load"
 Write-Host "  - Profile photos / CV downloads work"
 Write-Host "  - /admin/backups shows history"
