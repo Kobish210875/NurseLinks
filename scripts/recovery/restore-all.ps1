@@ -114,17 +114,20 @@ if (-not $SkipAuth -and (Test-Path $authSql)) {
 
 Write-Host "2/4  Restore public schema..." -ForegroundColor Yellow
 
-# Ensure required extensions exist before replaying the dump.
-# pg_trgm is used for GIN text-search indexes and must be present first.
-Write-Host "     Enabling required extensions..." -ForegroundColor DarkCyan
-& psql -h $dbHost -p 5432 -U $dbUser -d postgres --no-password `
-    --command="CREATE EXTENSION IF NOT EXISTS pg_trgm; CREATE EXTENSION IF NOT EXISTS pgcrypto;" `
-    --no-psqlrc --set=ON_ERROR_STOP=1
-if ($LASTEXITCODE -ne 0) { throw "Failed to enable required extensions" }
-
-& psql -h $dbHost -p 5432 -U $dbUser -d postgres --no-password `
-    --command="DROP SCHEMA IF EXISTS public CASCADE;" --no-psqlrc --set=ON_ERROR_STOP=1
-if ($LASTEXITCODE -ne 0) { throw "DROP SCHEMA public failed" }
+# Drop public schema, recreate it, then immediately re-enable required
+# extensions so their operator classes (e.g. gin_trgm_ops) exist before
+# the dump tries to create GIN indexes that reference them.
+Write-Host "     Resetting public schema + enabling extensions..." -ForegroundColor DarkCyan
+& psql -h $dbHost -p 5432 -U $dbUser -d postgres --no-password --no-psqlrc `
+    --set=ON_ERROR_STOP=1 --command="
+DROP SCHEMA IF EXISTS public CASCADE;
+CREATE SCHEMA public;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO public;
+CREATE EXTENSION IF NOT EXISTS pgcrypto  SCHEMA public;
+CREATE EXTENSION IF NOT EXISTS pg_trgm   SCHEMA public;
+"
+if ($LASTEXITCODE -ne 0) { throw "Schema reset / extension enable failed" }
 
 $tempSql = Join-Path $env:TEMP "nurselinks-restore-$([guid]::NewGuid().Guid).sql"
 if (Test-Path $publicSql) {
