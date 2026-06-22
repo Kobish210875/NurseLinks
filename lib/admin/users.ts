@@ -74,7 +74,7 @@ export async function getAdminUsers(query = "") {
     admin.from("admin_users").select("user_id"),
   ]);
 
-  const adminUserIds = new Set((adminRows ?? []).map((r) => r.user_id));
+  const adminUserIds = new Set((adminRows ?? []).map((r) => (r as { user_id: string }).user_id));
   const profilesById = new Map((profiles ?? []).map((profile) => [profile.id, profile]));
   const normalizedQuery = query.trim().toLowerCase();
 

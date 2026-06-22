@@ -367,7 +367,7 @@ export async function getConnectionRecommendations(
 
   // Fetch admin user IDs so we can exclude them from recommendations.
   const { data: adminRows } = await supabase.from("admin_users").select("user_id");
-  const adminIds = new Set((adminRows ?? []).map((r) => r.user_id));
+  const adminIds = new Set((adminRows ?? []).map((r) => (r as { user_id: string }).user_id));
   if (adminIds.size > 0) {
     data = data.filter((row) => !adminIds.has(row.profile_id));
   }
