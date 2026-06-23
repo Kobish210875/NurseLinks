@@ -69,6 +69,10 @@ export async function adminDeleteUser(formData: FormData) {
   // Remove the profile row, which cascades the remaining owned content.
   await admin.from("profiles").delete().eq("id", targetUserId);
 
+  // Invalidate all active sessions for the deleted user so they are kicked out
+  // immediately, before their JWT access token expires (~1 hour).
+  await admin.auth.admin.signOut(targetUserId, "global").catch(() => undefined);
+
   // Authoritative step: hard-delete the auth user so the email is freed.
   const { error: authError } = await admin.auth.admin.deleteUser(targetUserId);
 

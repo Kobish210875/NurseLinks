@@ -92,7 +92,10 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
     profile = null;
   }
 
-  if (profile?.deleted_at) {
+  // No profile row means either the user was hard-deleted by an admin or the
+  // signup trigger never ran. Either way deny access — do not fall back to the
+  // JWT payload, which remains valid for up to 1 hour after deletion.
+  if (!profile || profile.deleted_at) {
     return null;
   }
 
