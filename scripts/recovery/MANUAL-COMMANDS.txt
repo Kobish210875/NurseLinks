@@ -203,5 +203,85 @@ DEV (5 secrets):
   SUPABASE_DEV_SERVICE_ROLE_KEY
 
 ================================================================================
+SECTION 9 — DEV-ONLY TEST: BACKUP -> DELETE USER -> FULL RESTORE
+================================================================================
+
+Use this to rehearse the full flow on your DEV Supabase project before doing
+anything on PROD. Zero risk to production if env.recovery.local points to DEV.
+
+GOLDEN RULE
+  While testing, env.recovery.local must point to DEV only.
+  When finished, switch it back to PROD values.
+
+BEFORE YOU START
+  [ ] env.recovery.local -> PROJECT_REF = DEV ref, ENVIRONMENT=dev
+  [ ] App uses DEV DB (.env.local or Vercel Preview on develop branch)
+  [ ] You can log in as admin on DEV (/admin/users)
+  [ ] Pick a test user (not yourself, not an admin). Note name, email, user ID.
+
+  Optional — refresh DEV with realistic data (safe for PROD):
+    npm run clone:dev
+
+PHASE A — BACKUP DEV
+  [ ] npm run recovery:backup
+  [ ] npm run recovery:verify
+  [ ] Note archive folder, e.g. scripts/recovery/archives/dev-full-YYYYMMDDTHHMMSSZ/
+  [ ] Confirm folder contains: public-schema.sql, auth-data.sql, storage/, manifest.json
+  [ ] Write down the exact timestamp (restore target).
+
+PHASE B — RECORD "BEFORE" STATE
+  [ ] Test user can log in on DEV
+  [ ] Profile loads with expected data
+  [ ] Note 1-2 posts / messages / connections for that user
+  [ ] Optional: Supabase Table Editor -> profiles row exists
+
+PHASE C — DELETE THE TEST USER
+  [ ] Log in as admin on DEV
+  [ ] /admin/users -> Delete test user -> confirm
+  [ ] Verify: gone from admin list, profile missing, auth.users row removed,
+      posts/messages gone (spot-check)
+
+PHASE D — FULL RESTORE FROM DEV BACKUP
+  [ ] Double-check env.recovery.local still points to DEV (NOT prod)
+  [ ] npm run recovery:restore
+  [ ] ArchivePath: scripts/recovery/archives/dev-full-YYYYMMDDTHHMMSSZ
+  [ ] Confirm: RESTORE
+  [ ] Wait for all steps (auth -> public -> post-restore -> storage)
+
+PHASE E — VERIFY "AFTER" RESTORE
+  [ ] Log out and log back in (sessions cleared on restore)
+  [ ] Admin can access /admin/users and /admin/backups
+  [ ] Deleted test user is back: in admin list, can log in, profile restored
+  [ ] Posts/messages/connections restored (spot-check)
+  [ ] Another non-test user still works
+  [ ] Feed, network, jobs, messages load normally
+
+PHASE F — CLEANUP
+  [ ] Restore env.recovery.local to PROD values (PROJECT_REF, ENVIRONMENT=prod)
+  [ ] Optional: trigger DEV cloud snapshot (Admin -> Backups -> DEV, or GitHub Actions)
+  [ ] Keep dev-full-* archive for future tests
+
+WHAT THIS PROVES
+  Backup   -> you can capture DB + logins + storage
+  Delete   -> admin delete fully removes user + content
+  Restore  -> full restore brings everything back, including login
+
+COMMON PITFALLS
+  env.recovery.local on PROD during restore     -> WIPES PRODUCTION
+  Cloud snapshot only (4h backup)                 -> data may return, login may not
+  Skipping logout/login after restore             -> stale session looks broken
+  Deleting an admin user                          -> blocked by app; use normal user
+  Full restore on PROD while users are active     -> everyone loses post-backup data
+
+WHEN READY FOR PROD (same steps, PROD target)
+  1. env.recovery.local -> PROD
+  2. npm run recovery:backup -> copy archive off-site
+  3. Optional: manual snapshot in /admin/backups
+  4. Delete user on nurselinks.net
+  5. Restore only if you need to undo: npm run recovery:restore with PROD archive
+
+See also: RECOVERY-SCENARIOS.txt SCENARIO 11 (test restore without touching PROD)
+
+================================================================================
   END OF MANUAL OPERATIONS REFERENCE
 ================================================================================

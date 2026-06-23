@@ -14,6 +14,10 @@ const STORY_KEYS = [
   "feed.aboutStoryP1",
   "feed.aboutStoryP2",
   "feed.aboutStoryP3",
+  "feed.aboutStoryP4",
+  "feed.aboutStoryP5",
+  "feed.aboutStoryP6",
+  "feed.aboutStoryP7",
 ] as const;
 
 export default function AboutStoryDialog({ open, onClose }: AboutStoryDialogProps) {
@@ -80,9 +84,16 @@ export default function AboutStoryDialog({ open, onClose }: AboutStoryDialogProp
           </button>
         </header>
 
-        <div className="max-h-[min(70vh,28rem)] overflow-y-auto px-5 py-4 text-start sm:px-6 sm:py-5">
-          {STORY_KEYS.map((key) => (
-            <p key={key} className="mb-4 text-sm leading-[1.75] text-foreground/90 last:mb-0">
+        <div className="max-h-[min(80vh,36rem)] overflow-y-auto px-5 py-4 text-start sm:px-6 sm:py-5">
+          {STORY_KEYS.map((key, index) => (
+            <p
+              key={key}
+              className={`mb-4 text-sm leading-[1.75] last:mb-0 ${
+                index === STORY_KEYS.length - 1
+                  ? "font-semibold text-foreground"
+                  : "text-foreground/90"
+              }`}
+            >
               {t(key)}
             </p>
           ))}
