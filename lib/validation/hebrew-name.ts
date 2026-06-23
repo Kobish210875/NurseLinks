@@ -49,6 +49,11 @@ export function sanitizeHebrewNameSearchInput(value: string): string {
   return value.replace(NON_HEBREW_NAME_SEARCH_CHARS, "");
 }
 
+/** True when the raw input contained characters stripped by sanitizeHebrewNameSearchInput. */
+export function hasRejectedSearchCharacters(value: string): boolean {
+  return value.length > 0 && sanitizeHebrewNameSearchInput(value) !== value;
+}
+
 /** Returns false when the query contains disallowed characters (e.g. English letters). */
 export function isHebrewNameSearchQuery(value: string): boolean {
   const trimmed = value.trim();

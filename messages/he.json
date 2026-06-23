@@ -16,6 +16,9 @@
     "switchToHe": "עברית",
     "label": "שפת האתר"
   },
+  "common": {
+    "hebrewOnly": "עברית בלבד"
+  },
   "nav": {
     "homeAria": "NurseLinks — דף הבית",
     "search": "חיפוש",

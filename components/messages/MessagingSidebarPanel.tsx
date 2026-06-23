@@ -7,6 +7,7 @@ import MessagingDockConversation from "@/components/messages/MessagingDockConver
 import { useMessagingDock } from "@/components/messages/MessagingDockContext";
 import MessagingDockThreadList from "@/components/messages/MessagingDockThreadList";
 import type { NewMessageFriend } from "@/components/messages/NewMessagePicker";
+import HebrewSearchInput from "@/components/search/HebrewSearchInput";
 import NavUnreadDot from "@/components/nav/NavUnreadDot";
 import { useNavCounts } from "@/components/nav/NavCountsProvider";
 import { useVisiblePolling } from "@/lib/hooks/use-visible-polling";
@@ -266,13 +267,12 @@ export default function MessagingSidebarPanel() {
           <label className="sr-only" htmlFor={searchId}>
             {t("messages.dockSearchLabel")}
           </label>
-          <input
+          <HebrewSearchInput
             id={searchId}
-            type="search"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onValueChange={setSearch}
             placeholder={t("messages.dockSearchPlaceholder")}
-            className="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15"
+            inputClassName="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15"
           />
         </div>
 

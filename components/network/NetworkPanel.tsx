@@ -9,7 +9,8 @@ import {
   formatProfileHeadline,
 } from "@/lib/profile/display-professional";
 import type { NetworkMember, NetworkRecommendation } from "@/lib/network/types";
-import { sanitizeHebrewNameSearchInput } from "@/lib/validation/hebrew-name";
+import HebrewSearchInput from "@/components/search/HebrewSearchInput";
+import { isHebrewNameSearchQuery } from "@/lib/validation/hebrew-name";
 import FeedPostsScroll from "@/components/feed/FeedPostsScroll";
 import MemberRow from "./MemberRow";
 
@@ -111,7 +112,8 @@ export default function NetworkPanel({
     });
   }, [connections, friendsFilter]);
 
-  const showSearch = query.trim().length >= 2;
+  const showSearch =
+    isHebrewNameSearchQuery(query) && query.trim().length >= 2;
 
   function handleDismissRecommendation(memberId: string) {
     setDismissedRecommendationIds((prev) => new Set(prev).add(memberId));
@@ -147,13 +149,11 @@ export default function NetworkPanel({
         <label className="sr-only" htmlFor={networkSearchId}>
           {t("network.searchLabel")}
         </label>
-        <input
+        <HebrewSearchInput
           id={networkSearchId}
-          type="search"
           value={query}
-          onChange={(e) => setQuery(sanitizeHebrewNameSearchInput(e.target.value))}
+          onValueChange={setQuery}
           placeholder={t("network.searchPlaceholder")}
-          className="network-search-input box-border w-full min-w-0 rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm"
         />
       </section>
 
@@ -260,13 +260,11 @@ export default function NetworkPanel({
                 <label className="sr-only" htmlFor={connectionsFilterId}>
                   {t("network.connectionsFilterLabel")}
                 </label>
-                <input
+                <HebrewSearchInput
                   id={connectionsFilterId}
-                  type="search"
                   value={friendsFilter}
-                  onChange={(e) => setFriendsFilter(sanitizeHebrewNameSearchInput(e.target.value))}
+                  onValueChange={setFriendsFilter}
                   placeholder={t("network.connectionsFilterPlaceholder")}
-                  className="network-search-input box-border w-full min-w-0 rounded-lg border border-border bg-white px-3 py-2 text-base outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm"
                 />
               </div>
               <MemberList

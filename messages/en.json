@@ -11,6 +11,9 @@
     "banner": "DEV MODE",
     "previewBanner": "PREVIEW — dev data (not production)"
   },
+  "common": {
+    "hebrewOnly": "Hebrew only"
+  },
   "lang": {
     "switchToEn": "English",
     "switchToHe": "עברית",

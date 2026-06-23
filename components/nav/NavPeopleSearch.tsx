@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useLocale, useT } from "@/components/i18n/LocaleProvider";
 import type { PeopleSearchHit } from "@/lib/data/people-search";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
-import { sanitizeHebrewNameSearchInput } from "@/lib/validation/hebrew-name";
+import HebrewSearchInput from "@/components/search/HebrewSearchInput";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 
 const DEBOUNCE_MS = 200;
@@ -227,28 +227,16 @@ export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProp
       <label className="sr-only" htmlFor={searchInputId}>
         {t("nav.search")}
       </label>
-      <svg
-        className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-muted-foreground ${
-          isRtl ? rtlIconClass : compact ? "end-2.5 md:end-3" : "end-3"
-        }`}
-        xmlns="http://www.w3.org/2000/svg"
-        width={compact ? 14 : 16}
-        height={compact ? 14 : 16}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        aria-hidden="true"
-      >
-        <circle cx="11" cy="11" r="8" />
-        <path d="m21 21-4.3-4.3" />
-      </svg>
-      <input
+      <HebrewSearchInput
         ref={inputRef}
         id={searchInputId}
-        type="search"
-        enterKeyHint="search"
         value={query}
+        onValueChange={(value) => {
+          setQuery(value);
+          setIsOpen(true);
+          setActiveIndex(-1);
+        }}
+        enterKeyHint="search"
         autoComplete="off"
         autoCorrect="off"
         spellCheck={false}
@@ -258,14 +246,28 @@ export default function NavPeopleSearch({ compact = false }: NavPeopleSearchProp
         aria-controls={listId}
         aria-autocomplete="list"
         placeholder={t("nav.searchPlaceholder")}
-        onChange={(e) => {
-          setQuery(sanitizeHebrewNameSearchInput(e.target.value));
-          setIsOpen(true);
-          setActiveIndex(-1);
-        }}
         onFocus={() => setIsOpen(true)}
         onKeyDown={handleKeyDown}
-        className={`w-full max-w-full appearance-none rounded-md border border-border bg-white text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/15 ${
+        inputWrapClassName="relative"
+        beforeInput={
+          <svg
+            className={`pointer-events-none absolute top-1/2 z-10 -translate-y-1/2 text-muted-foreground ${
+              isRtl ? rtlIconClass : compact ? "end-2.5 md:end-3" : "end-3"
+            }`}
+            xmlns="http://www.w3.org/2000/svg"
+            width={compact ? 14 : 16}
+            height={compact ? 14 : 16}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.3-4.3" />
+          </svg>
+        }
+        inputClassName={`w-full max-w-full appearance-none rounded-md border border-border bg-white text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/15 ${
           isRtl ? rtlInputClass : ltrInputClass
         }`}
       />
