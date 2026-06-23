@@ -4,6 +4,7 @@ import { addPostComment, deletePostComment, toggleCommentLike } from "@/app/acti
 import { useT } from "@/components/i18n/LocaleProvider";
 import ReportContentButton from "@/components/moderation/ReportContentButton";
 import { PostLikeIcon, formatEngagementCount } from "@/components/feed/PostEngagementIcons";
+import PostLikersPopup from "@/components/feed/PostLikersPopup";
 import type { FeedComment } from "@/lib/data/feed";
 import Link from "next/link";
 import LinkifiedText from "@/components/ui/LinkifiedText";
@@ -197,17 +198,22 @@ export default function PostCommentRow({
                 {t("post.replyToComment")}
               </button>
             ) : null}
-            <button
-              type="button"
-              onClick={handleLike}
-              disabled={pendingLike}
-              aria-pressed={liked}
-              aria-label={t("post.commentLikeAria")}
-              className={`post-comment-like inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-semibold transition hover:bg-muted/50 disabled:opacity-60 ${liked ? "text-[var(--like-heart)]" : "text-muted-foreground"}`}
+            <PostLikersPopup
+              apiUrl={`/api/comments/${comment.id}/likes`}
+              likeCount={likeCount}
             >
-              <PostLikeIcon filled={liked} size={16} />
-              <span>{likeCount > 0 ? formatEngagementCount(likeCount) : t("post.like")}</span>
-            </button>
+              <button
+                type="button"
+                onClick={handleLike}
+                disabled={pendingLike}
+                aria-pressed={liked}
+                aria-label={t("post.commentLikeAria")}
+                className={`post-comment-like inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-semibold transition hover:bg-muted/50 disabled:opacity-60 ${liked ? "text-[var(--like-heart)]" : "text-muted-foreground"}`}
+              >
+                <PostLikeIcon filled={liked} size={16} />
+                <span>{likeCount > 0 ? formatEngagementCount(likeCount) : t("post.like")}</span>
+              </button>
+            </PostLikersPopup>
           </div>
           {likeError ? (
             <p className="mt-0.5 px-1 text-[10px] text-red-600" role="alert">

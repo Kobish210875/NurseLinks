@@ -8,6 +8,7 @@ import PostCommentRow from "@/components/feed/PostCommentRow";
 import PostImage from "@/components/feed/PostImage";
 import PostShareDialog from "@/components/feed/PostShareDialog";
 import ReportContentButton from "@/components/moderation/ReportContentButton";
+import PostLikersPopup from "@/components/feed/PostLikersPopup";
 import {
   PostCommentIcon,
   PostLikeBadge,
@@ -229,12 +230,12 @@ export default function PostCard({ post, currentUserId, isAdmin = false }: PostC
         {hasEngagementStats ? (
           <div className="flex items-center justify-between gap-3 py-2.5 text-sm text-muted-foreground">
             <span className="inline-flex min-h-[18px] items-center gap-1.5">
-              {likeCount > 0 ? (
-                <>
+              <PostLikersPopup apiUrl={`/api/posts/${post.id}/likes`} likeCount={likeCount}>
+                <span className="inline-flex cursor-default select-none items-center gap-1.5">
                   <PostLikeBadge />
                   <span className="font-medium tabular-nums">{likeCount}</span>
-                </>
-              ) : null}
+                </span>
+              </PostLikersPopup>
             </span>
             <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-0.5 text-end">
               {commentCount > 0 ? (
