@@ -56,11 +56,11 @@ export default function PostLikersPopup({ apiUrl, likeCount, children }: PostLik
     };
   }, []);
 
-  // Reset cache when apiUrl changes (e.g. optimistic like update)
+  // Reset cache when apiUrl or likeCount changes so the list stays fresh after toggling a like
   useEffect(() => {
     fetchedForUrl.current = null;
     setLikers(null);
-  }, [apiUrl]);
+  }, [apiUrl, likeCount]);
 
   if (likeCount === 0) return <>{children}</>;
 
