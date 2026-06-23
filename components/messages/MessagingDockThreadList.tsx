@@ -9,17 +9,22 @@ type MessagingDockThreadListProps = {
   threads: MessageThread[];
   activePeerId: string | null;
   onSelect: (peerId: string) => void;
+  isSearchActive?: boolean;
 };
 
 export default function MessagingDockThreadList({
   threads,
   activePeerId,
   onSelect,
+  isSearchActive = false,
 }: MessagingDockThreadListProps) {
   const t = useT();
   const { locale } = useLocale();
 
   if (threads.length === 0) {
+    if (isSearchActive) {
+      return null;
+    }
     return (
       <p className="px-4 py-8 text-center text-sm text-muted-foreground">{t("messages.empty")}</p>
     );

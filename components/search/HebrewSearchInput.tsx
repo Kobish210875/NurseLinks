@@ -7,7 +7,6 @@ import {
 } from "@/lib/validation/hebrew-name";
 import {
   forwardRef,
-  useEffect,
   useId,
   useState,
   type InputHTMLAttributes,
@@ -49,17 +48,13 @@ const HebrewSearchInput = forwardRef<HTMLInputElement, HebrewSearchInputProps>(
     const errorId = `${inputId}-hebrew-only`;
     const [showError, setShowError] = useState(false);
 
-    useEffect(() => {
-      if (!value.trim()) {
-        setShowError(false);
-      }
-    }, [value]);
-
     function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
       const raw = event.target.value;
-      if (hasRejectedSearchCharacters(raw)) {
+      if (!raw) {
+        setShowError(false);
+      } else if (hasRejectedSearchCharacters(raw)) {
         setShowError(true);
-      } else if (!raw.trim()) {
+      } else {
         setShowError(false);
       }
       onValueChange(sanitizeHebrewNameSearchInput(raw));

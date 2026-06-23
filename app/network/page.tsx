@@ -11,6 +11,10 @@ import { getNetworkPageData } from "@/lib/data/connections";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
 import { createClient } from "@/lib/supabase/server";
+import {
+  isHebrewNameSearchQuery,
+  sanitizeHebrewNameSearchInput,
+} from "@/lib/validation/hebrew-name";
 
 type NetworkPageProps = {
   searchParams: Promise<{ q?: string }>;
@@ -39,7 +43,11 @@ async function NetworkContent({ query }: { query: string }) {
 export default async function NetworkPage({ searchParams }: NetworkPageProps) {
   const [locale, params] = await Promise.all([getLocale(), searchParams]);
   const t = createT(getMessages(locale));
-  const query = typeof params.q === "string" ? params.q.trim() : "";
+  const rawQuery = typeof params.q === "string" ? params.q.trim() : "";
+  const query =
+    rawQuery.length >= 2 && isHebrewNameSearchQuery(rawQuery)
+      ? sanitizeHebrewNameSearchInput(rawQuery)
+      : "";
 
   return (
     <>

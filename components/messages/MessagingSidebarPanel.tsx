@@ -323,6 +323,7 @@ export default function MessagingSidebarPanel() {
               threads={filteredThreads}
               activePeerId={activePeerId}
               onSelect={openThread}
+              isSearchActive={search.trim().length > 0}
             />
           )}
         </div>

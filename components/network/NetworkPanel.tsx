@@ -10,7 +10,10 @@ import {
 } from "@/lib/profile/display-professional";
 import type { NetworkMember, NetworkRecommendation } from "@/lib/network/types";
 import HebrewSearchInput from "@/components/search/HebrewSearchInput";
-import { isHebrewNameSearchQuery } from "@/lib/validation/hebrew-name";
+import {
+  isHebrewNameSearchQuery,
+  sanitizeHebrewNameSearchInput,
+} from "@/lib/validation/hebrew-name";
 import FeedPostsScroll from "@/components/feed/FeedPostsScroll";
 import MemberRow from "./MemberRow";
 
@@ -67,16 +70,20 @@ export default function NetworkPanel({
   const networkSearchId = useId();
   const connectionsFilterId = useId();
   const [, startTransition] = useTransition();
-  const [query, setQuery] = useState(initialQuery);
+  const [query, setQuery] = useState(() => sanitizeHebrewNameSearchInput(initialQuery));
   const [friendsFilter, setFriendsFilter] = useState("");
   const [dismissedRecommendationIds, setDismissedRecommendationIds] = useState(
     () => new Set<string>(),
   );
 
   useEffect(() => {
+    setQuery(sanitizeHebrewNameSearchInput(initialQuery));
+  }, [initialQuery]);
+
+  useEffect(() => {
     const trimmed = query.trim();
     const timeout = window.setTimeout(() => {
-      if (trimmed.length >= 2) {
+      if (trimmed.length >= 2 && isHebrewNameSearchQuery(trimmed)) {
         router.replace(`/network?q=${encodeURIComponent(trimmed)}`);
       } else if (initialQuery) {
         router.replace("/network");
