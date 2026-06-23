@@ -1,6 +1,7 @@
 import type { CvDraft } from "@/app/profile/actions";
 import { AUTH_SESSION_TIMEOUT_MS } from "@/lib/auth/auth-timeouts";
 import { hasSupabaseAuthCookie } from "@/lib/auth/has-auth-cookie";
+import { clearLocalAuthSession, resolveAuthSession } from "@/lib/auth/resolve-auth-session";
 import { isTimeoutError, withTimeout } from "@/lib/async/with-timeout";
 import { isValidNursingEducationValue } from "@/lib/data/nursing-education-options";
 import { resolveWorkplaceSlug } from "@/lib/profile/workplace";
@@ -30,21 +31,47 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
 
   const supabase = await createClient();
 
-  let session;
+  let authStatus;
   try {
-    ({
-      data: { session },
-    } = await withTimeout(supabase.auth.getSession(), AUTH_SESSION_TIMEOUT_MS));
+    authStatus = await withTimeout(resolveAuthSession(supabase), AUTH_SESSION_TIMEOUT_MS);
   } catch (error) {
     if (isTimeoutError(error)) {
-      console.warn("[auth] getCurrentUser: getSession timed out");
+      console.warn("[auth] getCurrentUser: resolveAuthSession timed out");
     }
     return null;
   }
 
-  const user = session?.user ?? null;
+  if (authStatus.status === "invalid") {
+    await clearLocalAuthSession(supabase);
+    return null;
+  }
 
-  if (!user) {
+  if (authStatus.status !== "authenticated") {
+    return null;
+  }
+
+  const userId = authStatus.userId;
+
+  let user: {
+    id: string;
+    email?: string;
+    user_metadata?: Record<string, unknown>;
+  } | null = null;
+  try {
+    const {
+      data: { user: authUser },
+    } = await withTimeout(supabase.auth.getUser(), AUTH_SESSION_TIMEOUT_MS);
+    user = authUser;
+  } catch (error) {
+    if (isTimeoutError(error)) {
+      console.warn("[auth] getCurrentUser: getUser timed out");
+    }
+    await clearLocalAuthSession(supabase);
+    return null;
+  }
+
+  if (!user || user.id !== userId) {
+    await clearLocalAuthSession(supabase);
     return null;
   }
 
@@ -65,7 +92,7 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
 
   try {
     const profileResult = (await withTimeout(
-      supabase.from("profiles").select(fullSelect).eq("id", user.id).maybeSingle<ProfileRow>(),
+      supabase.from("profiles").select(fullSelect).eq("id", userId).maybeSingle<ProfileRow>(),
       AUTH_SESSION_TIMEOUT_MS,
     )) as { data: ProfileRow | null; error: { message?: string } | null };
     const { data: profileFull, error: profileError } = profileResult;
@@ -76,7 +103,7 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
         supabase
           .from("profiles")
           .select("full_name, headline, city, avatar_url, cv_draft")
-          .eq("id", user.id)
+          .eq("id", userId)
           .maybeSingle<ProfileRow>(),
         AUTH_SESSION_TIMEOUT_MS,
       )) as { data: ProfileRow | null };
@@ -96,6 +123,7 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
   // signup trigger never ran. Either way deny access — do not fall back to the
   // JWT payload, which remains valid for up to 1 hour after deletion.
   if (!profile || profile.deleted_at) {
+    await clearLocalAuthSession(supabase);
     return null;
   }
 
@@ -125,7 +153,7 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
     cvDraft.certifications?.trim();
 
   const adminCheckPromise = withTimeout(
-    supabase.from("admin_users").select("user_id").eq("user_id", user.id).maybeSingle<{ user_id: string }>(),
+    supabase.from("admin_users").select("user_id").eq("user_id", userId).maybeSingle<{ user_id: string }>(),
     AUTH_SESSION_TIMEOUT_MS,
   ).catch((error: unknown) => {
     if (isTimeoutError(error)) {
@@ -137,7 +165,7 @@ export const getCurrentUser = cache(async function getCurrentUser(): Promise<Cur
   if (!hasCv) {
     try {
       const { data: rpcCv } = await withTimeout(
-        supabase.rpc("get_profile_cv_draft", { target_id: user.id } as never),
+        supabase.rpc("get_profile_cv_draft", { target_id: userId } as never),
         AUTH_SESSION_TIMEOUT_MS,
       );
       if (rpcCv && typeof rpcCv === "object" && !Array.isArray(rpcCv)) {

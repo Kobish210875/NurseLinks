@@ -1,4 +1,8 @@
 import { AUTH_SESSION_TIMEOUT_MS } from "@/lib/auth/auth-timeouts";
+import {
+  clearLocalAuthSession,
+  resolveAuthSession,
+} from "@/lib/auth/resolve-auth-session";
 import { isTimeoutError, withTimeout } from "@/lib/async/with-timeout";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
@@ -55,15 +59,12 @@ export async function proxy(request: NextRequest) {
     },
   );
 
-  let user: { id: string } | null = null;
+  let authStatus: Awaited<ReturnType<typeof resolveAuthSession>>;
   try {
-    const {
-      data: { session },
-    } = await withTimeout(supabase.auth.getSession(), AUTH_SESSION_TIMEOUT_MS);
-    user = session?.user ?? null;
+    authStatus = await withTimeout(resolveAuthSession(supabase), AUTH_SESSION_TIMEOUT_MS);
   } catch (error) {
     if (isTimeoutError(error)) {
-      console.warn("[proxy] getSession timed out");
+      console.warn("[proxy] resolveAuthSession timed out");
     }
     if (isProtectedRoute(pathname)) {
       return NextResponse.redirect(new URL("/", request.url));
@@ -71,7 +72,17 @@ export async function proxy(request: NextRequest) {
     return response;
   }
 
-  if (user && isAuthRoute(pathname)) {
+  if (authStatus.status === "invalid") {
+    await clearLocalAuthSession(supabase);
+    if (isProtectedRoute(pathname)) {
+      return NextResponse.redirect(new URL("/", request.url));
+    }
+    return response;
+  }
+
+  const isAuthenticated = authStatus.status === "authenticated";
+
+  if (isAuthenticated && isAuthRoute(pathname)) {
     if (pathname === "/login") {
       const q = request.nextUrl.searchParams;
       if (q.has("error") || q.get("reset") === "success") {
@@ -81,7 +92,7 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/home", request.url));
   }
 
-  if (!user && isProtectedRoute(pathname)) {
+  if (!isAuthenticated && isProtectedRoute(pathname)) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
