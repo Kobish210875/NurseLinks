@@ -54,8 +54,6 @@ export default function AuthLanding() {
           ))}
         </ul>
       </div>
-
-      <p className="text-center text-xs text-muted-foreground">{t("feed.stats")}</p>
     </div>
   );
 }
