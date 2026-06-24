@@ -10,6 +10,7 @@ import { useNavCounts } from "@/components/nav/NavCountsProvider";
 import { formatFeedTimestamp } from "@/lib/i18n/format-feed-time";
 import type { DirectMessage, NetworkMember } from "@/lib/network/types";
 import { formatProfileHeadline } from "@/lib/profile/display-professional";
+import { useMobileThreadComposeInset } from "@/lib/hooks/use-mobile-thread-compose-inset";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
 
@@ -41,6 +42,9 @@ export default function MessageThreadView({
   const [displayMessages, setDisplayMessages] = useState(messages);
   const markedReadRef = useRef(false);
   const messagesListRef = useRef<HTMLUListElement>(null);
+  const composeRef = useRef<HTMLFormElement>(null);
+
+  useMobileThreadComposeInset(!dockMode);
 
   const canSend = body.trim().length > 0;
   const closeAfterSend = displayMessages.length === 0;
@@ -69,6 +73,36 @@ export default function MessageThreadView({
     });
     return () => window.cancelAnimationFrame(frame);
   }, [displayMessages, dockMode, peer.id]);
+
+  useEffect(() => {
+    if (dockMode) {
+      return;
+    }
+
+    const compose = composeRef.current;
+    if (!compose) {
+      return;
+    }
+
+    function syncComposeHeight() {
+      const node = composeRef.current;
+      if (!node) {
+        return;
+      }
+      document.documentElement.style.setProperty(
+        "--message-thread-compose-height",
+        `${node.offsetHeight}px`,
+      );
+    }
+
+    syncComposeHeight();
+    const observer = new ResizeObserver(syncComposeHeight);
+    observer.observe(compose);
+    return () => {
+      observer.disconnect();
+      document.documentElement.style.removeProperty("--message-thread-compose-height");
+    };
+  }, [dockMode, error]);
 
   useEffect(() => {
     if (markedReadRef.current) {
@@ -182,10 +216,12 @@ export default function MessageThreadView({
   return (
     <div
       className={`message-thread-shell flex flex-col overflow-hidden ${
-        dockMode ? "h-full min-h-0" : "feed-card min-h-[min(480px,70dvh)] max-md:min-h-0 max-md:border-0 max-md:shadow-none max-md:rounded-none"
+        dockMode
+          ? "h-full min-h-0"
+          : "feed-card min-h-[min(480px,70dvh)] max-md:min-h-0 max-md:flex-1 max-md:border-0 max-md:shadow-none max-md:rounded-none"
       }`}
     >
-      <header className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2.5 max-md:gap-1.5 max-md:py-1.5">
+      <header className="message-thread-header flex shrink-0 items-center gap-2 border-b border-border bg-card px-3 py-2.5 max-md:gap-1.5 max-md:py-1.5">
         {dockMode ? null : (
           <Link
             href="/messages"
@@ -220,72 +256,72 @@ export default function MessageThreadView({
         ) : null}
       </header>
 
-      <div className="flex min-h-0 flex-1 flex-col">
-          <ul
-            ref={messagesListRef}
-            className={`message-thread-messages space-y-3 p-4 ${
-              dockMode
-                ? `min-h-0 flex-1 overscroll-contain ${
-                    displayMessages.length === 0 ? "overflow-hidden" : "overflow-y-auto"
-                  }`
-                : "min-h-0 flex-1 overflow-y-auto overscroll-contain"
-            }`}
-          >
-            {displayMessages.length === 0 ? (
-              <li className="flex min-h-[8rem] items-center justify-center text-center text-sm text-muted-foreground">
-                {t("messages.threadEmpty")}
-              </li>
-            ) : (
-              displayMessages.map((m) => (
-                <li
-                  key={m.id}
-                  className={`flex items-end gap-1.5 ${m.isMine ? "justify-end" : "justify-start"}`}
-                >
-                  {!m.isMine && m.isUnread ? (
-                    <span className="mb-2 shrink-0">
-                      <NavUnreadDot ariaLabel={t("messages.unreadMessage")} />
-                    </span>
-                  ) : null}
-                  <div
-                    className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
-                      m.isMine
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-muted/50 text-foreground"
-                    }`}
-                  >
-                    <p className="text-sm leading-relaxed">
-                      <MessageBody body={m.body} isMine={m.isMine} />
-                    </p>
-                    {!m.isMine ? (
-                      <div className="mt-1">
-                        <ReportContentButton
-                          contentType="message"
-                          contentId={m.id}
-                          subjectUserId={m.senderId}
-                          currentUserId={currentUserId}
-                          className="text-[10px] text-muted-foreground hover:text-foreground"
-                        />
-                      </div>
-                    ) : null}
-                    <time
-                      className={`mt-1 block text-[10px] ${
-                        m.isMine ? "text-primary-foreground/80" : "text-muted-foreground"
-                      }`}
-                      dateTime={m.createdAt}
-                    >
-                      {formatFeedTimestamp(m.createdAt, locale)}
-                    </time>
+      <ul
+        ref={messagesListRef}
+        className={`message-thread-messages min-h-0 flex-1 space-y-3 overscroll-contain p-4 ${
+          dockMode
+            ? displayMessages.length === 0
+              ? "overflow-hidden"
+              : "overflow-y-auto"
+            : "overflow-y-auto"
+        }`}
+      >
+        {displayMessages.length === 0 ? (
+          <li className="flex min-h-[8rem] items-center justify-center text-center text-sm text-muted-foreground">
+            {t("messages.threadEmpty")}
+          </li>
+        ) : (
+          displayMessages.map((m) => (
+            <li
+              key={m.id}
+              className={`flex items-end gap-1.5 ${m.isMine ? "justify-end" : "justify-start"}`}
+            >
+              {!m.isMine && m.isUnread ? (
+                <span className="mb-2 shrink-0">
+                  <NavUnreadDot ariaLabel={t("messages.unreadMessage")} />
+                </span>
+              ) : null}
+              <div
+                className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
+                  m.isMine
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted/50 text-foreground"
+                }`}
+              >
+                <p className="text-sm leading-relaxed">
+                  <MessageBody body={m.body} isMine={m.isMine} />
+                </p>
+                {!m.isMine ? (
+                  <div className="mt-1">
+                    <ReportContentButton
+                      contentType="message"
+                      contentId={m.id}
+                      subjectUserId={m.senderId}
+                      currentUserId={currentUserId}
+                      className="text-[10px] text-muted-foreground hover:text-foreground"
+                    />
                   </div>
-                </li>
-              ))
-            )}
-          </ul>
-          <form
-            onSubmit={submit}
-            className={`message-thread-compose shrink-0 border-t border-border ${
-              dockMode ? "p-2.5" : "p-4"
-            }`}
-          >
+                ) : null}
+                <time
+                  className={`mt-1 block text-[10px] ${
+                    m.isMine ? "text-primary-foreground/80" : "text-muted-foreground"
+                  }`}
+                  dateTime={m.createdAt}
+                >
+                  {formatFeedTimestamp(m.createdAt, locale)}
+                </time>
+              </div>
+            </li>
+          ))
+        )}
+      </ul>
+      <form
+        ref={composeRef}
+        onSubmit={submit}
+        className={`message-thread-compose shrink-0 border-t border-border bg-card ${
+          dockMode ? "p-2.5" : "p-4 max-md:p-3"
+        }`}
+      >
             <label className="sr-only" htmlFor={messageBodyId}>
               {t("messages.inputLabel")}
             </label>
@@ -318,7 +354,6 @@ export default function MessageThreadView({
               </button>
             </div>
           </form>
-      </div>
     </div>
   );
 }
