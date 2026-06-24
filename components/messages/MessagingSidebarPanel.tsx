@@ -8,8 +8,6 @@ import { useMessagingDock } from "@/components/messages/MessagingDockContext";
 import MessagingDockThreadList from "@/components/messages/MessagingDockThreadList";
 import type { NewMessageFriend } from "@/components/messages/NewMessagePicker";
 import HebrewSearchInput from "@/components/search/HebrewSearchInput";
-import NavUnreadDot from "@/components/nav/NavUnreadDot";
-import { useNavCounts } from "@/components/nav/NavCountsProvider";
 import { prefetchMessageThread } from "@/lib/client/message-thread-cache";
 import { CONNECTIONS_CHANGED_EVENT } from "@/lib/client/sync-events";
 import { useVisiblePolling } from "@/lib/hooks/use-visible-polling";
@@ -68,7 +66,6 @@ function connectionToThread(member: NewMessageFriend): MessageThread {
 export default function MessagingSidebarPanel() {
   const t = useT();
   const searchId = useId();
-  const { unreadMessages } = useNavCounts();
   const { activePeerId, openThread, closeThread } = useMessagingDock();
   const panelRef = useRef<HTMLElement>(null);
   const [popoutAnchor, setPopoutAnchor] = useState<PopoutAnchor | null>(null);
@@ -79,6 +76,9 @@ export default function MessagingSidebarPanel() {
   const [search, setSearch] = useState("");
   const [composeOpen, setComposeOpen] = useState(false);
   const [readyPeerId, setReadyPeerId] = useState<string | null>(null);
+  // Incremented whenever inbox poll detects new activity on the active thread.
+  const [conversationSignal, setConversationSignal] = useState(0);
+  const activePeerLastMsgRef = useRef<string>("");
 
   async function loadInbox() {
     try {
@@ -88,6 +88,18 @@ export default function MessagingSidebarPanel() {
       }
       const data = (await res.json()) as InboxPayload;
       setInbox(data);
+
+      // If the active peer's thread has new activity, signal the open conversation.
+      if (activePeerId) {
+        const activeThread = data.threads.find((t) => t.peerId === activePeerId);
+        const signal = activeThread
+          ? `${activeThread.lastMessageAt}:${activeThread.unreadCount}`
+          : "";
+        if (signal && signal !== activePeerLastMsgRef.current) {
+          activePeerLastMsgRef.current = signal;
+          setConversationSignal((n) => n + 1);
+        }
+      }
     } finally {
       setLoadingInbox(false);
     }
@@ -95,6 +107,8 @@ export default function MessagingSidebarPanel() {
 
   useEffect(() => {
     setPopoutSize(null);
+    // Reset signal tracking when switching threads.
+    activePeerLastMsgRef.current = "";
   }, [activePeerId]);
 
   useEffect(() => {
@@ -277,6 +291,7 @@ export default function MessagingSidebarPanel() {
             <MessagingDockConversation
               key={activePeerId}
               peerId={activePeerId}
+              inboxSignal={conversationSignal}
               onClose={closeThread}
               onThreadUpdated={() => void loadInbox()}
             />
@@ -301,13 +316,8 @@ export default function MessagingSidebarPanel() {
         aria-label={t("messages.dockListAria")}
       >
         <header className="flex shrink-0 items-center gap-2 border-b border-border px-3 py-2">
-          <h2 className="inline-flex min-w-0 flex-1 items-center gap-1.5 truncate text-sm font-semibold text-foreground">
+          <h2 className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
             {t("messages.dockTitle")}
-            {unreadMessages > 0 ? (
-              <NavUnreadDot
-                ariaLabel={t("nav.unreadMessages").replace("{count}", String(unreadMessages))}
-              />
-            ) : null}
           </h2>
           <button
             type="button"

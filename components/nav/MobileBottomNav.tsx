@@ -45,7 +45,6 @@ export default function MobileBottomNav() {
     {
       href: "/messages",
       label: t("nav.messages"),
-      badge: "messages",
       match: (path) => path === "/messages" || path.startsWith("/messages/"),
     },
   ];
