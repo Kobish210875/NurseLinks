@@ -10,6 +10,7 @@ import type { NewMessageFriend } from "@/components/messages/NewMessagePicker";
 import HebrewSearchInput from "@/components/search/HebrewSearchInput";
 import NavUnreadDot from "@/components/nav/NavUnreadDot";
 import { useNavCounts } from "@/components/nav/NavCountsProvider";
+import { prefetchMessageThread } from "@/lib/client/message-thread-cache";
 import { useVisiblePolling } from "@/lib/hooks/use-visible-polling";
 import { POLL_MESSAGES_MS } from "@/lib/sync/poll-intervals";
 import type { MessageThread } from "@/lib/network/types";
@@ -63,6 +64,7 @@ export default function MessagingSidebarPanel() {
   const [loadingInbox, setLoadingInbox] = useState(true);
   const [search, setSearch] = useState("");
   const [composeOpen, setComposeOpen] = useState(false);
+  const [readyPeerId, setReadyPeerId] = useState<string | null>(null);
 
   async function loadInbox() {
     try {
@@ -79,6 +81,24 @@ export default function MessagingSidebarPanel() {
 
   useEffect(() => {
     setPopoutSize(null);
+  }, [activePeerId]);
+
+  useEffect(() => {
+    if (!activePeerId) {
+      setReadyPeerId(null);
+      return;
+    }
+
+    let cancelled = false;
+    void prefetchMessageThread(activePeerId).then((data) => {
+      if (!cancelled && data) {
+        setReadyPeerId(activePeerId);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [activePeerId]);
 
   function startPopoutResize(
@@ -205,7 +225,7 @@ export default function MessagingSidebarPanel() {
     activePeerId && popoutAnchor ? getConversationPopoutStyle(popoutAnchor) : null;
 
   const conversationPopout =
-    activePeerId && popoutAnchor && conversationPopoutStyle && typeof document !== "undefined"
+    activePeerId && readyPeerId === activePeerId && popoutAnchor && conversationPopoutStyle && typeof document !== "undefined"
       ? createPortal(
           <section
             className="messages-sidebar-popout feed-card fixed z-[60] flex min-h-0 flex-col overflow-hidden shadow-xl"
@@ -285,6 +305,7 @@ export default function MessagingSidebarPanel() {
                     <button
                       type="button"
                       className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-start hover:bg-muted/50"
+                      onMouseEnter={() => void prefetchMessageThread(member.id)}
                       onClick={() => {
                         setComposeOpen(false);
                         window.requestAnimationFrame(() => {

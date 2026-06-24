@@ -2,6 +2,7 @@
 
 import { useLocale, useT } from "@/components/i18n/LocaleProvider";
 import NavUnreadDot from "@/components/nav/NavUnreadDot";
+import { prefetchMessageThread } from "@/lib/client/message-thread-cache";
 import { formatFeedTimestamp } from "@/lib/i18n/format-feed-time";
 import type { MessageThread } from "@/lib/network/types";
 
@@ -39,6 +40,7 @@ export default function MessagingDockThreadList({
             <button
               type="button"
               onClick={() => onSelect(thread.peerId)}
+              onMouseEnter={() => void prefetchMessageThread(thread.peerId)}
               className={`flex w-full items-center gap-2 px-3 py-2 text-start transition hover:bg-muted/40 ${
                 active ? "bg-primary/5" : ""
               }`}
