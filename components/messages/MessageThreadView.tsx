@@ -218,7 +218,7 @@ export default function MessageThreadView({
       className={`message-thread-shell flex flex-col overflow-hidden ${
         dockMode
           ? "h-full min-h-0"
-          : "feed-card min-h-[min(480px,70dvh)] max-md:min-h-0 max-md:flex-1 max-md:border-0 max-md:shadow-none max-md:rounded-none"
+          : "feed-card flex-1 min-h-0 max-md:border-0 max-md:shadow-none max-md:rounded-none"
       }`}
     >
       <header className="message-thread-header flex shrink-0 items-center gap-2 border-b border-border bg-card px-3 py-2.5 max-md:gap-1.5 max-md:py-1.5">
