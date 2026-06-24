@@ -8,7 +8,12 @@ import { useMessagingDock } from "@/components/messages/MessagingDockContext";
 import MessagingDockThreadList from "@/components/messages/MessagingDockThreadList";
 import type { NewMessageFriend } from "@/components/messages/NewMessagePicker";
 import HebrewSearchInput from "@/components/search/HebrewSearchInput";
-import { prefetchMessageThread } from "@/lib/client/message-thread-cache";
+import {
+  getCachedMessageThread,
+  invalidateMessageThread,
+  prefetchMessageThread,
+  refreshMessageThread,
+} from "@/lib/client/message-thread-cache";
 import { CONNECTIONS_CHANGED_EVENT } from "@/lib/client/sync-events";
 import { useVisiblePolling } from "@/lib/hooks/use-visible-polling";
 import { POLL_MESSAGES_MS } from "@/lib/sync/poll-intervals";
@@ -89,6 +94,24 @@ export default function MessagingSidebarPanel() {
       const data = (await res.json()) as InboxPayload;
       setInbox(data);
 
+      // Invalidate cache for any thread whose lastMessageAt is newer than what we cached.
+      // This ensures opening a conversation after receiving a message always shows fresh data.
+      for (const thread of data.threads) {
+        if (!thread.lastMessageAt) {
+          continue;
+        }
+        const cached = getCachedMessageThread(thread.peerId);
+        if (cached) {
+          const cachedLatest =
+            cached.messages.length > 0
+              ? cached.messages[cached.messages.length - 1].createdAt
+              : "";
+          if (thread.lastMessageAt > cachedLatest) {
+            invalidateMessageThread(thread.peerId);
+          }
+        }
+      }
+
       // If the active peer's thread has new activity, signal the open conversation.
       if (activePeerId) {
         const activeThread = data.threads.find((t) => t.peerId === activePeerId);
@@ -118,7 +141,9 @@ export default function MessagingSidebarPanel() {
     }
 
     let cancelled = false;
-    void prefetchMessageThread(activePeerId).then((data) => {
+    // Always refresh on open so the latest messages are shown immediately,
+    // even if the cache was populated before the newest message arrived.
+    void refreshMessageThread(activePeerId).then((data) => {
       if (!cancelled && data) {
         setReadyPeerId(activePeerId);
       }
