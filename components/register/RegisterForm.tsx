@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { signUp } from "@/app/register/actions";
 import { useT } from "@/components/i18n/LocaleProvider";
@@ -28,6 +28,7 @@ export default function RegisterForm({
   requireEmailVerification = true,
 }: RegisterFormProps) {
   const t = useT();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const firstNameId = useId();
   const firstNameHintId = useId();
@@ -317,7 +318,10 @@ export default function RegisterForm({
       {requireEmailVerification ? (
         <RegistrationSuccessDialog
           open={registrationSubmitted && !dialogDismissed}
-          onClose={() => setDialogDismissed(true)}
+          onClose={() => {
+            setDialogDismissed(true);
+            router.push("/login");
+          }}
         />
       ) : null}
 
