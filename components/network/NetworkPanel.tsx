@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { useEffect, useId, useMemo, useState, useTransition } from "react";
 import { useT } from "@/components/i18n/LocaleProvider";
 import NavUnreadDot from "@/components/nav/NavUnreadDot";
+import { useNavCounts } from "@/components/nav/NavCountsProvider";
+import { CONNECTIONS_CHANGED_EVENT } from "@/lib/client/sync-events";
 import {
   formatProfileHeadline,
 } from "@/lib/profile/display-professional";
@@ -67,6 +69,7 @@ export default function NetworkPanel({
 }: NetworkPanelProps) {
   const t = useT();
   const router = useRouter();
+  const { pendingInvitations } = useNavCounts();
   const networkSearchId = useId();
   const connectionsFilterId = useId();
   const [, startTransition] = useTransition();
@@ -95,6 +98,24 @@ export default function NetworkPanel({
   const [tab, setTab] = useState<"connections" | "invitations">(
     invitations.length > 0 ? "invitations" : "connections",
   );
+
+  useEffect(() => {
+    if (pendingInvitations === invitations.length) {
+      return;
+    }
+    if (pendingInvitations > invitations.length) {
+      setTab("invitations");
+    }
+    router.refresh();
+  }, [pendingInvitations, invitations.length, router]);
+
+  useEffect(() => {
+    function onConnectionsChanged() {
+      router.refresh();
+    }
+    window.addEventListener(CONNECTIONS_CHANGED_EVENT, onConnectionsChanged);
+    return () => window.removeEventListener(CONNECTIONS_CHANGED_EVENT, onConnectionsChanged);
+  }, [router]);
 
   const visibleRecommendations = useMemo(
     () => recommendations.filter((r) => !dismissedRecommendationIds.has(r.id)),

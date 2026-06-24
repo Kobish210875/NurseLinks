@@ -13,6 +13,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import NursingEducationSelect from "./NursingEducationSelect";
 import ProfileAvatar from "./ProfileAvatar";
 import WorkExperienceSection from "./WorkExperienceSection";
+import ProfileFormActions from "./ProfileFormActions";
 import { normalizeWorkExperiences } from "@/lib/profile/work-experience";
 import { notifyInstitutionActivityChanged } from "@/lib/client/sync-events";
 
@@ -153,26 +154,7 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
         </div>
       </div>
 
-      <div className="flex gap-3">
-        <button
-          type="submit"
-          disabled={!isDirty}
-          className={`rounded-lg bg-primary py-3 text-sm font-semibold text-primary-foreground transition hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50 ${
-            isDirty ? "flex-1" : "w-full"
-          }`}
-        >
-          {isDirty ? t("profile.save") : t("profile.update")}
-        </button>
-        {isDirty ? (
-          <button
-            type="button"
-            onClick={handleCancel}
-            className="flex-1 rounded-lg border border-border bg-white py-3 text-sm font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"
-          >
-            {t("profile.cancel")}
-          </button>
-        ) : null}
-      </div>
+      <ProfileFormActions isDirty={isDirty} onCancel={handleCancel} />
       </form>
     </div>
   );

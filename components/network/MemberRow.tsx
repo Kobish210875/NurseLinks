@@ -66,9 +66,7 @@ export default function MemberRow({
         setOptimisticStatus(previous);
         return;
       }
-      if (nextStatus === "connected") {
-        notifyConnectionsChanged();
-      }
+      notifyConnectionsChanged();
     });
   }
 

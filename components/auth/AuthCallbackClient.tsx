@@ -43,6 +43,18 @@ function isRecoveryFlow(search: URLSearchParams, hash?: URLSearchParams) {
   );
 }
 
+function goToVerifiedLogin() {
+  window.location.replace("/login?verified=1");
+}
+
+function goToLoginError(signupFlow: boolean) {
+  if (signupFlow) {
+    goToVerifiedLogin();
+    return;
+  }
+  window.location.replace("/login?error=auth-callback-failed");
+}
+
 export default function AuthCallbackClient() {
   const t = useT();
   const router = useRouter();
@@ -66,7 +78,7 @@ export default function AuthCallbackClient() {
           router.replace("/forgot-password?error=reset-link-expired");
           return;
         }
-        router.replace(signupFlow ? "/login?verified=1" : "/login?error=auth-callback-failed");
+        goToLoginError(signupFlow);
         return;
       }
 
@@ -116,7 +128,7 @@ export default function AuthCallbackClient() {
 
         if (signupFlow) {
           await supabase.auth.signOut({ scope: "local" });
-          router.replace("/login?verified=1");
+          goToVerifiedLogin();
           return;
         }
 
@@ -125,7 +137,7 @@ export default function AuthCallbackClient() {
       }
 
       if (signupFlow && exchangeError && isRecoverableCallbackError(exchangeError.message)) {
-        router.replace("/login?verified=1");
+        goToVerifiedLogin();
         return;
       }
 
@@ -139,7 +151,7 @@ export default function AuthCallbackClient() {
           router.replace("/forgot-password?error=reset-link-expired");
           return;
         }
-        router.replace(signupFlow ? "/login?verified=1" : "/login?error=auth-callback-failed");
+        goToLoginError(signupFlow);
         return;
       }
 
@@ -148,7 +160,7 @@ export default function AuthCallbackClient() {
           router.replace("/forgot-password?error=reset-link-expired");
           return;
         }
-        router.replace(signupFlow ? "/login?verified=1" : "/login?error=auth-callback-failed");
+        goToLoginError(signupFlow);
         return;
       }
 
@@ -157,7 +169,7 @@ export default function AuthCallbackClient() {
         router.replace("/forgot-password?error=reset-link-expired");
         return;
       }
-      router.replace(signupFlow ? "/login?verified=1" : "/login?error=auth-callback-failed");
+      goToLoginError(signupFlow);
     })();
   }, [router]);
 

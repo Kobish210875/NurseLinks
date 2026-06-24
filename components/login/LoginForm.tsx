@@ -2,9 +2,15 @@
 
 import Link from "next/link";
 import { useT } from "@/components/i18n/LocaleProvider";
+import { completeAuthCallback } from "@/app/auth/callback/actions";
 import { signIn } from "@/app/login/actions";
-import { useId } from "react";
-import { useFormStatus } from "react-dom";
+import { createClient } from "@/lib/supabase/client";
+import {
+  EMAIL_NOT_CONFIRMED_ERROR,
+  NETWORK_ERROR,
+  normalizeSupabaseAuthError,
+} from "@/lib/auth/supabase-auth-errors";
+import { useEffect, useId, useState, type FormEvent } from "react";
 import PasswordInput from "@/components/register/PasswordInput";
 import RequiredLabel from "@/components/register/RequiredLabel";
 
@@ -17,34 +23,107 @@ type LoginFormProps = {
   defaultEmail?: string;
 };
 
-function LoginSubmitButton() {
-  const t = useT();
-  const { pending } = useFormStatus();
-
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="btn-primary mt-6 w-full rounded-lg px-4 py-3 text-sm font-semibold text-primary-foreground disabled:cursor-wait disabled:opacity-70"
-    >
-      {pending ? t("login.submitting") : t("login.submit")}
-    </button>
-  );
+function mapAuthCallbackError(
+  error: "auth-callback-failed" | "account-not-found" | "auth-profile-failed",
+  t: ReturnType<typeof useT>,
+) {
+  if (error === "account-not-found") {
+    return t("login.accountNotFound");
+  }
+  if (error === "auth-profile-failed") {
+    return t("login.authProfileFailed");
+  }
+  return t("login.authCallbackFailed");
 }
 
 export default function LoginForm({ errorMessage, successMessage, defaultEmail }: LoginFormProps) {
   const t = useT();
   const emailId = useId();
   const passwordId = useId();
+  const [email, setEmail] = useState(defaultEmail ?? "");
+  const [password, setPassword] = useState("");
+  const [clientError, setClientError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
+
+  useEffect(() => {
+    if (defaultEmail) {
+      setEmail(defaultEmail);
+    }
+  }, [defaultEmail]);
+
+  const displayError = clientError ?? errorMessage;
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (pending) {
+      return;
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || !password) {
+      setClientError(t("login.missing-fields"));
+      return;
+    }
+
+    setClientError(null);
+    setPending(true);
+
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
+      });
+
+      if (error) {
+        const code = normalizeSupabaseAuthError(error.message);
+        if (code === EMAIL_NOT_CONFIRMED_ERROR) {
+          const formData = new FormData();
+          formData.set("email", normalizedEmail);
+          formData.set("password", password);
+          await signIn(formData);
+          return;
+        }
+        if (code === NETWORK_ERROR) {
+          setClientError(t("errors.network-error"));
+          return;
+        }
+        if (error.message.toLowerCase().includes("invalid login credentials")) {
+          setClientError(t("login.wrongPassword"));
+          return;
+        }
+        try {
+          setClientError(decodeURIComponent(code));
+        } catch {
+          setClientError(t("login.authCallbackFailed"));
+        }
+        return;
+      }
+
+      const result = await completeAuthCallback();
+      if (!result.ok) {
+        await supabase.auth.signOut({ scope: "local" });
+        setClientError(mapAuthCallbackError(result.error, t));
+        return;
+      }
+
+      // Full navigation ensures auth cookies are visible to middleware on mobile.
+      window.location.replace("/home");
+    } catch {
+      setClientError(t("errors.network-error"));
+    } finally {
+      setPending(false);
+    }
+  }
 
   return (
-    <form action={signIn} className="feed-card w-full max-w-md p-6 text-start">
+    <form onSubmit={handleSubmit} className="feed-card w-full max-w-md p-6 text-start">
       <h1 className="mb-1 text-2xl font-bold text-foreground">{t("login.title")}</h1>
       <p className="mb-6 text-sm text-muted-foreground">{t("login.subtitle")}</p>
 
-      {errorMessage ? (
+      {displayError ? (
         <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-          {errorMessage}
+          {displayError}
         </p>
       ) : null}
       {successMessage ? (
@@ -65,7 +144,8 @@ export default function LoginForm({ errorMessage, successMessage, defaultEmail }
             placeholder="you@example.com"
             dir="ltr"
             autoComplete="email"
-            defaultValue={defaultEmail}
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
           />
         </label>
 
@@ -75,7 +155,7 @@ export default function LoginForm({ errorMessage, successMessage, defaultEmail }
             id={passwordId}
             name="password"
             autoComplete="current-password"
-            onValueChange={() => {}}
+            onValueChange={setPassword}
           />
         </label>
         <Link
@@ -86,7 +166,13 @@ export default function LoginForm({ errorMessage, successMessage, defaultEmail }
         </Link>
       </div>
 
-      <LoginSubmitButton />
+      <button
+        type="submit"
+        disabled={pending}
+        className="btn-primary mt-6 w-full rounded-lg px-4 py-3 text-sm font-semibold text-primary-foreground disabled:cursor-wait disabled:opacity-70"
+      >
+        {pending ? t("login.submitting") : t("login.submit")}
+      </button>
 
       <p className="mt-4 text-center text-sm text-muted-foreground">
         {t("login.noAccount")}{" "}
