@@ -7,6 +7,7 @@ type NavCounts = {
   pendingInvitations: number;
   unreadMessages: number;
   unreadJobs: number;
+  acceptedConnections: number;
 };
 
 type NavCountsContextValue = NavCounts & {
@@ -17,6 +18,7 @@ const NavCountsContext = createContext<NavCountsContextValue>({
   pendingInvitations: 0,
   unreadMessages: 0,
   unreadJobs: 0,
+  acceptedConnections: 0,
   updateCounts: () => {},
 });
 
@@ -24,6 +26,7 @@ type NavCountsProviderProps = {
   pendingInvitations: number;
   unreadMessages: number;
   unreadJobs: number;
+  acceptedConnections?: number;
   /** When false, skip client polling (logged-out pages). */
   enablePolling?: boolean;
   children: React.ReactNode;
@@ -33,6 +36,7 @@ export function NavCountsProvider({
   pendingInvitations,
   unreadMessages,
   unreadJobs,
+  acceptedConnections = 0,
   enablePolling = true,
   children,
 }: NavCountsProviderProps) {
@@ -40,11 +44,12 @@ export function NavCountsProvider({
     pendingInvitations,
     unreadMessages,
     unreadJobs,
+    acceptedConnections,
   });
 
   useEffect(() => {
-    setCounts({ pendingInvitations, unreadMessages, unreadJobs });
-  }, [pendingInvitations, unreadMessages, unreadJobs]);
+    setCounts({ pendingInvitations, unreadMessages, unreadJobs, acceptedConnections });
+  }, [pendingInvitations, unreadMessages, unreadJobs, acceptedConnections]);
 
   // Merge-patch so callers only need to specify the keys they're changing.
   const updateCounts = useCallback((patch: Partial<NavCounts>) => {

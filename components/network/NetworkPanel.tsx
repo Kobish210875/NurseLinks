@@ -2,7 +2,7 @@
 
 import { dismissConnectionRecommendation } from "@/app/actions/connections";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useMemo, useState, useTransition } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useTransition } from "react";
 import { useT } from "@/components/i18n/LocaleProvider";
 import NavUnreadDot from "@/components/nav/NavUnreadDot";
 import { useNavCounts } from "@/components/nav/NavCountsProvider";
@@ -69,7 +69,7 @@ export default function NetworkPanel({
 }: NetworkPanelProps) {
   const t = useT();
   const router = useRouter();
-  const { pendingInvitations } = useNavCounts();
+  const { pendingInvitations, acceptedConnections } = useNavCounts();
   const networkSearchId = useId();
   const connectionsFilterId = useId();
   const [, startTransition] = useTransition();
@@ -99,6 +99,8 @@ export default function NetworkPanel({
     invitations.length > 0 ? "invitations" : "connections",
   );
 
+  const prevAcceptedRef = useRef(acceptedConnections);
+
   useEffect(() => {
     if (pendingInvitations === invitations.length) {
       return;
@@ -108,6 +110,14 @@ export default function NetworkPanel({
     }
     router.refresh();
   }, [pendingInvitations, invitations.length, router]);
+
+  // Refresh when someone accepts our outgoing request (acceptedConnections increases).
+  useEffect(() => {
+    if (acceptedConnections > prevAcceptedRef.current) {
+      router.refresh();
+    }
+    prevAcceptedRef.current = acceptedConnections;
+  }, [acceptedConnections, router]);
 
   useEffect(() => {
     function onConnectionsChanged() {

@@ -20,11 +20,13 @@ export default function NavCountsPoller() {
         pendingInvitations?: number;
         unreadMessages?: number;
         unreadJobs?: number;
+        acceptedConnections?: number;
       };
       updateCounts({
         pendingInvitations: payload.pendingInvitations ?? 0,
         unreadMessages: payload.unreadMessages ?? 0,
         unreadJobs: payload.unreadJobs ?? 0,
+        acceptedConnections: payload.acceptedConnections ?? 0,
       });
     } catch {
       // Best-effort polling.

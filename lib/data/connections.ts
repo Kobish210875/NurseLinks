@@ -200,6 +200,23 @@ export async function getPendingInvitationCount(
   return count ?? 0;
 }
 
+export async function getAcceptedConnectionCount(
+  supabase: SupabaseClient<Database>,
+  userId: string,
+): Promise<number> {
+  const { count, error } = await supabase
+    .from("connections")
+    .select("*", { count: "exact", head: true })
+    .or(`requester_id.eq.${userId},addressee_id.eq.${userId}`)
+    .eq("status", "accepted");
+
+  if (error) {
+    return 0;
+  }
+
+  return count ?? 0;
+}
+
 export async function getPendingInvitations(
   supabase: SupabaseClient<Database>,
   userId: string,
