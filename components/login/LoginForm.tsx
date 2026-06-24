@@ -14,6 +14,7 @@ const inputClassName =
 type LoginFormProps = {
   errorMessage?: string | null;
   successMessage?: string | null;
+  defaultEmail?: string;
 };
 
 function LoginSubmitButton() {
@@ -31,7 +32,7 @@ function LoginSubmitButton() {
   );
 }
 
-export default function LoginForm({ errorMessage, successMessage }: LoginFormProps) {
+export default function LoginForm({ errorMessage, successMessage, defaultEmail }: LoginFormProps) {
   const t = useT();
   const emailId = useId();
   const passwordId = useId();
@@ -64,6 +65,7 @@ export default function LoginForm({ errorMessage, successMessage }: LoginFormPro
             placeholder="you@example.com"
             dir="ltr"
             autoComplete="email"
+            defaultValue={defaultEmail}
           />
         </label>
 

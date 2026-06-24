@@ -6,7 +6,7 @@ import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
 
 type LoginPageProps = {
-  searchParams: Promise<{ error?: string; reset?: string; verified?: string; sent?: string }>;
+  searchParams: Promise<{ error?: string; reset?: string; verified?: string; sent?: string; email?: string }>;
 };
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
@@ -62,7 +62,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         <LanguageToggle />
       </header>
       <main className="flex flex-1 items-center justify-center px-4 py-10">
-        <LoginForm errorMessage={errorMessage} successMessage={successMessage} />
+        <LoginForm errorMessage={errorMessage} successMessage={successMessage} defaultEmail={params.email} />
       </main>
     </div>
   );

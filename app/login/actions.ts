@@ -124,8 +124,10 @@ export async function signIn(formData: FormData) {
   const email = getRequiredString(formData, "email").toLowerCase();
   const password = getRequiredString(formData, "password");
 
+  const emailParam = email ? `&email=${encodeURIComponent(email)}` : "";
+
   if (!email || !password) {
-    redirect("/login?error=login-missing-fields");
+    redirect(`/login?error=login-missing-fields${emailParam}`);
   }
 
   const supabase = await createClient();
@@ -139,7 +141,7 @@ export async function signIn(formData: FormData) {
     ));
   } catch (signInTimeout) {
     if (isTimeoutError(signInTimeout)) {
-      redirect("/login?error=network-error");
+      redirect(`/login?error=network-error${emailParam}`);
     }
     throw signInTimeout;
   }
@@ -161,7 +163,7 @@ export async function signIn(formData: FormData) {
           }
         }
       }
-      redirect("/login?error=email-not-confirmed");
+      redirect(`/login?error=email-not-confirmed${emailParam}`);
     }
 
     const message = error.message.toLowerCase();
@@ -172,12 +174,12 @@ export async function signIn(formData: FormData) {
       // back to the generic wrong-password message rather than misleading the user.
       const admin = createAdminClient();
       if (!admin) {
-        redirect("/login?error=wrong-password");
+        redirect(`/login?error=wrong-password${emailParam}`);
       }
 
       const existingUser = await findAuthUserByEmail(email);
       if (!existingUser) {
-        redirect("/login?error=account-not-found");
+        redirect(`/login?error=account-not-found${emailParam}`);
       }
 
       const { data: profile } = await supabase
@@ -187,28 +189,28 @@ export async function signIn(formData: FormData) {
         .maybeSingle<{ deleted_at: string | null }>();
 
       if (profile?.deleted_at) {
-        redirect("/login?error=account-not-found");
+        redirect(`/login?error=account-not-found${emailParam}`);
       }
 
-      redirect("/login?error=wrong-password");
+      redirect(`/login?error=wrong-password${emailParam}`);
     }
-    redirect(`/login?error=${normalizedError}`);
+    redirect(`/login?error=${normalizedError}${emailParam}`);
   }
 
   const user = signInData.user;
   if (!user?.id) {
     await supabase.auth.signOut({ scope: "local" });
-    redirect("/login?error=account-not-found");
+    redirect(`/login?error=account-not-found${emailParam}`);
   }
 
   const profileStatus = await ensureAuthUserProfile(supabase, user);
   if (profileStatus === "deleted") {
     await supabase.auth.signOut({ scope: "local" });
-    redirect("/login?error=account-not-found");
+    redirect(`/login?error=account-not-found${emailParam}`);
   }
   if (profileStatus === "failed") {
     await supabase.auth.signOut({ scope: "local" });
-    redirect("/login?error=auth-profile-failed");
+    redirect(`/login?error=auth-profile-failed${emailParam}`);
   }
 
   await revokeOtherAuthSessions(supabase);
