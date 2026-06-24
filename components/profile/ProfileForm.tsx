@@ -14,6 +14,7 @@ import NursingEducationSelect from "./NursingEducationSelect";
 import ProfileAvatar from "./ProfileAvatar";
 import WorkExperienceSection from "./WorkExperienceSection";
 import { normalizeWorkExperiences } from "@/lib/profile/work-experience";
+import { notifyInstitutionActivityChanged } from "@/lib/client/sync-events";
 
 const fieldClassName =
   "w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/15";
@@ -43,6 +44,7 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
     savedHandledRef.current = true;
     setIsDirty(false);
     setFormKey((k) => k + 1);
+    notifyInstitutionActivityChanged();
     window.history.replaceState(null, "", "/profile");
 
     const scrollToPageTop = () => {
