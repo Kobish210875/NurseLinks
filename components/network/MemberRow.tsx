@@ -20,6 +20,7 @@ import {
   formatProfileHeadline,
   getInstitutionLabel,
 } from "@/lib/profile/display-professional";
+import { notifyConnectionsChanged } from "@/lib/client/sync-events";
 import { useEffect, useState, useTransition } from "react";
 
 type MemberRowProps = {
@@ -64,6 +65,9 @@ export default function MemberRow({
       if (hasActionError(result)) {
         setOptimisticStatus(previous);
         return;
+      }
+      if (nextStatus === "connected") {
+        notifyConnectionsChanged();
       }
     });
   }

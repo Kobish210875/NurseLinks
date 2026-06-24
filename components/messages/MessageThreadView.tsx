@@ -128,7 +128,20 @@ export default function MessageThreadView({
         setError(t("messages.sendFailed"));
         return;
       }
+      const sentBody = trimmed;
       setBody("");
+      setDisplayMessages((prev) => [
+        ...prev,
+        {
+          id: `optimistic-${Date.now()}`,
+          senderId: currentUserId,
+          recipientId: peer.id,
+          body: sentBody,
+          createdAt: new Date().toISOString(),
+          isMine: true,
+          isUnread: false,
+        },
+      ]);
       if (dockMode) {
         onMessageSent?.();
         return;

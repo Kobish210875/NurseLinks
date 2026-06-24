@@ -50,3 +50,8 @@ export function prefetchMessageThread(peerId: string) {
   inFlight.set(peerId, request);
   return request;
 }
+
+export function refreshMessageThread(peerId: string) {
+  invalidateMessageThread(peerId);
+  return prefetchMessageThread(peerId);
+}

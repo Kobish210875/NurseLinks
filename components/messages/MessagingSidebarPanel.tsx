@@ -11,6 +11,7 @@ import HebrewSearchInput from "@/components/search/HebrewSearchInput";
 import NavUnreadDot from "@/components/nav/NavUnreadDot";
 import { useNavCounts } from "@/components/nav/NavCountsProvider";
 import { prefetchMessageThread } from "@/lib/client/message-thread-cache";
+import { CONNECTIONS_CHANGED_EVENT } from "@/lib/client/sync-events";
 import { useVisiblePolling } from "@/lib/hooks/use-visible-polling";
 import { POLL_MESSAGES_MS } from "@/lib/sync/poll-intervals";
 import type { MessageThread } from "@/lib/network/types";
@@ -48,6 +49,19 @@ function getConversationPopoutStyle({ panel, anchorTop }: PopoutAnchor) {
     height,
     top,
     right: window.innerWidth - panel.left + POPOUT_GAP_PX,
+  };
+}
+
+function connectionToThread(member: NewMessageFriend): MessageThread {
+  return {
+    peerId: member.id,
+    peerName: member.fullName,
+    peerHeadline: null,
+    peerAvatarUrl: member.avatarUrl,
+    peerInitials: member.initials,
+    lastMessageBody: "",
+    lastMessageAt: "",
+    unreadCount: 0,
   };
 }
 
@@ -160,6 +174,20 @@ export default function MessagingSidebarPanel() {
     await loadInbox();
   }, POLL_MESSAGES_MS);
 
+  useEffect(() => {
+    function onConnectionsChanged() {
+      void loadInbox();
+    }
+    window.addEventListener(CONNECTIONS_CHANGED_EVENT, onConnectionsChanged);
+    return () => window.removeEventListener(CONNECTIONS_CHANGED_EVENT, onConnectionsChanged);
+  }, []);
+
+  useEffect(() => {
+    if (composeOpen) {
+      void loadInbox();
+    }
+  }, [composeOpen]);
+
   useLayoutEffect(() => {
     const panelEl = panelRef.current;
     if (!activePeerId || !panelEl) {
@@ -213,12 +241,21 @@ export default function MessagingSidebarPanel() {
     if (!q) {
       return inbox.threads;
     }
-    return inbox.threads.filter((thread) => {
+
+    const threadMatches = inbox.threads.filter((thread) => {
       const haystack = [thread.peerName, thread.lastMessageBody, thread.peerHeadline ?? ""]
         .join(" ")
         .toLowerCase();
       return haystack.includes(q);
     });
+
+    const threadPeerIds = new Set(inbox.threads.map((thread) => thread.peerId));
+    const connectionMatches = inbox.connections
+      .filter((member) => !threadPeerIds.has(member.id))
+      .filter((member) => member.fullName.toLowerCase().includes(q))
+      .map(connectionToThread);
+
+    return [...threadMatches, ...connectionMatches];
   }, [inbox, search]);
 
   const conversationPopoutStyle =
@@ -291,6 +328,7 @@ export default function MessagingSidebarPanel() {
             id={searchId}
             value={search}
             onValueChange={setSearch}
+            onFocus={() => void loadInbox()}
             placeholder={t("messages.dockSearchPlaceholder")}
             inputClassName="w-full rounded-lg border border-border bg-white px-3 py-2 text-sm outline-none focus:border-primary/40 focus:ring-2 focus:ring-primary/15"
           />

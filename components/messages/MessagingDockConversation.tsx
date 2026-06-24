@@ -4,6 +4,7 @@ import MessageThreadView from "@/components/messages/MessageThreadView";
 import {
   getCachedMessageThread,
   prefetchMessageThread,
+  refreshMessageThread,
   type MessageThreadPayload,
 } from "@/lib/client/message-thread-cache";
 import { useEffect, useState } from "react";
@@ -27,7 +28,10 @@ export default function MessagingDockConversation({
   useEffect(() => {
     let cancelled = false;
 
-    void prefetchMessageThread(peerId).then((data) => {
+    const load =
+      reloadToken === 0 ? prefetchMessageThread(peerId) : refreshMessageThread(peerId);
+
+    void load.then((data) => {
       if (!cancelled && data) {
         setPayload(data);
       }

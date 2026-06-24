@@ -69,7 +69,7 @@ export default function MessagingDockThreadList({
                     ) : null}
                   </span>
                   <time className="shrink-0 text-[10px] text-muted-foreground">
-                    {formatFeedTimestamp(thread.lastMessageAt, locale)}
+                    {thread.lastMessageAt ? formatFeedTimestamp(thread.lastMessageAt, locale) : null}
                   </time>
                 </span>
               </span>
