@@ -17,6 +17,7 @@
     "admin:clear-profile:dry": "node scripts/recovery/clear-admin-profile.mjs --dry-run",
     "sql:list": "node scripts/list-supabase-sql.mjs",
     "sql:bundle": "node scripts/build-combined-sql.mjs",
+    "favicons": "node scripts/generate-favicons.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -42,7 +43,9 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
+    "sharp": "^0.35.2",
     "tailwindcss": "^4",
+    "to-ico": "^1.1.5",
     "typescript": "^5"
   }
 }

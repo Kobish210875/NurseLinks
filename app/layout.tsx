@@ -56,6 +56,13 @@ export async function generateMetadata(): Promise<Metadata> {
     formatDetection: {
       telephone: false,
     },
+    icons: {
+      icon: [
+        { url: "/favicon.ico", sizes: "48x48" },
+        { url: "/icon.svg", type: "image/svg+xml", sizes: "any" },
+      ],
+      apple: "/apple-icon",
+    },
     openGraph: {
       type: "website",
       locale: locale === "he" ? "he_IL" : "en_US",
