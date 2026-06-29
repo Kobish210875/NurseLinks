@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { isValidIsraeliCity, resolveCityCanonical } from "@/lib/data/israeli-cities";
 import { isAllowedAvatarFile, resolveAvatarContentType } from "@/lib/images/avatar-file";
 import { isValidProfileInstitutionSlug } from "@/lib/data/medical-institutions";
 import {
@@ -99,13 +98,13 @@ export async function saveProfile(formData: FormData) {
 
   const { data: existingProfile } = await supabase
     .from("profiles")
-    .select("headline")
+    .select("headline, city")
     .eq("id", user.id)
-    .maybeSingle<{ headline: string | null }>();
+    .maybeSingle<{ headline: string | null; city: string | null }>();
   const isFirstProfileSave = !existingProfile?.headline?.trim();
 
   const profession = truncateHeadline(getRequiredString(formData, "profession"));
-  const cityInput = getRequiredString(formData, "city");
+  const city = existingProfile?.city ?? null;
   const educationLevelRaw = getRequiredString(formData, "educationLevel");
   const workExperiencesRaw = getRequiredString(formData, "workExperiences");
   const certifications = truncateProfileText(getRequiredString(formData, "certifications"));
@@ -119,15 +118,6 @@ export async function saveProfile(formData: FormData) {
   }
 
   const workExperiences = parseWorkExperiencesJson(workExperiencesRaw);
-
-  let city: string | null = null;
-  if (cityInput) {
-    const cityHe = resolveCityCanonical(cityInput);
-    if (!cityHe || !isValidIsraeliCity(cityHe)) {
-      redirect("/profile?error=invalid-city");
-    }
-    city = cityHe;
-  }
 
   let workplaceInstitutionSlug: string | null = deriveWorkplaceInstitutionSlug(workExperiences);
   if (workplaceInstitutionSlug && !isValidProfileInstitutionSlug(workplaceInstitutionSlug)) {

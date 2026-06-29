@@ -1,7 +1,6 @@
 "use client";
 
 import { saveProfile } from "@/app/profile/actions";
-import CityCombobox from "@/components/register/CityCombobox";
 import { useT } from "@/components/i18n/LocaleProvider";
 import type { CurrentUser } from "@/lib/auth/get-current-user";
 import {
@@ -31,7 +30,6 @@ type ProfileFormProps = {
 export default function ProfileForm({ user, saved, onboarding, error }: ProfileFormProps) {
   const t = useT();
   const professionId = useId();
-  const cityId = useId();
   const certificationsId = useId();
   const { cvDraft } = user;
   const workExperiences = normalizeWorkExperiences(cvDraft.workExperiences);
@@ -128,14 +126,6 @@ export default function ProfileForm({ user, saved, onboarding, error }: ProfileF
           />
         </div>
 
-        <CityCombobox
-          defaultCityHe={user.city ?? ""}
-          required={false}
-          labelKey="profile.residenceCity"
-          inputId={cityId}
-          onChange={markDirty}
-        />
-
         <div className="grid gap-1.5">
           <label className="text-sm font-medium text-foreground">{t("profile.education")}</label>
           <NursingEducationSelect
@@ -143,6 +133,11 @@ export default function ProfileForm({ user, saved, onboarding, error }: ProfileF
             placeholder={t("profile.educationPlaceholder")}
             onChange={markDirty}
           />
+        </div>
+
+        <div className="grid gap-1.5">
+          <span className="text-sm font-medium text-foreground">{t("profile.experience")}</span>
+          <WorkExperienceSection defaultEntries={workExperiences} onChange={markDirty} />
         </div>
 
         <div className="grid gap-1.5">
@@ -157,13 +152,6 @@ export default function ProfileForm({ user, saved, onboarding, error }: ProfileF
             defaultValue={cvDraft.certifications ?? ""}
             className={`${fieldClassName} break-words`}
           />
-        </div>
-      </div>
-
-      <div className="feed-card space-y-5 p-6">
-        <div className="grid gap-1.5">
-          <span className="text-sm font-medium text-foreground">{t("profile.experience")}</span>
-          <WorkExperienceSection defaultEntries={workExperiences} onChange={markDirty} />
         </div>
       </div>
 
