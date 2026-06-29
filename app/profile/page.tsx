@@ -13,6 +13,7 @@ import { createT, getMessages } from "@/lib/i18n/messages";
 type ProfilePageProps = {
   searchParams: Promise<{
     saved?: string;
+    onboarding?: string;
     error?: string;
   }>;
 };
@@ -43,7 +44,12 @@ async function ProfileContent({ searchParams }: ProfilePageProps) {
 
   return (
     <main id="profile-page-top" className="mx-auto max-w-[1128px] space-y-6 px-4 py-8">
-      <ProfileForm user={user} saved={params.saved === "1"} error={errorMessage} />
+      <ProfileForm
+        user={user}
+        saved={params.saved === "1"}
+        onboarding={params.onboarding === "1"}
+        error={errorMessage}
+      />
       <ProfileChangePasswordSection />
       {!user.isAdmin ? <DeleteAccountSection /> : null}
     </main>

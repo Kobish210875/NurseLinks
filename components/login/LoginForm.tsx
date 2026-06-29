@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { completeAuthCallback } from "@/app/auth/callback/actions";
-import { signIn } from "@/app/login/actions";
 import { createClient } from "@/lib/supabase/client";
 import {
   EMAIL_NOT_CONFIRMED_ERROR,
@@ -78,10 +77,7 @@ export default function LoginForm({ errorMessage, successMessage, defaultEmail }
       if (error) {
         const code = normalizeSupabaseAuthError(error.message);
         if (code === EMAIL_NOT_CONFIRMED_ERROR) {
-          const formData = new FormData();
-          formData.set("email", normalizedEmail);
-          formData.set("password", password);
-          await signIn(formData);
+          setClientError(t("login.emailNotConfirmed").replace("{email}", normalizedEmail));
           return;
         }
         if (code === NETWORK_ERROR) {
@@ -108,7 +104,7 @@ export default function LoginForm({ errorMessage, successMessage, defaultEmail }
       }
 
       // Full navigation ensures auth cookies are visible to middleware on mobile.
-      window.location.replace("/home");
+      window.location.replace(result.redirectTo);
     } catch {
       setClientError(t("errors.network-error"));
     } finally {

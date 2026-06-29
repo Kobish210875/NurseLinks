@@ -1,11 +1,12 @@
 "use server";
 
 import { ensureAuthUserProfile } from "@/lib/auth/ensure-auth-user-profile";
+import { getPostLoginPath } from "@/lib/auth/post-login-path";
 import { revokeOtherAuthSessions } from "@/lib/auth/single-session";
 import { createClient } from "@/lib/supabase/server";
 
 export type CompleteAuthCallbackResult =
-  | { ok: true }
+  | { ok: true; redirectTo: string }
   | { ok: false; error: "auth-callback-failed" | "account-not-found" | "auth-profile-failed" };
 
 export async function completeAuthCallback(): Promise<CompleteAuthCallbackResult> {
@@ -28,6 +29,12 @@ export async function completeAuthCallback(): Promise<CompleteAuthCallbackResult
     return { ok: false, error: "auth-profile-failed" };
   }
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("headline")
+    .eq("id", user.id)
+    .maybeSingle<{ headline: string | null }>();
+
   await revokeOtherAuthSessions(supabase);
-  return { ok: true };
+  return { ok: true, redirectTo: getPostLoginPath(profile?.headline) };
 }

@@ -97,6 +97,13 @@ export async function saveProfile(formData: FormData) {
     redirect("/");
   }
 
+  const { data: existingProfile } = await supabase
+    .from("profiles")
+    .select("headline")
+    .eq("id", user.id)
+    .maybeSingle<{ headline: string | null }>();
+  const isFirstProfileSave = !existingProfile?.headline?.trim();
+
   const profession = truncateHeadline(getRequiredString(formData, "profession"));
   const cityInput = getRequiredString(formData, "city");
   const educationLevelRaw = getRequiredString(formData, "educationLevel");
@@ -170,7 +177,7 @@ export async function saveProfile(formData: FormData) {
   if (workplaceInstitutionSlug && workplaceInstitutionSlug !== "other") {
     revalidatePath(`/hospitals/${workplaceInstitutionSlug}`);
   }
-  redirect("/profile?saved=1");
+  redirect(isFirstProfileSave ? "/profile?saved=1&onboarding=1" : "/profile?saved=1");
 }
 
 export async function deleteAccount() {

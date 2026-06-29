@@ -10,6 +10,7 @@ import { confirmUserEmail } from "@/lib/auth/confirm-user-email";
 import { isEmailVerificationRequired } from "@/lib/auth/email-verification-config";
 import { findAuthUserByEmail } from "@/lib/auth/find-auth-user-by-email";
 import { ensureAuthUserProfile } from "@/lib/auth/ensure-auth-user-profile";
+import { getPostLoginPath } from "@/lib/auth/post-login-path";
 import { revokeOtherAuthSessions } from "@/lib/auth/single-session";
 import { normalizeSupabaseAuthError } from "@/lib/auth/supabase-auth-errors";
 import { validatePassword } from "@/lib/validation/password";
@@ -158,7 +159,12 @@ export async function signIn(formData: FormData) {
             const profileStatus = await ensureAuthUserProfile(supabase, retry.data.user);
             if (profileStatus === "ok") {
               await revokeOtherAuthSessions(supabase);
-              redirect("/home");
+              const { data: profile } = await supabase
+                .from("profiles")
+                .select("headline")
+                .eq("id", retry.data.user.id)
+                .maybeSingle<{ headline: string | null }>();
+              redirect(getPostLoginPath(profile?.headline));
             }
           }
         }
@@ -215,7 +221,13 @@ export async function signIn(formData: FormData) {
 
   await revokeOtherAuthSessions(supabase);
 
-  redirect("/home");
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("headline")
+    .eq("id", user.id)
+    .maybeSingle<{ headline: string | null }>();
+
+  redirect(getPostLoginPath(profile?.headline));
 }
 
 export async function requestPasswordReset(formData: FormData) {

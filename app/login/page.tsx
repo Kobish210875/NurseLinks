@@ -27,7 +27,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
         : params.error === "wrong-password"
           ? t("login.wrongPassword")
           : params.error === "email-not-confirmed"
-          ? t("login.emailNotConfirmed")
+            ? t("login.emailNotConfirmed").replace("{email}", params.email ?? "")
         : params.error === "auth-callback-failed"
           ? t("login.authCallbackFailed")
           : params.error === "auth-profile-failed"

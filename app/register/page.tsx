@@ -43,8 +43,8 @@ export default async function RegisterPage({ searchParams }: RegisterPageProps) 
     <>
       <Navbar />
       <main className="feed-page min-h-[calc(100vh-3.5rem)] px-4 py-10">
-        <section className="mx-auto grid max-w-[960px] gap-6 lg:grid-cols-[1fr_1.2fr]">
-          <div className="feed-card p-6 text-start">
+        <section className="mx-auto max-w-[960px] md:grid md:grid-cols-[1fr_1.2fr] md:gap-6">
+          <div className="feed-card hidden p-6 text-start md:block">
             <p className="mb-3 text-sm font-semibold text-accent">{t("register.joinNetwork")}</p>
             <h1 className="mb-4 text-3xl font-bold text-primary">
               <NurseLinkWordmark textClassName="text-primary" />

@@ -6,6 +6,7 @@ import { confirmUserEmail } from "@/lib/auth/confirm-user-email";
 import { isEmailVerificationRequired } from "@/lib/auth/email-verification-config";
 import { ensureAuthUserProfile } from "@/lib/auth/ensure-auth-user-profile";
 import { findAuthUserByEmail } from "@/lib/auth/find-auth-user-by-email";
+import { getPostLoginPath } from "@/lib/auth/post-login-path";
 import { revokeOtherAuthSessions } from "@/lib/auth/single-session";
 import {
   EMAIL_RATE_LIMIT_ERROR,
@@ -107,7 +108,7 @@ async function finishRegistrationAndEnter(
   }
 
   await revokeOtherAuthSessions(supabase);
-  redirect("/home");
+  redirect(getPostLoginPath(profession));
 }
 
 function redirectAfterRegistration(

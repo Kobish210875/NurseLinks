@@ -69,6 +69,8 @@ export async function GET(request: NextRequest) {
           response = NextResponse.redirect(new URL(`/login?error=${result.error}`, requestUrl.origin));
           return response;
         }
+        response = NextResponse.redirect(new URL(result.redirectTo, requestUrl.origin));
+        return response;
       }
       return response;
     }
@@ -92,6 +94,8 @@ export async function GET(request: NextRequest) {
           response = NextResponse.redirect(new URL(`/login?error=${result.error}`, requestUrl.origin));
           return response;
         }
+        response = NextResponse.redirect(new URL(result.redirectTo, requestUrl.origin));
+        return response;
       }
       return response;
     }

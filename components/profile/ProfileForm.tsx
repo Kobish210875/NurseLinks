@@ -14,6 +14,7 @@ import NursingEducationSelect from "./NursingEducationSelect";
 import ProfileAvatar from "./ProfileAvatar";
 import WorkExperienceSection from "./WorkExperienceSection";
 import ProfileFormActions from "./ProfileFormActions";
+import OnboardingTabsDialog from "./OnboardingTabsDialog";
 import { normalizeWorkExperiences } from "@/lib/profile/work-experience";
 import { notifyInstitutionActivityChanged } from "@/lib/client/sync-events";
 
@@ -23,10 +24,11 @@ const fieldClassName =
 type ProfileFormProps = {
   user: CurrentUser;
   saved?: boolean;
+  onboarding?: boolean;
   error?: string | null;
 };
 
-export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
+export default function ProfileForm({ user, saved, onboarding, error }: ProfileFormProps) {
   const t = useT();
   const professionId = useId();
   const cityId = useId();
@@ -36,7 +38,9 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
   const educationLevel = cvDraft.educationLevel ?? "";
   const [formKey, setFormKey] = useState(0);
   const [isDirty, setIsDirty] = useState(false);
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
   const savedHandledRef = useRef(false);
+  const onboardingHandledRef = useRef(false);
 
   useEffect(() => {
     if (!saved || savedHandledRef.current) {
@@ -61,6 +65,15 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
       window.setTimeout(scrollToPageTop, 100);
     });
   }, [saved]);
+
+  useEffect(() => {
+    if (!onboarding || onboardingHandledRef.current) {
+      return;
+    }
+    onboardingHandledRef.current = true;
+    setOnboardingOpen(true);
+    window.history.replaceState(null, "", "/profile");
+  }, [onboarding]);
 
   function markDirty() {
     setIsDirty(true);
@@ -156,6 +169,8 @@ export default function ProfileForm({ user, saved, error }: ProfileFormProps) {
 
       <ProfileFormActions isDirty={isDirty} onCancel={handleCancel} />
       </form>
+
+      <OnboardingTabsDialog open={onboardingOpen} onClose={() => setOnboardingOpen(false)} />
     </div>
   );
 }

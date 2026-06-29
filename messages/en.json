@@ -247,7 +247,7 @@
     "accountNotFound": "This user does not exist or was deleted. Please register to the system.",
     "accountNotFoundDev": "This account does not exist in the DEV environment. Production users (nurselinks.net) are not copied automatically — register here or create a user in the nurselinks-dev Supabase project.",
     "wrongPassword": "Incorrect password. Try again or use Forgot password.",
-    "emailNotConfirmed": "Your email is not verified yet. Open the verification link from your inbox. After verification, you will be redirected and signed in automatically.",
+    "emailNotConfirmed": "Please confirm the email we sent to {email}. Once confirmed, you can sign in.",
     "emailVerifiedSuccess": "Your email was verified successfully. Sign in with your email and password.",
     "callbackLoading": "Verifying your account…",
     "authCallbackFailed": "Could not confirm the account from this link. Try signing in with your email and password.",
@@ -263,6 +263,21 @@
     "resetSessionExpired": "This reset link has expired or was already used. Request a new link and try again.",
     "resetLinkExpired": "This reset link has expired or was already used. Send a new link to your email.",
     "passwordSameAsOld": "The new password must be different from your current password."
+  },
+  "onboarding": {
+    "title": "Welcome to NurseLinks!",
+    "subtitle": "Here is what you will find in each area of the site:",
+    "homeTitle": "Home",
+    "homeBody": "Create posts, read community posts, comment, and like.",
+    "networkTitle": "My network",
+    "networkBody": "Connect with colleagues, manage invitations, and grow your professional network.",
+    "institutionsTitle": "Institutions",
+    "institutionsBody": "Hospitals and medical institutions, colleagues by workplace, and professional resources.",
+    "jobsTitle": "Jobs",
+    "jobsBody": "New nursing jobs and job applications.",
+    "messagesTitle": "Messages",
+    "messagesBody": "Private conversations with colleagues from your network.",
+    "cta": "Let's go"
   },
   "profile": {
     "signOut": "Sign out",

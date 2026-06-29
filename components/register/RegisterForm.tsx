@@ -7,7 +7,6 @@ import { signUp } from "@/app/register/actions";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { validateHebrewNamePart } from "@/lib/validation/hebrew-name";
 import { validatePassword } from "@/lib/validation/password";
-import { PROFILE_HEADLINE_MAX_LENGTH } from "@/lib/profile/field-limits";
 import PasswordInput from "./PasswordInput";
 import RegisterSubmitButton from "./RegisterSubmitButton";
 import RegistrationSuccessDialog from "./RegistrationSuccessDialog";
@@ -16,6 +15,7 @@ import RequiredLabel from "./RequiredLabel";
 const inputClassName =
   "w-full max-w-full rounded-lg border border-border bg-white px-3 py-2.5 text-base outline-none transition focus:border-primary/40 focus:ring-2 focus:ring-primary/15 md:text-sm";
 const hebrewOnlyHintClassName = "text-sm font-bold text-primary";
+const hebrewOnlyHintWarningClassName = "text-sm font-bold text-red-600";
 const nonHebrewNameChars = /[^\u05D0-\u05EA\s\-'׳״.]/gu;
 
 type RegisterFormProps = {
@@ -44,6 +44,7 @@ export default function RegisterForm({
   const [dialogDismissed, setDialogDismissed] = useState(false);
   const [clientError, setClientError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [hebrewNameWarnings, setHebrewNameWarnings] = useState({ firstName: false, lastName: false });
   const [policyOpen, setPolicyOpen] = useState(false);
 
   const formLocked = registrationSubmitted;
@@ -64,12 +65,20 @@ export default function RegisterForm({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [policyOpen]);
 
-  function sanitizeHebrewNameInput(event: React.FormEvent<HTMLInputElement>) {
+  function handleHebrewNameInput(
+    field: "firstName" | "lastName",
+    event: React.FormEvent<HTMLInputElement>,
+  ) {
     const input = event.currentTarget;
+    const hadNonHebrew = nonHebrewNameChars.test(input.value);
     const hebrewOnly = input.value.replace(nonHebrewNameChars, "");
     if (input.value !== hebrewOnly) {
       input.value = hebrewOnly;
     }
+    setHebrewNameWarnings((current) => ({
+      ...current,
+      [field]: hadNonHebrew,
+    }));
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -172,7 +181,12 @@ export default function RegisterForm({
         <fieldset disabled={formLocked} className="grid gap-4 sm:grid-cols-2 disabled:opacity-70">
           <label className="grid gap-1.5 sm:col-span-1" htmlFor={firstNameId}>
             <RequiredLabel>{t("register.firstName")}</RequiredLabel>
-            <span id={firstNameHintId} className={hebrewOnlyHintClassName}>
+            <span
+              id={firstNameHintId}
+              className={
+                hebrewNameWarnings.firstName ? hebrewOnlyHintWarningClassName : hebrewOnlyHintClassName
+              }
+            >
               {t("register.firstNameHint")}
             </span>
             <input
@@ -183,7 +197,7 @@ export default function RegisterForm({
               maxLength={40}
               className={inputClassName}
               placeholder={t("register.firstNamePlaceholder")}
-              onInput={sanitizeHebrewNameInput}
+              onInput={(event) => handleHebrewNameInput("firstName", event)}
               aria-invalid={Boolean(fieldErrors.firstName)}
               aria-describedby={firstNameHintId}
             />
@@ -194,7 +208,12 @@ export default function RegisterForm({
 
           <label className="grid gap-1.5 sm:col-span-1" htmlFor={lastNameId}>
             <RequiredLabel>{t("register.lastName")}</RequiredLabel>
-            <span id={lastNameHintId} className={hebrewOnlyHintClassName}>
+            <span
+              id={lastNameHintId}
+              className={
+                hebrewNameWarnings.lastName ? hebrewOnlyHintWarningClassName : hebrewOnlyHintClassName
+              }
+            >
               {t("register.lastNameHint")}
             </span>
             <input
@@ -205,7 +224,7 @@ export default function RegisterForm({
               maxLength={40}
               className={inputClassName}
               placeholder={t("register.lastNamePlaceholder")}
-              onInput={sanitizeHebrewNameInput}
+              onInput={(event) => handleHebrewNameInput("lastName", event)}
               aria-invalid={Boolean(fieldErrors.lastName)}
               aria-describedby={lastNameHintId}
             />
@@ -266,16 +285,6 @@ export default function RegisterForm({
             {fieldErrors.password ? (
               <span className="text-sm text-red-600">{fieldErrors.password}</span>
             ) : null}
-          </label>
-
-          <label className="grid gap-1.5 sm:col-span-2">
-            <span className="text-sm font-medium text-foreground">{t("register.profession")}</span>
-            <input
-              name="profession"
-              maxLength={PROFILE_HEADLINE_MAX_LENGTH}
-              className={inputClassName}
-              placeholder={t("register.professionPlaceholder")}
-            />
           </label>
         </fieldset>
 

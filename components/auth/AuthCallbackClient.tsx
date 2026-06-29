@@ -70,8 +70,6 @@ export default function AuthCallbackClient() {
           : undefined;
       const signupFlow = isSignupFlow(search);
       const recoveryFlow = isRecoveryFlow(search, hashParams);
-      const nextParam = search.get("next") ?? (recoveryFlow ? "/reset-password" : "/home");
-      const next = nextParam.startsWith("/") ? nextParam : "/home";
 
       if (search.get("error")) {
         if (recoveryFlow) {
@@ -132,7 +130,7 @@ export default function AuthCallbackClient() {
           return;
         }
 
-        window.location.replace(next);
+        window.location.replace(result.redirectTo);
         return;
       }
 
