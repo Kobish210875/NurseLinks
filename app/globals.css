@@ -430,6 +430,9 @@ svg.logo-icon {
     transform: translateZ(0);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+    isolation: isolate;
+    background-color: #fff;
+    box-shadow: 0 -4px 16px rgb(44 74 110 / 0.1);
   }
 
   html.has-mobile-app-shell,
@@ -466,6 +469,23 @@ svg.logo-icon {
 
   body.has-mobile-app-shell main {
     padding-bottom: calc(var(--mobile-bottom-nav-offset) + 1.25rem);
+  }
+
+  body.has-mobile-app-shell .profile-page {
+    overflow-x: clip;
+  }
+
+  body.has-mobile-app-shell .mobile-page-bottom-spacer {
+    height: calc(var(--mobile-bottom-nav-offset) + 0.5rem);
+    pointer-events: none;
+  }
+
+  body.mobile-keyboard-open .mobile-bottom-nav {
+    display: none;
+  }
+
+  body.mobile-keyboard-open.has-mobile-app-shell main {
+    padding-bottom: 1.25rem;
   }
 
   /* Thread page: fixed viewport column — no document scroll (keeps peer header + compose visible) */

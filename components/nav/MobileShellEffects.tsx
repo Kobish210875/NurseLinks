@@ -34,6 +34,41 @@ export default function MobileShellEffects() {
     if (!user) {
       return;
     }
+
+    const mq = window.matchMedia("(max-width: 767px)");
+    if (!mq.matches) {
+      return;
+    }
+
+    const viewport = window.visualViewport;
+    if (!viewport) {
+      return;
+    }
+
+    function updateKeyboardState() {
+      if (!viewport) {
+        return;
+      }
+      const keyboardOpen = viewport.height < window.innerHeight * 0.85;
+      document.documentElement.classList.toggle("mobile-keyboard-open", keyboardOpen);
+      document.body.classList.toggle("mobile-keyboard-open", keyboardOpen);
+    }
+
+    updateKeyboardState();
+    viewport.addEventListener("resize", updateKeyboardState);
+    viewport.addEventListener("scroll", updateKeyboardState);
+    return () => {
+      viewport.removeEventListener("resize", updateKeyboardState);
+      viewport.removeEventListener("scroll", updateKeyboardState);
+      document.documentElement.classList.remove("mobile-keyboard-open");
+      document.body.classList.remove("mobile-keyboard-open");
+    };
+  }, [user]);
+
+  useEffect(() => {
+    if (!user) {
+      return;
+    }
     if ("scrollRestoration" in history) {
       history.scrollRestoration = "manual";
     }

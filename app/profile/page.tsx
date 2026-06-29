@@ -43,7 +43,7 @@ async function ProfileContent({ searchParams }: ProfilePageProps) {
               : null;
 
   return (
-    <main id="profile-page-top" className="mx-auto max-w-[1128px] space-y-6 px-4 py-8">
+    <div id="profile-page-top" className="mx-auto max-w-[1128px] space-y-6 px-4 py-8">
       <ProfileForm
         user={user}
         saved={params.saved === "1"}
@@ -52,20 +52,23 @@ async function ProfileContent({ searchParams }: ProfilePageProps) {
       />
       <ProfileChangePasswordSection />
       {!user.isAdmin ? <DeleteAccountSection /> : null}
-    </main>
+      <div className="mobile-page-bottom-spacer md:hidden" aria-hidden="true" />
+    </div>
   );
 }
 
 export default function ProfilePage({ searchParams }: ProfilePageProps) {
   return (
-    <>
+    <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
       <Navbar authenticated />
-      <Suspense fallback={<ProfilePageSkeleton />}>
-        <ProfileContent searchParams={searchParams} />
-      </Suspense>
-      <div className="lg:hidden">
+      <main className="home-main-shell feed-page profile-page min-h-0 flex-1 max-md:block max-md:flex-none">
+        <Suspense fallback={<ProfilePageSkeleton />}>
+          <ProfileContent searchParams={searchParams} />
+        </Suspense>
+      </main>
+      <div className="hidden lg:block">
         <Footer />
       </div>
-    </>
+    </div>
   );
 }

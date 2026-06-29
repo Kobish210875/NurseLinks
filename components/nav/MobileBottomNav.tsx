@@ -77,7 +77,7 @@ export default function MobileBottomNav() {
 
   return (
     <nav
-      className="mobile-bottom-nav fixed inset-x-0 bottom-0 z-[60] overflow-visible border-t border-border bg-white pb-[env(safe-area-inset-bottom)] md:hidden"
+      className="mobile-bottom-nav fixed inset-x-0 bottom-0 z-[60] overflow-hidden border-t border-border bg-white pb-[env(safe-area-inset-bottom)] shadow-[0_-4px_16px_rgb(44_74_110/0.1)] md:hidden"
       aria-label={t("nav.mobileBottomAria")}
       dir="rtl"
     >
