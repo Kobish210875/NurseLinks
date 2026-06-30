@@ -6,6 +6,7 @@ import {
   cropAvatarFile,
   getAvatarCenteredOffset,
   getAvatarCoverScale,
+  getAvatarInitialZoom,
 } from "@/lib/images/crop-avatar";
 import { useMounted } from "@/lib/ui/use-mounted";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
@@ -42,6 +43,21 @@ export default function AvatarCropModal({
   const dragRef = useRef<{ startX: number; startY: number; originX: number; originY: number } | null>(
     null,
   );
+  const offsetRef = useRef(offset);
+  const imageSizeRef = useRef(imageSize);
+  const zoomRef = useRef(zoom);
+
+  useEffect(() => {
+    offsetRef.current = offset;
+  }, [offset]);
+
+  useEffect(() => {
+    imageSizeRef.current = imageSize;
+  }, [imageSize]);
+
+  useEffect(() => {
+    zoomRef.current = zoom;
+  }, [zoom]);
 
   useEffect(() => {
     const previous = document.body.style.overflow;
@@ -64,17 +80,18 @@ export default function AvatarCropModal({
       const w = img.naturalWidth;
       const h = img.naturalHeight;
       setImageSize({ w, h });
-      const scale = getAvatarCoverScale(w, h, AVATAR_CROP_VIEWPORT, 1);
+      const initialZoom = getAvatarInitialZoom(w, h, AVATAR_CROP_VIEWPORT, MAX_ZOOM);
+      const initialScale = getAvatarCoverScale(w, h, AVATAR_CROP_VIEWPORT, initialZoom);
       setOffset(
         clampAvatarOffset(
           w,
           h,
-          scale,
+          initialScale,
           AVATAR_CROP_VIEWPORT,
-          getAvatarCenteredOffset(w, h, scale, AVATAR_CROP_VIEWPORT),
+          getAvatarCenteredOffset(w, h, initialScale, AVATAR_CROP_VIEWPORT),
         ),
       );
-      setZoom(1);
+      setZoom(initialZoom);
     };
     img.src = previewUrl;
   }, [previewUrl]);
@@ -119,35 +136,52 @@ export default function AvatarCropModal({
   );
 
   function onPointerDown(event: React.PointerEvent<HTMLDivElement>) {
-    if (!imageSize) {
+    const size = imageSizeRef.current;
+    if (!size || saving) {
       return;
     }
-    event.currentTarget.setPointerCapture(event.pointerId);
+    event.preventDefault();
+    const origin = offsetRef.current;
+    const startX = event.clientX;
+    const startY = event.clientY;
+
     dragRef.current = {
-      startX: event.clientX,
-      startY: event.clientY,
-      originX: offset.x,
-      originY: offset.y,
+      startX,
+      startY,
+      originX: origin.x,
+      originY: origin.y,
     };
-  }
 
-  function onPointerMove(event: React.PointerEvent<HTMLDivElement>) {
-    if (!dragRef.current || !imageSize) {
-      return;
+    function onPointerMove(moveEvent: PointerEvent) {
+      const activeDrag = dragRef.current;
+      const activeSize = imageSizeRef.current;
+      if (!activeDrag || !activeSize) {
+        return;
+      }
+      const activeScale = getAvatarCoverScale(
+        activeSize.w,
+        activeSize.h,
+        AVATAR_CROP_VIEWPORT,
+        zoomRef.current,
+      );
+      setOffset(
+        clampAvatarOffset(activeSize.w, activeSize.h, activeScale, AVATAR_CROP_VIEWPORT, {
+          x: activeDrag.originX + (moveEvent.clientX - activeDrag.startX),
+          y: activeDrag.originY + (moveEvent.clientY - activeDrag.startY),
+        }),
+      );
     }
-    setOffset(
-      clampAvatarOffset(imageSize.w, imageSize.h, scale, AVATAR_CROP_VIEWPORT, {
-        x: dragRef.current.originX + (event.clientX - dragRef.current.startX),
-        y: dragRef.current.originY + (event.clientY - dragRef.current.startY),
-      }),
-    );
-  }
 
-  function endDrag(event: React.PointerEvent<HTMLDivElement>) {
-    if (dragRef.current) {
-      event.currentTarget.releasePointerCapture(event.pointerId);
+    function endDrag() {
       dragRef.current = null;
+      document.removeEventListener("pointermove", onPointerMove);
+      document.removeEventListener("pointerup", endDrag);
+      document.removeEventListener("pointercancel", endDrag);
     }
+
+    document.addEventListener("pointermove", onPointerMove);
+    document.addEventListener("pointerup", endDrag);
+    document.addEventListener("pointercancel", endDrag);
   }
 
   async function handleSave() {
@@ -200,12 +234,9 @@ export default function AvatarCropModal({
         <p className="mt-1 text-center text-sm text-muted-foreground">{t("profile.cropHint")}</p>
 
         <div
-          className="relative mx-auto mt-4 touch-none select-none overflow-hidden rounded-xl bg-muted/40"
+          className="relative mx-auto mt-4 cursor-grab touch-none select-none overflow-hidden rounded-xl bg-muted/40 active:cursor-grabbing"
           style={{ width: AVATAR_CROP_VIEWPORT, height: AVATAR_CROP_VIEWPORT }}
           onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={endDrag}
-          onPointerCancel={endDrag}
           aria-hidden="true"
         >
           {imageSize ? (

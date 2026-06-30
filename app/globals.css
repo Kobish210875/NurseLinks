@@ -153,6 +153,14 @@ svg.logo-icon {
     overflow: hidden;
   }
 
+  /* Profile / settings-style pages: scroll the main column (no feed scroll panel). */
+  .home-page-root:has(.profile-page) .home-main-shell {
+    overflow-x: clip;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
   .home-feed-shell {
     height: 100%;
     min-height: 0;

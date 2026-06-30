@@ -80,6 +80,25 @@ export function getAvatarCenteredOffset(
   };
 }
 
+export function getAvatarInitialZoom(
+  imageWidth: number,
+  imageHeight: number,
+  viewportSize: number,
+  maxZoom = 2.75,
+) {
+  const coverScale = getAvatarCoverScale(imageWidth, imageHeight, viewportSize, 1);
+  const scaledWidth = imageWidth * coverScale;
+  const scaledHeight = imageHeight * coverScale;
+
+  if (scaledWidth <= viewportSize + 1 && scaledHeight <= viewportSize + 1) {
+    const zoomForWidth = (viewportSize + 32) / scaledWidth;
+    const zoomForHeight = (viewportSize + 32) / scaledHeight;
+    return Math.min(maxZoom, Math.max(1.08, zoomForWidth, zoomForHeight));
+  }
+
+  return 1;
+}
+
 export function clampAvatarOffset(
   imageWidth: number,
   imageHeight: number,
