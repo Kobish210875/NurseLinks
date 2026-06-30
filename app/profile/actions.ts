@@ -11,11 +11,42 @@ import {
   mergeCvDraftWithWorkplace,
 } from "@/lib/profile/workplace";
 import { isValidNursingEducationValue } from "@/lib/data/nursing-education-options";
-import { truncateHeadline, truncateProfileText } from "@/lib/profile/field-limits";
+import { truncateProfileText } from "@/lib/profile/field-limits";
 import { parseWorkExperiencesJson, deriveWorkplaceInstitutionSlug, type WorkExperienceEntry } from "@/lib/profile/work-experience";
 import { isCurrentUserAdmin } from "@/lib/auth/admin";
 import { updateProfile, type ProfileUpdate } from "@/lib/supabase/profiles";
+
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024;
+
+export type CvDraft = {
+  /** @deprecated Legacy free-text field; use workExperiences */
+  experience?: string;
+  /** @deprecated Legacy free-text field; use educationLevel */
+  education?: string;
+  educationLevel?: string;
+  workExperiences?: WorkExperienceEntry[];
+  certifications?: string;
+  workplace_institution_slug?: string;
+};
+
+function profileHasMeaningfulContent(
+  headline: string | null | undefined,
+  cvDraft: CvDraft | null | undefined,
+) {
+  if (headline?.trim()) {
+    return true;
+  }
+  if (cvDraft?.educationLevel?.trim()) {
+    return true;
+  }
+  if (cvDraft?.certifications?.trim()) {
+    return true;
+  }
+  if ((cvDraft?.workExperiences?.length ?? 0) > 0) {
+    return true;
+  }
+  return false;
+}
 
 function getRequiredString(formData: FormData, key: string) {
   const value = formData.get(key);
@@ -75,17 +106,6 @@ export async function uploadAvatar(formData: FormData) {
   return { success: true as const, avatarUrl };
 }
 
-export type CvDraft = {
-  /** @deprecated Legacy free-text field; use workExperiences */
-  experience?: string;
-  /** @deprecated Legacy free-text field; use educationLevel */
-  education?: string;
-  educationLevel?: string;
-  workExperiences?: WorkExperienceEntry[];
-  certifications?: string;
-  workplace_institution_slug?: string;
-};
-
 export async function saveProfile(formData: FormData) {
   const supabase = await createClient();
   const {
@@ -98,12 +118,15 @@ export async function saveProfile(formData: FormData) {
 
   const { data: existingProfile } = await supabase
     .from("profiles")
-    .select("headline, city")
+    .select("headline, city, cv_draft")
     .eq("id", user.id)
-    .maybeSingle<{ headline: string | null; city: string | null }>();
-  const isFirstProfileSave = !existingProfile?.headline?.trim();
+    .maybeSingle<{ headline: string | null; city: string | null; cv_draft: CvDraft | null }>();
+  const isFirstProfileSave = !profileHasMeaningfulContent(
+    existingProfile?.headline,
+    existingProfile?.cv_draft,
+  );
 
-  const profession = truncateHeadline(getRequiredString(formData, "profession"));
+  const headline = existingProfile?.headline ?? null;
   const city = existingProfile?.city ?? null;
   const educationLevelRaw = getRequiredString(formData, "educationLevel");
   const workExperiencesRaw = getRequiredString(formData, "workExperiences");
@@ -134,7 +157,7 @@ export async function saveProfile(formData: FormData) {
   );
 
   const baseUpdate: ProfileUpdate = {
-    headline: profession || null,
+    headline,
     license_number: null,
     city,
     cv_draft: cvDraft as ProfileUpdate["cv_draft"],
@@ -155,7 +178,7 @@ export async function saveProfile(formData: FormData) {
 
   await supabase.auth.updateUser({
     data: {
-      headline: profession || null,
+      headline,
       city,
       cv_draft: cvDraft,
     },

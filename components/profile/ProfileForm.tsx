@@ -5,8 +5,6 @@ import { useT } from "@/components/i18n/LocaleProvider";
 import type { CurrentUser } from "@/lib/auth/get-current-user";
 import {
   PROFILE_CV_TEXT_MAX_LENGTH,
-  PROFILE_HEADLINE_MAX_LENGTH,
-  truncateHeadline,
 } from "@/lib/profile/field-limits";
 import { useEffect, useId, useRef, useState } from "react";
 import NursingEducationSelect from "./NursingEducationSelect";
@@ -29,7 +27,6 @@ type ProfileFormProps = {
 
 export default function ProfileForm({ user, saved, onboarding, error }: ProfileFormProps) {
   const t = useT();
-  const professionId = useId();
   const certificationsId = useId();
   const { cvDraft } = user;
   const workExperiences = normalizeWorkExperiences(cvDraft.workExperiences);
@@ -112,32 +109,12 @@ export default function ProfileForm({ user, saved, onboarding, error }: ProfileF
         <h2 className="text-sm font-semibold text-foreground">{t("profile.sectionPersonal")}</h2>
 
         <div className="grid gap-1.5">
-          <label htmlFor={professionId} className="text-sm font-medium text-foreground">
-            {t("profile.profession")}
-          </label>
-          <input
-            id={professionId}
-            name="profession"
-            type="text"
-            maxLength={PROFILE_HEADLINE_MAX_LENGTH}
-            defaultValue={truncateHeadline(user.headline ?? "")}
-            className={fieldClassName}
-            placeholder={t("profile.professionPlaceholder")}
-          />
-        </div>
-
-        <div className="grid gap-1.5">
           <label className="text-sm font-medium text-foreground">{t("profile.education")}</label>
           <NursingEducationSelect
             defaultValue={educationLevel}
             placeholder={t("profile.educationPlaceholder")}
             onChange={markDirty}
           />
-        </div>
-
-        <div className="grid gap-1.5">
-          <span className="text-sm font-medium text-foreground">{t("profile.experience")}</span>
-          <WorkExperienceSection defaultEntries={workExperiences} onChange={markDirty} />
         </div>
 
         <div className="grid gap-1.5">
@@ -152,6 +129,11 @@ export default function ProfileForm({ user, saved, onboarding, error }: ProfileF
             defaultValue={cvDraft.certifications ?? ""}
             className={`${fieldClassName} break-words`}
           />
+        </div>
+
+        <div className="grid gap-1.5">
+          <span className="text-sm font-medium text-foreground">{t("profile.experience")}</span>
+          <WorkExperienceSection defaultEntries={workExperiences} onChange={markDirty} />
         </div>
       </div>
 
