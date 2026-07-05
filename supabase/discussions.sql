@@ -99,6 +99,8 @@ create trigger discussion_replies_after_insert
 
 grant select, insert, delete on public.discussion_threads to authenticated;
 grant select, insert, delete on public.discussion_replies to authenticated;
+grant select, insert, update, delete on public.discussion_threads to service_role;
+grant select, insert, update, delete on public.discussion_replies to service_role;
 
 -- Extend moderation content types (safe if constraint name differs — adjust in SQL editor if needed)
 alter table public.moderation_flags
