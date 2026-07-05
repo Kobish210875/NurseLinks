@@ -5,6 +5,7 @@ import { usePathname, useSearchParams } from "next/navigation";
 import { useT } from "@/components/i18n/LocaleProvider";
 import NavUnreadDot from "@/components/nav/NavUnreadDot";
 import { useNavCounts } from "@/components/nav/NavCountsProvider";
+import { SHOW_DISCUSSIONS_IN_NAV, SHOW_JOBS_IN_NAV } from "@/lib/features/nav";
 
 type BottomItem = {
   href: string;
@@ -36,12 +37,25 @@ export default function MobileBottomNav() {
       label: t("nav.institutions"),
       match: (path) => path === "/institutions" || path.startsWith("/hospitals/"),
     },
-    {
-      href: "/jobs",
-      label: t("nav.jobs"),
-      badge: "jobs",
-      match: (path) => path === "/jobs" || path.startsWith("/jobs/"),
-    },
+    ...(SHOW_DISCUSSIONS_IN_NAV
+      ? [
+          {
+            href: "/discussions",
+            label: t("nav.discussions"),
+            match: (path: string) => path === "/discussions" || path.startsWith("/discussions/"),
+          } satisfies BottomItem,
+        ]
+      : []),
+    ...(SHOW_JOBS_IN_NAV
+      ? [
+          {
+            href: "/jobs",
+            label: t("nav.jobs"),
+            badge: "jobs" as const,
+            match: (path: string) => path === "/jobs" || path.startsWith("/jobs/"),
+          } satisfies BottomItem,
+        ]
+      : []),
     {
       href: "/messages",
       label: t("nav.messages"),

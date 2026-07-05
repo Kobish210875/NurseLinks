@@ -11,6 +11,7 @@ import NavUnreadDot from "@/components/nav/NavUnreadDot";
 import NavPeopleSearch from "@/components/nav/NavPeopleSearch";
 import { useNavCounts } from "@/components/nav/NavCountsProvider";
 import NurseLinkWordmark from "@/components/NurseLinkWordmark";
+import { SHOW_DISCUSSIONS_IN_NAV, SHOW_JOBS_IN_NAV } from "@/lib/features/nav";
 
 type NavbarProps = {
   authenticated?: boolean;
@@ -34,6 +35,8 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
     pathname === "/home" ||
     pathname === "/network" ||
     pathname.startsWith("/network/") ||
+    pathname === "/discussions" ||
+    pathname.startsWith("/discussions/") ||
     pathname === "/jobs" ||
     pathname.startsWith("/jobs/");
   const desktopNavMaxWidth = isWideShellRoute ? "max-w-[1240px]" : "max-w-[1128px]";
@@ -49,7 +52,10 @@ export default function Navbar({ authenticated = false }: NavbarProps) {
   const navItems: NavItem[] = [
     { href: "/home", label: t("nav.home") },
     { href: "/network", label: t("nav.network"), badge: "network" },
-    { href: "/jobs", label: t("nav.jobs"), badge: "jobs" },
+    ...(SHOW_DISCUSSIONS_IN_NAV
+      ? [{ href: "/discussions", label: t("nav.discussions") }]
+      : []),
+    ...(SHOW_JOBS_IN_NAV ? [{ href: "/jobs", label: t("nav.jobs"), badge: "jobs" as const }] : []),
     ...(mobileUser?.isAdmin
       ? [
           { href: "/admin/users", label: t("nav.adminUsers") },

@@ -1,4 +1,4 @@
-export type ModerationContentType = "post" | "comment" | "message";
+export type ModerationContentType = "post" | "comment" | "message" | "discussion" | "discussion_reply";
 
 export type ModerationFlagSource = "auto" | "user_report";
 

@@ -242,6 +242,58 @@ export type Database = {
         };
         Update: never;
       };
+      discussion_threads: {
+        Row: {
+          id: string;
+          author_id: string;
+          title: string;
+          body: string;
+          is_anonymous: boolean;
+          anonymous_label: string | null;
+          reply_count: number;
+          created_at: string;
+          updated_at: string;
+          last_reply_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          author_id: string;
+          title: string;
+          body: string;
+          is_anonymous?: boolean;
+          anonymous_label?: string | null;
+          reply_count?: number;
+          created_at?: string;
+          updated_at?: string;
+          last_reply_at?: string | null;
+        };
+        Update: {
+          reply_count?: number;
+          updated_at?: string;
+          last_reply_at?: string | null;
+        };
+      };
+      discussion_replies: {
+        Row: {
+          id: string;
+          thread_id: string;
+          author_id: string;
+          body: string;
+          is_anonymous: boolean;
+          anonymous_label: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          thread_id: string;
+          author_id: string;
+          body: string;
+          is_anonymous?: boolean;
+          anonymous_label?: string | null;
+          created_at?: string;
+        };
+        Update: never;
+      };
       direct_messages: {
         Row: {
           id: string;

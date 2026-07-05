@@ -6,7 +6,7 @@ import { scrollAppToTopAfterPaint } from "@/lib/client/scroll-app-to-top";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
-const APP_SHELL_PREFIXES = ["/home", "/network", "/jobs", "/messages", "/profile", "/hospitals", "/institutions"];
+const APP_SHELL_PREFIXES = ["/home", "/network", "/discussions", "/jobs", "/messages", "/profile", "/hospitals", "/institutions"];
 
 function isAppShellPath(pathname: string) {
   return APP_SHELL_PREFIXES.some(
