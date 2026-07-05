@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { assertUserCanPublish } from "@/lib/auth/suspension";
 import { autoFlagContentIfNeeded } from "@/lib/moderation/flags";
+import { isDiscussionsNotConfigured } from "@/lib/discussions/setup-error";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -29,16 +30,6 @@ function parseAnonymous(formData: FormData) {
   };
 }
 
-function isDiscussionsNotConfigured(message: string) {
-  const lower = message.toLowerCase();
-  return (
-    lower.includes("discussion_threads") ||
-    lower.includes("discussion_replies") ||
-    lower.includes("does not exist") ||
-    lower.includes("schema cache") ||
-    lower.includes("row-level security")
-  );
-}
 
 function revalidateDiscussions(threadId?: string) {
   revalidatePath("/discussions");
@@ -84,7 +75,7 @@ export async function createDiscussionThread(formData: FormData) {
   const { error } = await supabase.from("discussion_threads").insert(row as never);
 
   if (error) {
-    if (isDiscussionsNotConfigured(error.message)) {
+    if (isDiscussionsNotConfigured(error.message, error.code)) {
       return { error: "not-configured" as const };
     }
     return { error: "create-failed" as const };
@@ -137,7 +128,7 @@ export async function createDiscussionReply(threadId: string, formData: FormData
   const { error } = await supabase.from("discussion_replies").insert(row as never);
 
   if (error) {
-    if (isDiscussionsNotConfigured(error.message)) {
+    if (isDiscussionsNotConfigured(error.message, error.code)) {
       return { error: "not-configured" as const };
     }
     return { error: "create-failed" as const };

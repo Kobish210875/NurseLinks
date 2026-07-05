@@ -97,6 +97,9 @@ create trigger discussion_replies_after_insert
   for each row
   execute function public.discussion_on_reply_insert();
 
+grant select, insert, delete on public.discussion_threads to authenticated;
+grant select, insert, delete on public.discussion_replies to authenticated;
+
 -- Extend moderation content types (safe if constraint name differs — adjust in SQL editor if needed)
 alter table public.moderation_flags
   drop constraint if exists moderation_flags_content_type_check;
@@ -104,3 +107,5 @@ alter table public.moderation_flags
 alter table public.moderation_flags
   add constraint moderation_flags_content_type_check
   check (content_type in ('post', 'comment', 'message', 'discussion', 'discussion_reply'));
+
+notify pgrst, 'reload schema';

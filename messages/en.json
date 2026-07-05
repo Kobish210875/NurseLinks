@@ -29,7 +29,7 @@
     "searchSeeAll": "See all in My Network",
     "home": "Home",
     "network": "My network",
-    "discussions": "Discussions",
+    "discussions": "Ask the community",
     "jobs": "Jobs",
     "messages": "Messages",
     "login": "Sign in",
@@ -432,7 +432,7 @@
     "replyPlaceholder": "Write your reply…",
     "backToList": "Back to all threads",
     "notConfiguredTitle": "Feature setup needed",
-    "notConfigured": "Run supabase/discussions.sql on your DEV Supabase project, then refresh.",
+    "notConfigured": "Run supabase/discussions.sql on your DEV Supabase project (including the GRANT lines at the end), then refresh.",
     "suspended": "Your account is temporarily suspended and cannot post.",
     "createFailed": "Could not post. Please try again.",
     "replyFailed": "Could not post reply. Please try again."

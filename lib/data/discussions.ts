@@ -4,6 +4,7 @@ import type { Locale } from "@/lib/i18n/config";
 import { createT, getMessages } from "@/lib/i18n/messages";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
+import { isDiscussionsNotConfigured } from "@/lib/discussions/setup-error";
 
 export type DiscussionAuthorDisplay = {
   id: string;
@@ -75,16 +76,6 @@ type ProfileRow = {
 };
 
 const BODY_PREVIEW_LEN = 160;
-
-function isDiscussionsNotConfigured(message: string) {
-  const lower = message.toLowerCase();
-  return (
-    lower.includes("discussion_threads") ||
-    lower.includes("discussion_replies") ||
-    lower.includes("does not exist") ||
-    lower.includes("schema cache")
-  );
-}
 
 function previewBody(body: string) {
   const trimmed = body.trim();
@@ -160,7 +151,7 @@ export async function getDiscussionThreads(
     .order("created_at", { ascending: false });
 
   if (error) {
-    if (isDiscussionsNotConfigured(error.message)) {
+    if (isDiscussionsNotConfigured(error.message, error.code)) {
       return { error: "not-configured" };
     }
     throw error;
@@ -212,7 +203,7 @@ export async function getDiscussionThread(
     .maybeSingle();
 
   if (threadError) {
-    if (isDiscussionsNotConfigured(threadError.message)) {
+    if (isDiscussionsNotConfigured(threadError.message, threadError.code)) {
       return { error: "not-configured" };
     }
     throw threadError;
@@ -231,7 +222,7 @@ export async function getDiscussionThread(
     .order("created_at", { ascending: true });
 
   if (repliesError) {
-    if (isDiscussionsNotConfigured(repliesError.message)) {
+    if (isDiscussionsNotConfigured(repliesError.message, repliesError.code)) {
       return { error: "not-configured" };
     }
     throw repliesError;

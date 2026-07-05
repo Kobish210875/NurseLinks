@@ -27,6 +27,7 @@
    - `supabase/recommendation-workplace.sql` (upgrade: same-workplace recommendations + index; run if snapshots already exist)
    - `supabase/moderation.sql` (content flags, user suspension, user reports — expand word list in `lib/moderation/wordlist.ts`)
    - `supabase/discussions.sql` (community threads + replies; replaces jobs tab in nav for now)
+   - If tables exist but the app still shows setup banner, run `supabase/discussions-grants-fix.sql` (missing GRANT + schema reload).
    - If CV shows empty for others but exists on edit page: `supabase/profile-cv-fix.sql`
    - If message send fails after connecting: `supabase/connections-messaging-fix.sql`
 5. Restart the Next.js dev server after changing `.env.local`.
