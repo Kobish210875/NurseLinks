@@ -4,14 +4,20 @@ import Footer from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import DiscussionComposer from "@/components/discussions/DiscussionComposer";
 import DiscussionList from "@/components/discussions/DiscussionList";
+import DiscussionSearchBar from "@/components/discussions/DiscussionSearchBar";
 import DiscussionsSkeleton from "@/components/discussions/DiscussionsSkeleton";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
 import { getDiscussionThreads } from "@/lib/data/discussions";
+import { normalizeDiscussionSearchQuery } from "@/lib/discussions/search-query";
 import { getLocale } from "@/lib/i18n/get-locale";
 import { createT, getMessages } from "@/lib/i18n/messages";
 import { createClient } from "@/lib/supabase/server";
 
-async function DiscussionsContent() {
+type DiscussionsPageProps = {
+  searchParams: Promise<{ q?: string }>;
+};
+
+async function DiscussionsContent({ searchQuery }: { searchQuery: string }) {
   const [user, locale, supabase] = await Promise.all([
     getCurrentUser(),
     getLocale(),
@@ -23,7 +29,7 @@ async function DiscussionsContent() {
   }
 
   const t = createT(getMessages(locale));
-  const result = await getDiscussionThreads(supabase, locale);
+  const result = await getDiscussionThreads(supabase, locale, searchQuery);
 
   if ("error" in result) {
     return (
@@ -35,11 +41,14 @@ async function DiscussionsContent() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
+      <DiscussionSearchBar defaultQuery={searchQuery} />
       <DiscussionComposer />
       <DiscussionList
         threads={result.threads}
         emptyLabel={t("discussions.emptyList")}
+        searchEmptyLabel={t("discussions.searchEmpty")}
+        isSearchActive={searchQuery.length > 0}
         repliesLabel={(count) =>
           count === 0
             ? t("discussions.noRepliesShort")
@@ -50,9 +59,11 @@ async function DiscussionsContent() {
   );
 }
 
-export default async function DiscussionsPage() {
+export default async function DiscussionsPage({ searchParams }: DiscussionsPageProps) {
   const locale = await getLocale();
   const t = createT(getMessages(locale));
+  const params = await searchParams;
+  const searchQuery = normalizeDiscussionSearchQuery(params.q);
 
   return (
     <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
@@ -68,7 +79,7 @@ export default async function DiscussionsPage() {
             </p>
           </header>
           <Suspense fallback={<DiscussionsSkeleton />}>
-            <DiscussionsContent />
+            <DiscussionsContent searchQuery={searchQuery} />
           </Suspense>
         </div>
       </main>

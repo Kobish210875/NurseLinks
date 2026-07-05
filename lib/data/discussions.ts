@@ -5,6 +5,10 @@ import { createT, getMessages } from "@/lib/i18n/messages";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/database.types";
 import { isDiscussionsNotConfigured } from "@/lib/discussions/setup-error";
+import {
+  escapeDiscussionIlikePattern,
+  normalizeDiscussionSearchQuery,
+} from "@/lib/discussions/search-query";
 
 export type DiscussionAuthorDisplay = {
   id: string;
@@ -139,14 +143,23 @@ async function loadProfiles(
 export async function getDiscussionThreads(
   supabase: SupabaseClient<Database>,
   locale: Locale,
+  searchQuery?: string,
 ): Promise<{ threads: DiscussionThreadSummary[] } | { error: "not-configured" }> {
   const t = createT(getMessages(locale));
+  const q = normalizeDiscussionSearchQuery(searchQuery);
 
-  const { data, error } = await supabase
+  let request = supabase
     .from("discussion_threads")
     .select(
       "id, author_id, title, body, is_anonymous, anonymous_label, reply_count, created_at, last_reply_at",
-    )
+    );
+
+  if (q) {
+    const pattern = `%${escapeDiscussionIlikePattern(q)}%`;
+    request = request.ilike("title", pattern);
+  }
+
+  const { data, error } = await request
     .order("last_reply_at", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false });
 

@@ -4,7 +4,7 @@ import { createDiscussionReply } from "@/app/actions/discussions";
 import AnonymousFields from "@/components/discussions/AnonymousFields";
 import LinkifiedText from "@/components/ui/LinkifiedText";
 import { useT } from "@/components/i18n/LocaleProvider";
-import type { DiscussionThreadDetail } from "@/lib/data/discussions";
+import type { DiscussionReply, DiscussionThreadDetail } from "@/lib/data/discussions";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
@@ -13,7 +13,7 @@ type DiscussionThreadViewProps = {
   thread: DiscussionThreadDetail;
 };
 
-function AuthorBadge({
+function ThreadAuthorHeader({
   name,
   avatarUrl,
   initials,
@@ -51,6 +51,36 @@ function AuthorBadge({
         <time className="text-xs text-muted-foreground">{timeLabel}</time>
       </div>
     </div>
+  );
+}
+
+function CompactReplyRow({ reply }: { reply: DiscussionReply }) {
+  const authorName = reply.author.profileHref ? (
+    <Link href={reply.author.profileHref} className="font-medium text-foreground hover:text-primary">
+      {reply.author.name}
+    </Link>
+  ) : (
+    <span className="font-medium text-foreground">{reply.author.name}</span>
+  );
+
+  return (
+    <li
+      className={`border-b border-border/70 px-1 py-1.5 text-sm leading-snug last:border-b-0 ${
+        reply.isMine ? "bg-primary/5" : ""
+      }`}
+    >
+      <p className="min-w-0 break-words">
+        <time className="text-xs text-muted-foreground">{reply.timeLabel}</time>
+        <span className="mx-1 text-muted-foreground" aria-hidden="true">
+          ·
+        </span>
+        {authorName}
+        <span className="text-muted-foreground">: </span>
+        <span className="text-foreground">
+          <LinkifiedText text={reply.body} />
+        </span>
+      </p>
+    </li>
   );
 }
 
@@ -93,7 +123,7 @@ export default function DiscussionThreadView({ thread }: DiscussionThreadViewPro
       <article className="rounded-2xl border border-border bg-white p-4 shadow-sm">
         <header className="mb-3 border-b border-border pb-3">
           <h1 className="mb-3 break-words text-xl font-bold text-foreground">{thread.title}</h1>
-          <AuthorBadge
+          <ThreadAuthorHeader
             name={thread.author.name}
             avatarUrl={thread.author.avatarUrl}
             initials={thread.author.initials}
@@ -106,37 +136,19 @@ export default function DiscussionThreadView({ thread }: DiscussionThreadViewPro
         </div>
       </article>
 
-      <section className="min-h-0 flex-1 space-y-3">
-        <h2 className="px-1 text-sm font-semibold text-muted-foreground">
+      <section className="min-h-0 flex-1">
+        <h2 className="mb-1 px-1 text-xs font-semibold text-muted-foreground">
           {t("discussions.repliesHeading").replace("{count}", String(thread.replies.length))}
         </h2>
 
         {thread.replies.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-border bg-white px-4 py-8 text-center text-sm text-muted-foreground">
+          <p className="rounded-lg border border-dashed border-border bg-white px-3 py-4 text-center text-sm text-muted-foreground">
             {t("discussions.noRepliesYet")}
           </p>
         ) : (
-          <ul className="space-y-3">
+          <ul className="rounded-lg border border-border bg-white px-2 py-0.5">
             {thread.replies.map((reply) => (
-              <li
-                key={reply.id}
-                className={`rounded-2xl border bg-white p-4 shadow-sm ${
-                  reply.isMine ? "border-primary/25" : "border-border"
-                }`}
-              >
-                <div className="mb-2">
-                  <AuthorBadge
-                    name={reply.author.name}
-                    avatarUrl={reply.author.avatarUrl}
-                    initials={reply.author.initials}
-                    profileHref={reply.author.profileHref}
-                    timeLabel={reply.timeLabel}
-                  />
-                </div>
-                <div className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">
-                  <LinkifiedText text={reply.body} />
-                </div>
-              </li>
+              <CompactReplyRow key={reply.id} reply={reply} />
             ))}
           </ul>
         )}

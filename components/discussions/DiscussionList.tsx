@@ -4,36 +4,43 @@ import type { DiscussionThreadSummary } from "@/lib/data/discussions";
 type DiscussionListProps = {
   threads: DiscussionThreadSummary[];
   emptyLabel: string;
+  searchEmptyLabel?: string;
   repliesLabel: (count: number) => string;
+  isSearchActive?: boolean;
 };
 
-export default function DiscussionList({ threads, emptyLabel, repliesLabel }: DiscussionListProps) {
+export default function DiscussionList({
+  threads,
+  emptyLabel,
+  searchEmptyLabel,
+  repliesLabel,
+  isSearchActive = false,
+}: DiscussionListProps) {
   if (threads.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-border bg-white px-4 py-10 text-center text-sm text-muted-foreground">
-        {emptyLabel}
+      <div className="rounded-lg border border-dashed border-border bg-white px-3 py-6 text-center text-sm text-muted-foreground">
+        {isSearchActive && searchEmptyLabel ? searchEmptyLabel : emptyLabel}
       </div>
     );
   }
 
   return (
-    <ul className="space-y-3">
+    <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-white">
       {threads.map((thread) => (
         <li key={thread.id}>
           <Link
             href={`/discussions/${thread.id}`}
-            className="block rounded-2xl border border-border bg-white p-4 shadow-sm transition hover:border-primary/25 hover:shadow-md"
+            className="block px-3 py-2.5 transition hover:bg-muted/40"
           >
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-              <h3 className="min-w-0 flex-1 text-base font-bold text-foreground">{thread.title}</h3>
+            <div className="flex min-w-0 items-baseline justify-between gap-2">
+              <h3 className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
+                {thread.title}
+              </h3>
               <time className="shrink-0 text-xs text-muted-foreground">{thread.timeLabel}</time>
             </div>
-            <p className="mb-3 line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-              {thread.bodyPreview}
-            </p>
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-              <span>{thread.author.name}</span>
-              <span>{repliesLabel(thread.replyCount)}</span>
+            <div className="mt-0.5 flex min-w-0 items-center justify-between gap-2 text-xs text-muted-foreground">
+              <span className="truncate">{thread.author.name}</span>
+              <span className="shrink-0">{repliesLabel(thread.replyCount)}</span>
             </div>
           </Link>
         </li>
