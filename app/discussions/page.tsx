@@ -44,13 +44,13 @@ async function DiscussionsContent({ searchQuery }: { searchQuery: string }) {
   const isSearchActive = searchQuery.length > 0;
 
   return (
-    <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(280px,360px)_minmax(0,1fr)] lg:items-stretch lg:gap-6">
+    <div className="grid gap-4 lg:grid-cols-[minmax(280px,360px)_minmax(0,1fr)] lg:items-start lg:gap-6">
       <aside className="space-y-4 lg:sticky lg:top-4 lg:self-start">
         <DiscussionSearchBar defaultQuery={searchQuery} />
         <DiscussionComposer />
       </aside>
 
-      <section className="flex min-h-0 min-w-0 flex-col lg:min-h-[calc(100dvh-11rem)]">
+      <section className="min-w-0">
         <div className="mb-2 flex min-w-0 flex-wrap items-center justify-between gap-2 px-1">
           <h2 className="text-sm font-semibold text-foreground">
             {isSearchActive
@@ -66,7 +66,7 @@ async function DiscussionsContent({ searchQuery }: { searchQuery: string }) {
             </Link>
           ) : null}
         </div>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain lg:rounded-lg lg:border lg:border-border lg:bg-white">
+        <div className="lg:max-h-[calc(100dvh-11rem)] lg:overflow-y-auto lg:overscroll-contain">
           <DiscussionList
             threads={result.threads}
             emptyLabel={t("discussions.emptyList")}
@@ -94,7 +94,7 @@ export default async function DiscussionsPage({ searchParams }: DiscussionsPageP
     <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
       <Navbar authenticated />
       <main className="home-main-shell feed-page flex min-h-0 w-full min-w-0 max-w-[100vw] flex-1 flex-col overflow-x-clip py-3 max-md:h-auto max-md:overflow-visible md:min-h-[calc(100vh-4rem)] md:py-6">
-        <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-1 flex-col px-3 sm:px-4">
+        <div className="mx-auto w-full min-w-0 max-w-6xl px-3 sm:px-4">
           <header className="mb-4 min-w-0 text-start">
             <h1 className="break-words text-lg font-bold text-foreground sm:text-xl">
               {t("discussions.title")}

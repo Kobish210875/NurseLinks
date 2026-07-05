@@ -7,7 +7,7 @@ export default function DiscussionsSkeleton() {
       </aside>
       <section className="space-y-2">
         <div className="h-5 w-32 rounded bg-muted" />
-        <div className="h-64 rounded-lg bg-muted lg:h-[calc(100dvh-11rem)]" />
+        <div className="h-32 rounded-lg bg-muted" />
       </section>
     </div>
   );

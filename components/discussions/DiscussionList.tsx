@@ -18,14 +18,14 @@ export default function DiscussionList({
 }: DiscussionListProps) {
   if (threads.length === 0) {
     return (
-      <div className="border-dashed border-border bg-white px-3 py-6 text-center text-sm text-muted-foreground max-lg:rounded-lg max-lg:border">
+      <div className="rounded-lg border border-dashed border-border bg-white px-3 py-6 text-center text-sm text-muted-foreground">
         {isSearchActive && searchEmptyLabel ? searchEmptyLabel : emptyLabel}
       </div>
     );
   }
 
   return (
-    <ul className="divide-y divide-border bg-white max-lg:overflow-hidden max-lg:rounded-lg max-lg:border lg:border-0">
+    <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-white shadow-sm">
       {threads.map((thread) => (
         <li key={thread.id}>
           <Link
