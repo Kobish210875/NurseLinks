@@ -263,6 +263,11 @@ svg.logo-icon {
     overflow: hidden;
   }
 
+  .discussions-page-grid > section {
+    min-height: 0;
+    max-height: calc(100dvh - 8.5rem);
+  }
+
   /* Uniform body text on WEB home — no zoom (zoom breaks sidebar windows). */
   .home-feed-shell .post-body,
   .home-feed-shell .post-comment-body,

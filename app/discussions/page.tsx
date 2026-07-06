@@ -50,17 +50,14 @@ async function DiscussionsContent({
   const isSearchActive = searchQuery.length > 0;
 
   return (
-    <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(280px,360px)_minmax(0,1fr)] lg:items-stretch lg:gap-6">
-      <aside className="space-y-4 lg:sticky lg:top-4 lg:self-start">
-        <p className="hidden text-sm leading-relaxed text-muted-foreground lg:block">
-          {t("discussions.subtitle")}
-        </p>
+    <>
+      <aside className="order-1 flex min-h-0 flex-col gap-4 lg:col-start-1 lg:row-start-1 lg:self-start">
         <DiscussionSearchBar defaultQuery={searchQuery} />
         <DiscussionComposer />
       </aside>
 
-      <section className="flex min-h-0 min-w-0 flex-col lg:min-h-0 lg:flex-1">
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-white shadow-sm lg:max-h-[calc(100dvh-4.5rem)]">
+      <section className="order-2 flex min-h-0 min-w-0 flex-col lg:col-span-2 lg:col-start-2 lg:row-start-1 lg:h-full">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-white shadow-sm">
           {isSearchActive ? (
             <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-2">
               <p className="text-sm font-semibold text-foreground">
@@ -91,7 +88,7 @@ async function DiscussionsContent({
           </div>
         </div>
       </section>
-    </div>
+    </>
   );
 }
 
@@ -108,14 +105,16 @@ export default async function DiscussionsPage({ searchParams }: DiscussionsPageP
   return (
     <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
       <Navbar authenticated />
-      <main className="home-main-shell feed-page flex min-h-0 w-full min-w-0 max-w-[100vw] flex-1 flex-col overflow-x-clip py-3 max-md:h-auto max-md:overflow-visible md:min-h-[calc(100vh-4rem)] md:py-3 lg:py-2">
-        <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-1 flex-col px-3 sm:px-4 lg:min-h-0">
-          <header className="mb-3 min-w-0 text-start lg:hidden">
+      <main className="home-main-shell feed-page home-feed-shell h-full min-h-0 w-full min-w-0 max-w-[100vw] overflow-x-clip py-3 max-md:h-auto max-md:overflow-visible md:min-h-[calc(100vh-4rem)] md:py-6 lg:overflow-hidden lg:py-2">
+        <div className="mx-auto flex h-full w-full min-w-0 max-w-[1240px] flex-col px-3 sm:px-4 max-md:h-auto">
+          <header className="mb-3 shrink-0 min-w-0 text-start">
             <p className="text-sm leading-relaxed text-muted-foreground">{t("discussions.subtitle")}</p>
           </header>
-          <Suspense fallback={<DiscussionsSkeleton />}>
-            <DiscussionsContent searchQuery={searchQuery} isAdmin={user.isAdmin} />
-          </Suspense>
+          <div className="home-feed-grid discussions-page-grid grid min-h-0 flex-1 grid-cols-1 gap-4 max-md:h-auto max-md:min-h-0 max-md:flex-none lg:grid-cols-[280px_minmax(0,1fr)_260px] lg:items-start lg:gap-6">
+            <Suspense fallback={<DiscussionsSkeleton />}>
+              <DiscussionsContent searchQuery={searchQuery} isAdmin={user.isAdmin} />
+            </Suspense>
+          </div>
         </div>
       </main>
       <div className="lg:hidden">
