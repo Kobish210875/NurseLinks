@@ -7,6 +7,7 @@ type DiscussionListProps = {
   searchEmptyLabel?: string;
   repliesLabel: (count: number) => string;
   isSearchActive?: boolean;
+  embedded?: boolean;
 };
 
 export default function DiscussionList({
@@ -15,17 +16,28 @@ export default function DiscussionList({
   searchEmptyLabel,
   repliesLabel,
   isSearchActive = false,
+  embedded = false,
 }: DiscussionListProps) {
+  const shellClass = embedded
+    ? "divide-y divide-border"
+    : "divide-y divide-border overflow-hidden rounded-lg border border-border bg-white shadow-sm";
+
   if (threads.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border bg-white px-3 py-6 text-center text-sm text-muted-foreground">
+      <div
+        className={
+          embedded
+            ? "px-3 py-6 text-center text-sm text-muted-foreground"
+            : "rounded-lg border border-dashed border-border bg-white px-3 py-6 text-center text-sm text-muted-foreground"
+        }
+      >
         {isSearchActive && searchEmptyLabel ? searchEmptyLabel : emptyLabel}
       </div>
     );
   }
 
   return (
-    <ul className="divide-y divide-border overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+    <ul className={shellClass}>
       {threads.map((thread) => (
         <li key={thread.id}>
           <Link

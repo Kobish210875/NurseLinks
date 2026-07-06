@@ -50,34 +50,35 @@ async function DiscussionsContent({ searchQuery }: { searchQuery: string }) {
         <DiscussionComposer />
       </aside>
 
-      <section className="min-w-0">
-        <div className="mb-2 flex min-w-0 flex-wrap items-center justify-between gap-2 px-1">
-          <h2 className="text-sm font-semibold text-foreground">
-            {isSearchActive
-              ? t("discussions.searchResultsHeading").replace("{query}", searchQuery)
-              : t("discussions.threadsHeading")}
-          </h2>
+      <section className="flex min-h-0 min-w-0 flex-col lg:max-h-[calc(100dvh-9.5rem)]">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-white shadow-sm">
           {isSearchActive ? (
-            <Link
-              href="/discussions"
-              className="shrink-0 text-sm font-medium text-primary hover:text-primary/80"
-            >
-              {t("discussions.clearSearch")}
-            </Link>
+            <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-2">
+              <p className="text-sm font-semibold text-foreground">
+                {t("discussions.searchResultsHeading").replace("{query}", searchQuery)}
+              </p>
+              <Link
+                href="/discussions"
+                className="shrink-0 text-sm font-medium text-primary hover:text-primary/80"
+              >
+                {t("discussions.clearSearch")}
+              </Link>
+            </div>
           ) : null}
-        </div>
-        <div className="lg:max-h-[calc(100dvh-11rem)] lg:overflow-y-auto lg:overscroll-contain">
-          <DiscussionList
-            threads={result.threads}
-            emptyLabel={t("discussions.emptyList")}
-            searchEmptyLabel={t("discussions.searchEmpty")}
-            isSearchActive={isSearchActive}
-            repliesLabel={(count) =>
-              count === 0
-                ? t("discussions.noRepliesShort")
-                : t("discussions.repliesCount").replace("{count}", String(count))
-            }
-          />
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+            <DiscussionList
+              embedded
+              threads={result.threads}
+              emptyLabel={t("discussions.emptyList")}
+              searchEmptyLabel={t("discussions.searchEmpty")}
+              isSearchActive={isSearchActive}
+              repliesLabel={(count) =>
+                count === 0
+                  ? t("discussions.noRepliesShort")
+                  : t("discussions.repliesCount").replace("{count}", String(count))
+              }
+            />
+          </div>
         </div>
       </section>
     </div>
@@ -95,13 +96,8 @@ export default async function DiscussionsPage({ searchParams }: DiscussionsPageP
       <Navbar authenticated />
       <main className="home-main-shell feed-page flex min-h-0 w-full min-w-0 max-w-[100vw] flex-1 flex-col overflow-x-clip py-3 max-md:h-auto max-md:overflow-visible md:min-h-[calc(100vh-4rem)] md:py-6">
         <div className="mx-auto w-full min-w-0 max-w-6xl px-3 sm:px-4">
-          <header className="mb-4 min-w-0 text-start">
-            <h1 className="break-words text-lg font-bold text-foreground sm:text-xl">
-              {t("discussions.title")}
-            </h1>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {t("discussions.subtitle")}
-            </p>
+          <header className="mb-3 min-w-0 text-start">
+            <p className="text-sm leading-relaxed text-muted-foreground">{t("discussions.subtitle")}</p>
           </header>
           <Suspense fallback={<DiscussionsSkeleton />}>
             <DiscussionsContent searchQuery={searchQuery} />
