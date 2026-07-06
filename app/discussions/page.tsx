@@ -18,7 +18,13 @@ type DiscussionsPageProps = {
   searchParams: Promise<{ q?: string }>;
 };
 
-async function DiscussionsContent({ searchQuery }: { searchQuery: string }) {
+async function DiscussionsContent({
+  searchQuery,
+  isAdmin,
+}: {
+  searchQuery: string;
+  isAdmin: boolean;
+}) {
   const [user, locale, supabase] = await Promise.all([
     getCurrentUser(),
     getLocale(),
@@ -44,14 +50,17 @@ async function DiscussionsContent({ searchQuery }: { searchQuery: string }) {
   const isSearchActive = searchQuery.length > 0;
 
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(280px,360px)_minmax(0,1fr)] lg:items-start lg:gap-6">
+    <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-[minmax(280px,360px)_minmax(0,1fr)] lg:items-stretch lg:gap-6">
       <aside className="space-y-4 lg:sticky lg:top-4 lg:self-start">
+        <p className="hidden text-sm leading-relaxed text-muted-foreground lg:block">
+          {t("discussions.subtitle")}
+        </p>
         <DiscussionSearchBar defaultQuery={searchQuery} />
         <DiscussionComposer />
       </aside>
 
-      <section className="flex min-h-0 min-w-0 flex-col lg:max-h-[calc(100dvh-9.5rem)]">
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-white shadow-sm">
+      <section className="flex min-h-0 min-w-0 flex-col lg:min-h-0 lg:flex-1">
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-white shadow-sm lg:max-h-[calc(100dvh-4.5rem)]">
           {isSearchActive ? (
             <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-2">
               <p className="text-sm font-semibold text-foreground">
@@ -68,6 +77,7 @@ async function DiscussionsContent({ searchQuery }: { searchQuery: string }) {
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
             <DiscussionList
               embedded
+              isAdmin={isAdmin}
               threads={result.threads}
               emptyLabel={t("discussions.emptyList")}
               searchEmptyLabel={t("discussions.searchEmpty")}
@@ -86,21 +96,25 @@ async function DiscussionsContent({ searchQuery }: { searchQuery: string }) {
 }
 
 export default async function DiscussionsPage({ searchParams }: DiscussionsPageProps) {
-  const locale = await getLocale();
+  const [locale, user] = await Promise.all([getLocale(), getCurrentUser()]);
   const t = createT(getMessages(locale));
   const params = await searchParams;
   const searchQuery = normalizeDiscussionSearchQuery(params.q);
 
+  if (!user) {
+    redirect("/");
+  }
+
   return (
     <div className="home-page-root flex min-h-screen flex-col max-md:block max-md:min-h-0">
       <Navbar authenticated />
-      <main className="home-main-shell feed-page flex min-h-0 w-full min-w-0 max-w-[100vw] flex-1 flex-col overflow-x-clip py-3 max-md:h-auto max-md:overflow-visible md:min-h-[calc(100vh-4rem)] md:py-6">
-        <div className="mx-auto w-full min-w-0 max-w-6xl px-3 sm:px-4">
-          <header className="mb-3 min-w-0 text-start">
+      <main className="home-main-shell feed-page flex min-h-0 w-full min-w-0 max-w-[100vw] flex-1 flex-col overflow-x-clip py-3 max-md:h-auto max-md:overflow-visible md:min-h-[calc(100vh-4rem)] md:py-3 lg:py-2">
+        <div className="mx-auto flex w-full min-w-0 max-w-6xl flex-1 flex-col px-3 sm:px-4 lg:min-h-0">
+          <header className="mb-3 min-w-0 text-start lg:hidden">
             <p className="text-sm leading-relaxed text-muted-foreground">{t("discussions.subtitle")}</p>
           </header>
           <Suspense fallback={<DiscussionsSkeleton />}>
-            <DiscussionsContent searchQuery={searchQuery} />
+            <DiscussionsContent searchQuery={searchQuery} isAdmin={user.isAdmin} />
           </Suspense>
         </div>
       </main>

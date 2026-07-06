@@ -4,8 +4,10 @@ import { randomUUID } from "crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { assertUserCanPublish } from "@/lib/auth/suspension";
+import { isCurrentUserAdmin } from "@/lib/auth/admin";
 import { autoFlagContentIfNeeded } from "@/lib/moderation/flags";
 import { isDiscussionsNotConfigured } from "@/lib/discussions/setup-error";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { Database } from "@/lib/supabase/database.types";
 
@@ -140,6 +142,115 @@ export async function createDiscussionReply(threadId: string, formData: FormData
     subjectUserId: user.id,
     body,
   });
+
+  revalidateDiscussions(threadId);
+  return { success: true as const };
+}
+
+async function syncThreadReplyStats(
+  client: NonNullable<ReturnType<typeof createAdminClient>>,
+  threadId: string,
+) {
+  const { count, error: countError } = await client
+    .from("discussion_replies")
+    .select("*", { count: "exact", head: true })
+    .eq("thread_id", threadId);
+
+  if (countError) {
+    throw countError;
+  }
+
+  const { data: lastReply, error: lastError } = await client
+    .from("discussion_replies")
+    .select("created_at")
+    .eq("thread_id", threadId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle<{ created_at: string }>();
+
+  if (lastError) {
+    throw lastError;
+  }
+
+  const { error: updateError } = await client
+    .from("discussion_threads")
+    .update({
+      reply_count: count ?? 0,
+      last_reply_at: lastReply?.created_at ?? null,
+      updated_at: new Date().toISOString(),
+    } as never)
+    .eq("id", threadId);
+
+  if (updateError) {
+    throw updateError;
+  }
+}
+
+export async function deleteDiscussionThread(threadId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "unauthorized" as const };
+  }
+
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isAdmin) {
+    return { error: "forbidden" as const };
+  }
+
+  const admin = createAdminClient();
+  if (!admin) {
+    return { error: "delete-failed" as const };
+  }
+
+  const { error } = await admin.from("discussion_threads").delete().eq("id", threadId);
+  if (error) {
+    if (isDiscussionsNotConfigured(error.message, error.code)) {
+      return { error: "not-configured" as const };
+    }
+    return { error: "delete-failed" as const };
+  }
+
+  revalidateDiscussions();
+  return { success: true as const };
+}
+
+export async function deleteDiscussionReply(threadId: string, replyId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "unauthorized" as const };
+  }
+
+  const isAdmin = await isCurrentUserAdmin();
+  if (!isAdmin) {
+    return { error: "forbidden" as const };
+  }
+
+  const admin = createAdminClient();
+  if (!admin) {
+    return { error: "delete-failed" as const };
+  }
+
+  const { error } = await admin.from("discussion_replies").delete().eq("id", replyId);
+  if (error) {
+    if (isDiscussionsNotConfigured(error.message, error.code)) {
+      return { error: "not-configured" as const };
+    }
+    return { error: "delete-failed" as const };
+  }
+
+  try {
+    await syncThreadReplyStats(admin, threadId);
+  } catch {
+    return { error: "delete-failed" as const };
+  }
 
   revalidateDiscussions(threadId);
   return { success: true as const };

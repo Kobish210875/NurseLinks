@@ -57,7 +57,7 @@ export default async function DiscussionThreadPage({ params }: DiscussionThreadP
           >
             ← {t("discussions.backToList")}
           </Link>
-          <DiscussionThreadView thread={result.thread} />
+          <DiscussionThreadView thread={result.thread} isAdmin={user.isAdmin} />
         </div>
       </main>
       <div className="lg:hidden">

@@ -2,6 +2,7 @@
 
 import { createDiscussionReply } from "@/app/actions/discussions";
 import AnonymousFields from "@/components/discussions/AnonymousFields";
+import DiscussionDeleteButton from "@/components/discussions/DiscussionDeleteButton";
 import LinkifiedText from "@/components/ui/LinkifiedText";
 import { useT } from "@/components/i18n/LocaleProvider";
 import type { DiscussionReply, DiscussionThreadDetail } from "@/lib/data/discussions";
@@ -11,6 +12,7 @@ import { useState, useTransition } from "react";
 
 type DiscussionThreadViewProps = {
   thread: DiscussionThreadDetail;
+  isAdmin?: boolean;
 };
 
 function ThreadAuthorHeader({
@@ -54,7 +56,15 @@ function ThreadAuthorHeader({
   );
 }
 
-function CompactReplyRow({ reply }: { reply: DiscussionReply }) {
+function CompactReplyRow({
+  reply,
+  threadId,
+  isAdmin,
+}: {
+  reply: DiscussionReply;
+  threadId: string;
+  isAdmin: boolean;
+}) {
   const authorName = reply.author.profileHref ? (
     <Link href={reply.author.profileHref} className="font-medium text-foreground hover:text-primary">
       {reply.author.name}
@@ -65,11 +75,11 @@ function CompactReplyRow({ reply }: { reply: DiscussionReply }) {
 
   return (
     <li
-      className={`border-b border-border/70 px-1 py-1.5 text-sm leading-snug last:border-b-0 ${
+      className={`flex items-start gap-1 border-b border-border/70 px-1 py-1.5 text-sm leading-snug last:border-b-0 ${
         reply.isMine ? "bg-primary/5" : ""
       }`}
     >
-      <p className="min-w-0 break-words">
+      <p className="min-w-0 flex-1 break-words">
         <time className="text-xs text-muted-foreground">{reply.timeLabel}</time>
         <span className="mx-1 text-muted-foreground" aria-hidden="true">
           ·
@@ -80,11 +90,14 @@ function CompactReplyRow({ reply }: { reply: DiscussionReply }) {
           <LinkifiedText text={reply.body} />
         </span>
       </p>
+      {isAdmin ? (
+        <DiscussionDeleteButton kind="reply" id={reply.id} threadId={threadId} compact />
+      ) : null}
     </li>
   );
 }
 
-export default function DiscussionThreadView({ thread }: DiscussionThreadViewProps) {
+export default function DiscussionThreadView({ thread, isAdmin = false }: DiscussionThreadViewProps) {
   const t = useT();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -122,7 +135,12 @@ export default function DiscussionThreadView({ thread }: DiscussionThreadViewPro
     <div className="flex min-h-0 flex-1 flex-col gap-4">
       <article className="rounded-2xl border border-border bg-white p-4 shadow-sm">
         <header className="mb-3 border-b border-border pb-3">
-          <h1 className="mb-3 break-words text-xl font-bold text-foreground">{thread.title}</h1>
+          <div className="mb-3 flex items-start justify-between gap-2">
+            <h1 className="min-w-0 flex-1 break-words text-xl font-bold text-foreground">{thread.title}</h1>
+            {isAdmin ? (
+              <DiscussionDeleteButton kind="thread" id={thread.id} threadId={thread.id} />
+            ) : null}
+          </div>
           <ThreadAuthorHeader
             name={thread.author.name}
             avatarUrl={thread.author.avatarUrl}
@@ -148,7 +166,7 @@ export default function DiscussionThreadView({ thread }: DiscussionThreadViewPro
         ) : (
           <ul className="rounded-lg border border-border bg-white px-2 py-0.5">
             {thread.replies.map((reply) => (
-              <CompactReplyRow key={reply.id} reply={reply} />
+              <CompactReplyRow key={reply.id} reply={reply} threadId={thread.id} isAdmin={isAdmin} />
             ))}
           </ul>
         )}

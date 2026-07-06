@@ -1,4 +1,5 @@
 import Link from "next/link";
+import DiscussionDeleteButton from "@/components/discussions/DiscussionDeleteButton";
 import type { DiscussionThreadSummary } from "@/lib/data/discussions";
 
 type DiscussionListProps = {
@@ -8,6 +9,7 @@ type DiscussionListProps = {
   repliesLabel: (count: number) => string;
   isSearchActive?: boolean;
   embedded?: boolean;
+  isAdmin?: boolean;
 };
 
 export default function DiscussionList({
@@ -17,6 +19,7 @@ export default function DiscussionList({
   repliesLabel,
   isSearchActive = false,
   embedded = false,
+  isAdmin = false,
 }: DiscussionListProps) {
   const shellClass = embedded
     ? "divide-y divide-border"
@@ -39,10 +42,10 @@ export default function DiscussionList({
   return (
     <ul className={shellClass}>
       {threads.map((thread) => (
-        <li key={thread.id}>
+        <li key={thread.id} className="flex items-start gap-1">
           <Link
             href={`/discussions/${thread.id}`}
-            className="block px-3 py-2.5 transition hover:bg-muted/40"
+            className="block min-w-0 flex-1 px-3 py-2.5 transition hover:bg-muted/40"
           >
             <div className="flex min-w-0 items-baseline justify-between gap-2">
               <h3 className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
@@ -55,6 +58,11 @@ export default function DiscussionList({
               <span className="shrink-0">{repliesLabel(thread.replyCount)}</span>
             </div>
           </Link>
+          {isAdmin ? (
+            <div className="shrink-0 pe-2 pt-2.5">
+              <DiscussionDeleteButton kind="thread" id={thread.id} threadId={thread.id} compact />
+            </div>
+          ) : null}
         </li>
       ))}
     </ul>
