@@ -411,6 +411,8 @@
     "title": "Discussions",
     "subtitle": "Ask, share, and consult with the community — threads are saved for everyone.",
     "startThread": "Start a new thread",
+    "composerTeaser": "Tap to open a new community thread",
+    "collapseComposer": "Close",
     "titleLabel": "Topic",
     "titlePlaceholder": "e.g. Best shoes for a 12-hour shift?",
     "bodyLabel": "Details",

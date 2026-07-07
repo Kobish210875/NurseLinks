@@ -5,8 +5,13 @@ import AnonymousFields from "@/components/discussions/AnonymousFields";
 import { useT } from "@/components/i18n/LocaleProvider";
 import { useState, useTransition } from "react";
 
-export default function DiscussionComposer() {
+type DiscussionComposerProps = {
+  collapsible?: boolean;
+};
+
+export default function DiscussionComposer({ collapsible = false }: DiscussionComposerProps) {
   const t = useT();
+  const [expanded, setExpanded] = useState(!collapsible);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [isAnonymous, setIsAnonymous] = useState(false);
@@ -32,9 +37,50 @@ export default function DiscussionComposer() {
     });
   }
 
+  if (collapsible && !expanded) {
+    return (
+      <button
+        type="button"
+        onClick={() => setExpanded(true)}
+        className="w-full rounded-lg border border-border bg-white px-3 py-3 text-start shadow-sm transition hover:border-primary/30 hover:bg-muted/20"
+        aria-expanded={false}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-sm font-semibold text-foreground">{t("discussions.startThread")}</span>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            className="shrink-0 text-muted-foreground"
+            aria-hidden="true"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </div>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t("discussions.composerTeaser")}</p>
+      </button>
+    );
+  }
+
   return (
-    <section className="rounded-2xl border border-border bg-white p-4 shadow-sm">
-      <h2 className="mb-3 text-base font-bold text-foreground">{t("discussions.startThread")}</h2>
+    <section className="rounded-2xl border border-border bg-white p-4 shadow-sm lg:rounded-2xl">
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <h2 className="text-base font-bold text-foreground">{t("discussions.startThread")}</h2>
+        {collapsible ? (
+          <button
+            type="button"
+            onClick={() => setExpanded(false)}
+            className="shrink-0 rounded-lg px-2 py-1 text-xs font-medium text-muted-foreground transition hover:bg-muted/50 hover:text-foreground"
+            aria-expanded={true}
+          >
+            {t("discussions.collapseComposer")}
+          </button>
+        ) : null}
+      </div>
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
           <label htmlFor="discussion-title" className="mb-1 block text-sm font-medium text-foreground">

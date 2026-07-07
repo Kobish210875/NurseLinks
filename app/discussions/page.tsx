@@ -48,15 +48,49 @@ async function DiscussionsContent({
   }
 
   const isSearchActive = searchQuery.length > 0;
+  const listProps = {
+    threads: result.threads,
+    emptyLabel: t("discussions.emptyList"),
+    searchEmptyLabel: t("discussions.searchEmpty"),
+    isSearchActive,
+    isAdmin,
+    repliesLabel: (count: number) =>
+      count === 0
+        ? t("discussions.noRepliesShort")
+        : t("discussions.repliesCount").replace("{count}", String(count)),
+  };
+
+  const searchResultsBar = isSearchActive ? (
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-white px-3 py-2 shadow-sm">
+      <p className="text-sm font-semibold text-foreground">
+        {t("discussions.searchResultsHeading").replace("{query}", searchQuery)}
+      </p>
+      <Link
+        href="/discussions"
+        className="shrink-0 text-sm font-medium text-primary hover:text-primary/80"
+      >
+        {t("discussions.clearSearch")}
+      </Link>
+    </div>
+  ) : null;
 
   return (
     <>
-      <aside className="order-1 flex min-h-0 flex-col gap-4 lg:col-start-1 lg:row-start-1 lg:self-start">
+      {/* Mobile: search + collapsible composer + thread list */}
+      <div className="flex flex-col gap-3 lg:hidden">
+        <DiscussionSearchBar defaultQuery={searchQuery} />
+        <DiscussionComposer collapsible />
+        {searchResultsBar}
+        <DiscussionList {...listProps} />
+      </div>
+
+      {/* Desktop: two-column layout */}
+      <aside className="order-1 hidden min-h-0 flex-col gap-4 lg:col-start-1 lg:row-start-1 lg:flex lg:self-start">
         <DiscussionSearchBar defaultQuery={searchQuery} />
         <DiscussionComposer />
       </aside>
 
-      <section className="order-2 flex min-h-0 min-w-0 flex-col lg:col-span-2 lg:col-start-2 lg:row-start-1 lg:h-full">
+      <section className="order-2 hidden min-h-0 min-w-0 flex-col lg:col-span-2 lg:col-start-2 lg:row-start-1 lg:flex lg:h-full">
         <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-white shadow-sm">
           {isSearchActive ? (
             <div className="flex shrink-0 flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-2">
@@ -72,19 +106,7 @@ async function DiscussionsContent({
             </div>
           ) : null}
           <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
-            <DiscussionList
-              embedded
-              isAdmin={isAdmin}
-              threads={result.threads}
-              emptyLabel={t("discussions.emptyList")}
-              searchEmptyLabel={t("discussions.searchEmpty")}
-              isSearchActive={isSearchActive}
-              repliesLabel={(count) =>
-                count === 0
-                  ? t("discussions.noRepliesShort")
-                  : t("discussions.repliesCount").replace("{count}", String(count))
-              }
-            />
+            <DiscussionList embedded {...listProps} />
           </div>
         </div>
       </section>
