@@ -7,7 +7,7 @@
   );
   --desktop-nav-height: 3.5rem;
   --desktop-nav-offset: calc(var(--desktop-nav-height) + 1px);
-  --mobile-bottom-nav-height: 3.5rem;
+  --mobile-bottom-nav-height: 3.75rem;
   --mobile-bottom-nav-offset: calc(
     var(--mobile-bottom-nav-height) + env(safe-area-inset-bottom, 0px)
   );

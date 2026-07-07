@@ -95,7 +95,11 @@ export default function MobileBottomNav() {
       aria-label={t("nav.mobileBottomAria")}
       dir="rtl"
     >
-      <ul className="mx-auto grid h-14 w-full max-w-md grid-cols-5 overflow-visible px-1" dir="rtl">
+      <ul
+        className="mx-auto grid h-[3.75rem] w-full gap-0 overflow-visible px-0"
+        style={{ gridTemplateColumns: `repeat(${items.length}, minmax(0, 1fr))` }}
+        dir="rtl"
+      >
         {items.map((item) => {
           const active = item.match(pathname, searchParams);
           const count = badgeCount(item.badge);
@@ -105,17 +109,17 @@ export default function MobileBottomNav() {
             <li key={item.href} className="min-w-0 overflow-visible">
               <Link
                 href={item.href}
-                className={`relative flex h-full min-w-0 flex-col items-center justify-center overflow-visible px-0.5 text-center text-[13px] font-semibold leading-snug transition ${
+                className={`relative flex h-full min-w-0 flex-col items-center justify-center overflow-visible px-0 text-center text-[11px] font-semibold leading-[1.15] transition ${
                   active
-                    ? "text-foreground after:absolute after:inset-x-1 after:top-0 after:h-0.5 after:rounded-full after:bg-foreground"
+                    ? "text-foreground after:absolute after:inset-x-0.5 after:top-0 after:h-0.5 after:rounded-full after:bg-foreground"
                     : "text-muted-foreground hover:text-primary"
                 }`}
               >
-                <span className="inline-flex max-w-full items-center justify-center gap-1" dir="rtl">
+                <span className="inline-flex max-w-full items-start justify-center gap-0.5" dir="rtl">
                   {showBadge ? (
-                    <NavUnreadDot ariaLabel={badgeLabel(item.badge, count)} />
+                    <NavUnreadDot ariaLabel={badgeLabel(item.badge, count)} className="mt-0.5 shrink-0" />
                   ) : null}
-                  <span className="truncate">{item.label}</span>
+                  <span className="line-clamp-2 whitespace-normal">{item.label}</span>
                 </span>
               </Link>
             </li>
